@@ -1,0 +1,6 @@
+# All game scripts are CRLF, but LF works fine and we already use it
+*.j			text eol=lf
+*.ai		text eol=lf
+# Not yet included in repo but can go with LF for consistency?
+*.pld		text eol=lf
+*.wts		text eol=lf
