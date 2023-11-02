@@ -202,6 +202,9 @@ function DebugCamInfo takes nothing returns nothing
     set message = message + ", FoV=" + R2SW(GetCameraField(CAMERA_FIELD_FIELD_OF_VIEW) * bj_RADTODEG, 0, 2)
     set message = message + ", Roll=" + R2SW(GetCameraField(CAMERA_FIELD_ROLL) * bj_RADTODEG, 0, 2)
     set message = message + ", Rot=" + R2SW(GetCameraField(CAMERA_FIELD_ROTATION) * bj_RADTODEG, 0, 2)
+    set message = message + ", LocalPitch=" + R2SW(GetCameraField(CAMERA_FIELD_LOCAL_PITCH) * bj_RADTODEG, 0, 2)
+    set message = message + ", LocalYaw=" + R2SW(GetCameraField(CAMERA_FIELD_LOCAL_YAW) * bj_RADTODEG, 0, 2)
+    set message = message + ", LocalRoll=" + R2SW(GetCameraField(CAMERA_FIELD_LOCAL_ROLL) * bj_RADTODEG, 0, 2)
 
     call DisplayTextToPlayer(thePlayer, 0, 0, message)
 endfunction
