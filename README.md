@@ -8,6 +8,10 @@ Only tags are stable references.
 
 Scripts are there https://github.com/Luashine/wc3-jass-history-scripts
 
+## How to contribute?
+
+Find me the missing Warcraft 3 versions, pretty please with sugar on top and an air kiss. *I'll be completely and fully satisfied* with a first version for each release, like 1.30.0 and 1.31.0.
+
 ## How to filter non-empty commits
 
 For Github, append `?w=1` or `&w=1` to the end of URL to skip whitespace changes.
