@@ -323,7 +323,7 @@ globals
 
     constant integer DARK_RITUAL        = 'AUdr'
     constant integer DEATH_DECAY        = 'AUdd'
-    constant integer FROST_ARMOR        = 'AUfa'
+    constant integer FROST_ARMOR        = 'AUfu'
     constant integer FROST_NOVA         = 'AUfn'
 
     constant integer ANIM_DEAD          = 'AUan'
