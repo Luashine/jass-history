@@ -2531,6 +2531,11 @@ function SetMusicVolumeBJ takes real volumePercent returns nothing
 endfunction
 
 //===========================================================================
+function SetThematicMusicVolumeBJ takes real volumePercent returns nothing
+    call SetThematicMusicVolume(PercentToInt(volumePercent, 127))
+endfunction
+
+//===========================================================================
 function GetSoundDurationBJ takes sound soundHandle returns real
     if (soundHandle == null) then
         return bj_NOTHING_SOUND_DURATION
@@ -7308,7 +7313,7 @@ function SetCinematicAvailableBJ takes boolean available, integer cinematicIndex
         call PlayCinematic( "NightElfEd" )
     elseif (cinematicIndex == bj_CINEMATICINDEX_XOP) then
         call SetOpCinematicAvailable( bj_CAMPAIGN_OFFSET_XN, available )
-        call PlayCinematic( "IntroX" )
+        // call PlayCinematic( "IntroX" )
     elseif (cinematicIndex == bj_CINEMATICINDEX_XED) then
         call SetEdCinematicAvailable( bj_CAMPAIGN_OFFSET_XU, available )
         call PlayCinematic( "OutroX" )
