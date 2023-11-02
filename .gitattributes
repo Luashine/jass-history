@@ -1,6 +1,6 @@
 # All game scripts are CRLF, I checked.
-# However the game is fine with LF and we will enforce it for consistency.
-*.j			text eol=lf
-*.ai		text eol=lf
-*.pld		text eol=lf
-*.wts		text eol=lf
+# However the game is fine with LF
+*.j			text eol=crlf
+*.ai		text eol=crlf
+*.pld		text eol=crlf
+*.wts		text eol=crlf
