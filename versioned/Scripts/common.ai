@@ -349,7 +349,6 @@ globals
     constant integer W2_WARLOCK         = 'nw2w'
     constant integer PIG_FARM           = 'npgf'
     constant integer FOREST_TROLL       = 'nftr'
-	constant integer DRAGON_ROOST       = 'ndrb'
 
     // special orc units
     constant integer CHAOS_GRUNT        = 'nchg'
@@ -551,8 +550,6 @@ globals
     constant integer HIGH_TOWER         = 'negt'
     constant integer ELF_HIGH_BARRACKS  = 'nheb'
     constant integer CORRUPT_LIFE       = 'nctl'
-	constant integer CORRUPT_AGES       = 'ncta'
-	constant integer CORRUPT_ETERNITY   = 'ncte'
     constant integer CORRUPT_WELL       = 'ncmw'
     constant integer CORRUPT_PROTECTOR  = 'ncap'
     constant integer CORRUPT_WAR        = 'ncaw'
