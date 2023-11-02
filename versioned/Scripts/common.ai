@@ -1,11 +1,13 @@
 //==================================================================================================
-//  $Id: common.ai,v 1.45 2003/04/07 20:03:13 bfitch Exp $
+//  $Id: common.ai,v 1.54 2003/04/15 12:28:21 bfitch Exp $
 //==================================================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
 native DebugUnitID          takes string str, integer val               returns nothing
 native DisplayText          takes integer p, string str                 returns nothing
 native DisplayTextI         takes integer p, string str, integer val    returns nothing
+native DisplayTextII        takes integer p, string str, integer v1, integer v2 returns nothing
+native DisplayTextIII       takes integer p, string str, integer v1, integer v2, integer v3 returns nothing
 native DoAiScriptDebug      takes nothing                               returns boolean
 
 native GetAiPlayer          takes nothing                               returns integer
@@ -97,6 +99,7 @@ native FillGuardPosts       takes nothing                               returns 
 native ReturnGuardPosts     takes nothing                               returns nothing
 native CreateCaptains       takes nothing                               returns nothing
 native SetCaptainHome       takes integer which, real x, real y         returns nothing
+native ResetCaptainLocs     takes nothing                               returns nothing
 native ShiftTownSpot        takes real x, real y                        returns nothing
 native TeleportCaptain      takes real x, real y                        returns nothing
 native ClearCaptainTargets  takes nothing                               returns nothing
@@ -346,6 +349,8 @@ globals
     constant integer CHAOS_RAIDER       = 'nchr'
     constant integer CHAOS_PEON         = 'ncpn'
     constant integer CHAOS_KODO         = 'nckb'
+    constant integer CHAOS_GROM         = 'Opgh'
+    constant integer CHAOS_BLADEMASTER  = 'Nbbc'
 
     //--------------------------------------------------------------------
     //  UNDEAD
@@ -400,7 +405,7 @@ globals
     constant integer SHADE              = 'ushd'
     constant integer UNDEAD_BARGE       = 'uarb'
     constant integer OBSIDIAN_STATUE    = 'uobs'
-    constant integer OBS_STATUE         = OBSIDIAN_STATUE
+    constant integer OBS_STATUE         =  OBSIDIAN_STATUE
     constant integer BLK_SPHINX         = 'ubsp'
 
     // undead buildings
@@ -442,7 +447,7 @@ globals
     constant integer UPG_CR_ARMOR       = 'Rucr'
     constant integer UPG_PLAGUE         = 'Rupc'
     constant integer UPG_BLK_SPHINX     = 'Rusp'
-
+    constant integer UPG_BURROWING      = 'Rubu'
 
     //--------------------------------------------------------------------
     //  ELVES
@@ -461,6 +466,7 @@ globals
     constant integer SYLVANUS           = 'Hvwd'
     constant integer CENARIUS           = 'Ecen'
     constant integer ILLIDAN            = 'Eevi'
+    constant integer ILLIDAN_DEMON      = 'Eevm'
     constant integer MAIEV              = 'Ewrd'
 
     // elf hero abilities
@@ -720,6 +726,7 @@ globals
     boolean trace_on                = true
     boolean war3x                   = true
     boolean zep_next_wave           = false
+    boolean form_group_timeouts     = true
 endglobals
 
 //============================================================================
@@ -733,6 +740,20 @@ endfunction
 function TraceI takes string message, integer val returns nothing
     if trace_on then
         call DisplayTextI(GetAiPlayer(),message,val)
+    endif
+endfunction
+
+//============================================================================
+function TraceII takes string message, integer v1, integer v2 returns nothing
+    if trace_on then
+        call DisplayTextII(GetAiPlayer(),message,v1,v2)
+    endif
+endfunction
+
+//============================================================================
+function TraceIII takes string message, integer v1, integer v2, integer v3 returns nothing
+    if trace_on then
+        call DisplayTextIII(GetAiPlayer(),message,v1,v2,v3)
     endif
 endfunction
 
@@ -776,6 +797,22 @@ endfunction
 //============================================================================
 //  Utility Functions
 //============================================================================
+function Min takes integer A, integer B returns integer
+    if A < B then
+        return A
+    else
+        return B
+    endif
+endfunction
+
+function Max takes integer A, integer B returns integer
+    if A > B then
+        return A
+    else
+        return B
+    endif
+endfunction
+
 function SetZepNextWave takes nothing returns nothing
     set zep_next_wave = true
 endfunction
@@ -828,6 +865,20 @@ function WaitForSignal takes nothing returns integer
     set cmd = GetLastCommand()
     call PopLastCommand()
     return cmd
+endfunction
+
+//============================================================================
+function SetHarvestLumber takes boolean harvest returns nothing
+    if harvest then
+        set campaign_wood_peons = 3
+    else
+        set campaign_wood_peons = 0
+    endif
+endfunction
+
+//============================================================================
+function SetFormGroupTimeouts takes boolean state returns nothing
+    set form_group_timeouts = state
 endfunction
 
 //============================================================================
@@ -1075,8 +1126,11 @@ function TownCountEx takes integer unitid, boolean only_done, integer townid ret
         set have_qty = have_qty + GetUnitCountEx(DRUID_CLAW_M,false,townid)
     elseif unitid == DRUID_CLAW_M then
         set have_qty = have_qty + GetUnitCountEx(DRUID_CLAW,only_done,townid)
-    endif
 
+    elseif unitid == ILLIDAN then
+        set have_qty = have_qty + GetUnitCountEx(ILLIDAN_DEMON,false,townid)
+
+    endif
     return have_qty
 endfunction
 
@@ -1267,15 +1321,15 @@ function OneBuildLoop takes nothing returns nothing
     local integer id
     local integer tp
 
-    set total_gold   = GetGold() - gold_buffer
-    set total_wood   = GetWood()
+    set total_gold = GetGold() - gold_buffer
+    set total_wood = GetWood()
 
     loop
         exitwhen index == build_length
 
-        set qty  = build_qty[index]
-        set id   = build_item[index]
-        set tp   = build_type[index]
+        set qty = build_qty [index]
+        set id  = build_item[index]
+        set tp  = build_type[index]
 
         //--------------------------------------------------------------------
         if tp == BUILD_UNIT then
@@ -1524,7 +1578,7 @@ function FormGroup takes integer seconds, boolean testReady returns nothing
         endloop
 
         //xxx
-        if sleep_seconds < -60 then
+        if form_group_timeouts and (sleep_seconds < -60) then
             call Trace("exit form group -- timeout\n")
         elseif CaptainInCombat(true) then
             call Trace("exit form group -- can't form while already in combat\n")
@@ -1534,7 +1588,7 @@ function FormGroup takes integer seconds, boolean testReady returns nothing
         //xxx
 
         // time out and send group anyway if time has already expired
-        exitwhen sleep_seconds < -60
+        exitwhen form_group_timeouts and (sleep_seconds < -60)
         exitwhen CaptainInCombat(true)
         exitwhen CaptainIsFull() and CaptainReadiness() >= readyPercent
     endloop
@@ -1617,15 +1671,18 @@ endfunction
 //============================================================================
 function SleepInCombat takes nothing returns nothing
     local integer count = 0
+    debug call Trace("SleepInCombat\n")
     loop
         loop
             exitwhen not CaptainInCombat(true)  // goal is cleared
+            exitwhen CaptainIsEmpty()           // duh
             call SuicideSleep(1)
         endloop
 
         set count = count + 1
         exitwhen count >= 8
     endloop
+    debug call Trace("exit SleepInCombat\n")
 endfunction
 
 //============================================================================
@@ -1798,7 +1855,18 @@ function SuicideUntilSignal takes integer seconds, player p returns nothing
     endloop
 endfunction
 
-//============================================================================
+//--------------------------------------------------------------------------------------------------
+function SuicideOnce takes integer easy, integer med, integer hard, integer unitid returns nothing
+    if difficulty == EASY then
+        call SuicideUnit(easy,unitid)
+    elseif difficulty == NORMAL then
+        call SuicideUnit(med,unitid)
+    else
+        call SuicideUnit(hard,unitid)
+    endif
+endfunction
+
+//--------------------------------------------------------------------------------------------------
 function SuicideUnitA takes integer unitid returns nothing
     if unitid != 0 then
         call SuicideUnit(1,unitid)
@@ -1806,7 +1874,15 @@ function SuicideUnitA takes integer unitid returns nothing
     call Sleep(0.1)
 endfunction
 
-//============================================================================
+//--------------------------------------------------------------------------------------------------
+function SuicideUnitB takes integer unitid, integer playerid returns nothing
+    if unitid != 0 then
+        call SuicideUnitEx(1,unitid,playerid)
+    endif
+    call Sleep(0.1)
+endfunction
+
+//--------------------------------------------------------------------------------------------------
 function SuicideUnits takes integer u1, integer u2, integer u3, integer u4, integer u5, integer u6, integer u7, integer u8, integer u9, integer uA returns nothing
     call Trace("MASS SUICIDE - this script is now technically done\n") //xxx
 
@@ -1822,6 +1898,25 @@ function SuicideUnits takes integer u1, integer u2, integer u3, integer u4, inte
         call SuicideUnitA(u8)
         call SuicideUnitA(u9)
         call SuicideUnitA(uA)
+    endloop
+endfunction
+
+//--------------------------------------------------------------------------------------------------
+function SuicideUnitsEx takes integer playerid, integer u1, integer u2, integer u3, integer u4, integer u5, integer u6, integer u7, integer u8, integer u9, integer uA returns nothing
+    call Trace("MASS SUICIDE - this script is now technically done\n") //xxx
+
+    call PrepFullSuicide()
+    loop
+        call SuicideUnitB(u1,playerid)
+        call SuicideUnitB(u2,playerid)
+        call SuicideUnitB(u3,playerid)
+        call SuicideUnitB(u4,playerid)
+        call SuicideUnitB(u5,playerid)
+        call SuicideUnitB(u6,playerid)
+        call SuicideUnitB(u7,playerid)
+        call SuicideUnitB(u8,playerid)
+        call SuicideUnitB(u9,playerid)
+        call SuicideUnitB(uA,playerid)
     endloop
 endfunction
 
@@ -1889,6 +1984,7 @@ endfunction
 
 //============================================================================
 function ReformUntilTargetDead takes unit target returns nothing
+    debug call Trace("ReformUntilTargetDead\n")
     call CommonSleepUntilTargetDead(target,true)
 endfunction
 
@@ -1899,6 +1995,7 @@ function AttackMoveKillA takes unit target returns nothing
         return
     endif
 
+    debug call Trace("AttackMoveKillA\n")
     call AttackMoveKill(target)
     call ReformUntilTargetDead(target)
     call SleepInCombat()

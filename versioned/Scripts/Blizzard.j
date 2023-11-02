@@ -42,6 +42,7 @@ globals
     constant integer   bj_MAX_INVENTORY                 =   6
     constant integer   bj_MAX_PLAYERS                   =  12
     constant integer   bj_PLAYER_NEUTRAL_VICTIM         =  13
+    constant integer   bj_PLAYER_NEUTRAL_EXTRA          =  14
     constant integer   bj_MAX_PLAYER_SLOTS              =  16
     constant integer   bj_MAX_SKELETONS                 =  25
     constant integer   bj_MAX_STOCK_ITEM_SLOTS          =  11
@@ -221,7 +222,6 @@ globals
     constant integer   bj_MISSION_INDEX_XN08       = bj_CAMPAIGN_OFFSET_XN * 1000 + 8
     constant integer   bj_MISSION_INDEX_XN09       = bj_CAMPAIGN_OFFSET_XN * 1000 + 9
     constant integer   bj_MISSION_INDEX_XN10       = bj_CAMPAIGN_OFFSET_XN * 1000 + 10
-    constant integer   bj_MISSION_INDEX_XN11       = bj_CAMPAIGN_OFFSET_XN * 1000 + 11
     // Expansion Human
     constant integer   bj_MISSION_INDEX_XH00       = bj_CAMPAIGN_OFFSET_XH * 1000 + 0
     constant integer   bj_MISSION_INDEX_XH01       = bj_CAMPAIGN_OFFSET_XH * 1000 + 1
@@ -233,7 +233,6 @@ globals
     constant integer   bj_MISSION_INDEX_XH07       = bj_CAMPAIGN_OFFSET_XH * 1000 + 7
     constant integer   bj_MISSION_INDEX_XH08       = bj_CAMPAIGN_OFFSET_XH * 1000 + 8
     constant integer   bj_MISSION_INDEX_XH09       = bj_CAMPAIGN_OFFSET_XH * 1000 + 9
-    constant integer   bj_MISSION_INDEX_XH10       = bj_CAMPAIGN_OFFSET_XH * 1000 + 10
     // Expansion Undead
     constant integer   bj_MISSION_INDEX_XU00       = bj_CAMPAIGN_OFFSET_XU * 1000 + 0
     constant integer   bj_MISSION_INDEX_XU01       = bj_CAMPAIGN_OFFSET_XU * 1000 + 1
@@ -269,6 +268,7 @@ globals
     constant integer   bj_ALLIANCE_ALLIED_UNITS    = 4
     constant integer   bj_ALLIANCE_ALLIED_ADVUNITS = 5
     constant integer   bj_ALLIANCE_NEUTRAL         = 6
+    constant integer   bj_ALLIANCE_NEUTRAL_VISION  = 7
 
     // Keyboard Event Types
     constant integer   bj_KEYEVENTTYPE_DEPRESS     = 0
@@ -371,10 +371,12 @@ globals
     constant integer   bj_ITEM_STATUS_INVULNERABLE = 2
     constant integer   bj_ITEM_STATUS_POWERUP      = 3
     constant integer   bj_ITEM_STATUS_SELLABLE     = 4
+    constant integer   bj_ITEM_STATUS_PAWNABLE     = 5
 
     // Itemcode status types
     constant integer   bj_ITEMCODE_STATUS_POWERUP  = 0
     constant integer   bj_ITEMCODE_STATUS_SELLABLE = 1
+    constant integer   bj_ITEMCODE_STATUS_PAWNABLE = 2
 
     // Minimap ping styles
     constant integer   bj_MINIMAPPINGSTYLE_SIMPLE  = 0
@@ -390,6 +392,8 @@ globals
 
     // Elevator pathing-blocker destructable code
     constant integer   bj_ELEVATOR_BLOCKER_CODE    = 'DTep'
+    constant integer   bj_ELEVATOR_CODE01          = 'DTrf'
+    constant integer   bj_ELEVATOR_CODE02          = 'DTrx'
 
     // Elevator wall codes
     constant integer   bj_ELEVATOR_WALL_TYPE_ALL        = 0
@@ -537,6 +541,7 @@ globals
     integer            bj_destRandomConsidered     = 0
     destructable       bj_destRandomCurrentPick    = null
     destructable       bj_elevatorWallBlocker      = null
+    destructable       bj_elevatorNeighbor         = null
     integer            bj_itemRandomConsidered     = 0
     item               bj_itemRandomCurrentPick    = null
     integer            bj_forceRandomConsidered    = 0
@@ -558,6 +563,7 @@ globals
     timer              bj_delayedSuspendDecayTimer = CreateTimer()
     trigger            bj_delayedSuspendDecayTrig  = null
     integer            bj_livingPlayerUnitsTypeId  = 0
+    widget             bj_lastDyingWidget          = null
 
     // Random distribution vars
 	integer            bj_randDistCount            = 0
@@ -831,6 +837,19 @@ endfunction
 //===========================================================================
 function RectContainsUnit takes rect r, unit whichUnit returns boolean
     return RectContainsCoords(r, GetUnitX(whichUnit), GetUnitY(whichUnit))
+endfunction
+
+//===========================================================================
+function RectContainsItem takes item whichItem, rect r returns boolean
+    if (whichItem == null) then
+        return false
+    endif
+
+    if (IsItemOwned(whichItem)) then
+        return false
+    endif
+
+    return RectContainsCoords(r, GetItemX(whichItem), GetItemY(whichItem))
 endfunction
 
 
@@ -1378,6 +1397,22 @@ function CameraSetTargetNoiseForPlayer takes player whichPlayer, real magnitude,
     if (GetLocalPlayer() == whichPlayer) then
         // Use only local code (no net traffic) within this block to avoid desyncs.
         call CameraSetTargetNoise(magnitude, velocity)
+    endif
+endfunction
+
+//===========================================================================
+function CameraSetEQNoiseForPlayer takes player whichPlayer, real magnitude returns nothing
+    local real richter = magnitude
+    if (richter > 5.0) then
+        set richter = 5.0
+    endif
+    if (richter < 2.0) then
+        set richter = 2.0
+    endif
+    if (GetLocalPlayer() == whichPlayer) then
+        // Use only local code (no net traffic) within this block to avoid desyncs.
+        call CameraSetTargetNoiseEx(magnitude*2.0, magnitude*Pow(10,richter),true)
+        call CameraSetSourceNoiseEx(magnitude*2.0, magnitude*Pow(10,richter),true)
     endif
 endfunction
 
@@ -2651,6 +2686,8 @@ function CheckItemStatus takes item whichItem, integer status returns boolean
         return IsItemPowerup(whichItem)
     elseif (status == bj_ITEM_STATUS_SELLABLE) then
         return IsItemSellable(whichItem)
+    elseif (status == bj_ITEM_STATUS_PAWNABLE) then
+        return IsItemPawnable(whichItem)
     else
         // Unrecognized status - return false
         return false
@@ -2663,6 +2700,8 @@ function CheckItemcodeStatus takes integer itemId, integer status returns boolea
         return IsItemIdPowerup(itemId)
     elseif (status == bj_ITEMCODE_STATUS_SELLABLE) then
         return IsItemIdSellable(itemId)
+    elseif (status == bj_ITEMCODE_STATUS_PAWNABLE) then
+        return IsItemIdPawnable(itemId)
     else
         // Unrecognized status - return false
         return false
@@ -2896,6 +2935,29 @@ function GetUnitStateSwap takes unitstate whichState, unit whichUnit returns rea
 endfunction
 
 //===========================================================================
+function GetUnitStatePercent takes unit whichUnit, unitstate whichState, unitstate whichMaxState returns real
+    local real value    = GetUnitState(whichUnit, whichState)
+    local real maxValue = GetUnitState(whichUnit, whichMaxState)
+
+    // Return 0 for null units.
+    if (whichUnit == null) or (maxValue == 0) then
+        return 0.0
+    endif
+
+    return value / maxValue * 100.0
+endfunction
+
+//===========================================================================
+function GetUnitLifePercent takes unit whichUnit returns real
+    return GetUnitStatePercent(whichUnit, UNIT_STATE_LIFE, UNIT_STATE_MAX_LIFE)
+endfunction
+
+//===========================================================================
+function GetUnitManaPercent takes unit whichUnit returns real
+    return GetUnitStatePercent(whichUnit, UNIT_STATE_MANA, UNIT_STATE_MAX_MANA)
+endfunction
+
+//===========================================================================
 function SelectUnitSingle takes unit whichUnit returns nothing
     call ClearSelection()
     call SelectUnit(whichUnit, true)
@@ -2966,22 +3028,22 @@ endfunction
 
 //===========================================================================
 function SetUnitLifeBJ takes unit whichUnit, real newValue returns nothing
-    call SetUnitState(whichUnit, UNIT_STATE_LIFE, newValue)
+    call SetUnitState(whichUnit, UNIT_STATE_LIFE, RMaxBJ(0,newValue))
 endfunction
 
 //===========================================================================
 function SetUnitManaBJ takes unit whichUnit, real newValue returns nothing
-    call SetUnitState(whichUnit, UNIT_STATE_MANA, newValue)
+    call SetUnitState(whichUnit, UNIT_STATE_MANA, RMaxBJ(0,newValue))
 endfunction
 
 //===========================================================================
 function SetUnitLifePercentBJ takes unit whichUnit, real percent returns nothing
-    call SetUnitState(whichUnit, UNIT_STATE_LIFE, GetUnitState(whichUnit, UNIT_STATE_MAX_LIFE) * percent * 0.01)
+    call SetUnitState(whichUnit, UNIT_STATE_LIFE, GetUnitState(whichUnit, UNIT_STATE_MAX_LIFE) * RMaxBJ(0,percent) * 0.01)
 endfunction
 
 //===========================================================================
 function SetUnitManaPercentBJ takes unit whichUnit, real percent returns nothing
-    call SetUnitState(whichUnit, UNIT_STATE_MANA, GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) * percent * 0.01)
+    call SetUnitState(whichUnit, UNIT_STATE_MANA, GetUnitState(whichUnit, UNIT_STATE_MAX_MANA) * RMaxBJ(0,percent) * 0.01)
 endfunction
 
 //===========================================================================
@@ -3199,6 +3261,16 @@ function EnableCreepSleepBJ takes boolean enable returns nothing
     if (not enable) then
         call WakePlayerUnits(Player(PLAYER_NEUTRAL_AGGRESSIVE))
     endif
+endfunction
+
+//===========================================================================
+function UnitGenerateAlarms takes unit whichUnit, boolean generate returns boolean
+    return UnitIgnoreAlarm(whichUnit, not generate)
+endfunction
+
+//===========================================================================
+function DoesUnitGenerateAlarms takes unit whichUnit returns boolean
+    return not UnitIgnoreAlarmToggled(whichUnit)
 endfunction
 
 //===========================================================================
@@ -3671,15 +3743,6 @@ function ChangeElevatorHeight takes destructable d, integer newHeight returns no
 endfunction
 
 //===========================================================================
-function FindElevatorWallBlockerEnum takes nothing returns nothing
-    local destructable d = GetEnumDestructable()
-
-    if (GetDestructableTypeId(d) == bj_ELEVATOR_BLOCKER_CODE) then
-        set bj_elevatorWallBlocker = d
-    endif
-endfunction
-
-//===========================================================================
 // Grab the unit and throw his own coords in his face, forcing him to push
 // and shove until he finds a spot where noone will bother him.
 //
@@ -3690,17 +3753,54 @@ function NudgeUnitsInRectEnum takes nothing returns nothing
 endfunction
 
 //===========================================================================
-// Nudge the units within a given rect ever so gently, so as to encourage
-// them to find locations where they can peacefully coexist with pathing
-// restrictions, and live happy, fruitful lives.
+function NudgeItemsInRectEnum takes nothing returns nothing
+    local item nudgee = GetEnumItem()
+
+    call SetItemPosition(nudgee, GetItemX(nudgee), GetItemY(nudgee))
+endfunction
+
+//===========================================================================
+// Nudge the items and units within a given rect ever so gently, so as to
+// encourage them to find locations where they can peacefully coexist with
+// pathing restrictions and live happy, fruitful lives.
 //
-function NudgeUnitsInRect takes rect nudgeArea returns nothing
+function NudgeObjectsInRect takes rect nudgeArea returns nothing
     local group        g
 
     set g = CreateGroup()
     call GroupEnumUnitsInRect(g, nudgeArea, null)
     call ForGroup(g, function NudgeUnitsInRectEnum)
     call DestroyGroup(g)
+
+    call EnumItemsInRect(nudgeArea, null, function NudgeItemsInRectEnum)
+endfunction
+
+//===========================================================================
+function NearbyElevatorExistsEnum takes nothing returns nothing
+    local destructable d     = GetEnumDestructable()
+    local integer      dType = GetDestructableTypeId(d)
+
+    if (dType == bj_ELEVATOR_CODE01) or (dType == bj_ELEVATOR_CODE02) then
+        set bj_elevatorNeighbor = d
+    endif
+endfunction
+
+//===========================================================================
+function NearbyElevatorExists takes real x, real y returns boolean
+    local real findThreshold = 32
+    local rect r
+
+    // If another elevator is overlapping this one, ignore the wall.
+    set r = Rect(x - findThreshold, y - findThreshold, x + findThreshold, y + findThreshold)
+    set bj_elevatorNeighbor = null
+    call EnumDestructablesInRect(r, null, function NearbyElevatorExistsEnum)
+
+    return bj_elevatorNeighbor != null
+endfunction
+
+//===========================================================================
+function FindElevatorWallBlockerEnum takes nothing returns nothing
+    set bj_elevatorWallBlocker = GetEnumDestructable()
 endfunction
 
 //===========================================================================
@@ -3721,26 +3821,34 @@ function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean op
     call EnumDestructablesInRect(r, null, function FindElevatorWallBlockerEnum)
     set blocker = bj_elevatorWallBlocker
 
+    // Ensure that the blocker exists.
+    if (blocker == null) then
+        set blocker = CreateDeadDestructable(bj_ELEVATOR_BLOCKER_CODE, x, y, facing, 1, 0)
+    elseif (GetDestructableTypeId(blocker) != bj_ELEVATOR_BLOCKER_CODE) then
+        // If a different destructible exists in the blocker's spot, ignore
+        // the request.  (Two destructibles cannot occupy the same location
+        // on the map, so we cannot create an elevator blocker here.)
+        return
+    endif
+
     if (open) then
-        // If the blocker is alive, kill it.
-        if (blocker != null) and (GetDestructableLife(blocker) > 0) then
+        // Ensure that the blocker is dead.
+        if (GetDestructableLife(blocker) > 0) then
             call KillDestructable(blocker)
         endif
     else
-        // Ensure that the blocker exists and is alive.
-        if (blocker == null) then
-            set blocker = CreateDestructable(bj_ELEVATOR_BLOCKER_CODE, x, y, facing, 1, 0)
-        elseif (GetDestructableLife(blocker) <= 0) then
+        // Ensure that the blocker is alive.
+        if (GetDestructableLife(blocker) <= 0) then
             call DestructableRestoreLife(blocker, GetDestructableMaxLife(blocker), false)
         endif
 
-        // Nudge any units standing in the blocker's way.
+        // Nudge any objects standing in the blocker's way.
         if (facing == 0) then
-            call NudgeUnitsInRect(Rect(x - nudgeWidth/2, y - nudgeLength/2, x + nudgeWidth/2, y + nudgeLength/2))
+            call NudgeObjectsInRect(Rect(x - nudgeWidth/2, y - nudgeLength/2, x + nudgeWidth/2, y + nudgeLength/2))
         elseif (facing == 90) then
-            call NudgeUnitsInRect(Rect(x - nudgeLength/2, y - nudgeWidth/2, x + nudgeLength/2, y + nudgeWidth/2))
+            call NudgeObjectsInRect(Rect(x - nudgeLength/2, y - nudgeWidth/2, x + nudgeLength/2, y + nudgeWidth/2))
         else
-            // Unrecognized blocker angle - don't nudge anyone.
+            // Unrecognized blocker angle - don't nudge anything.
         endif
     endif
 endfunction
@@ -3750,21 +3858,30 @@ function ChangeElevatorWalls takes boolean open, integer walls, destructable d r
     local real x = GetDestructableX(d)
     local real y = GetDestructableY(d)
     local real distToBlocker = 192
+    local real distToNeighbor = 256
 
     if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_EAST) then
-        call ChangeElevatorWallBlocker(x + distToBlocker, y, 0, open)
+        if (not NearbyElevatorExists(x + distToNeighbor, y)) then
+            call ChangeElevatorWallBlocker(x + distToBlocker, y, 0, open)
+        endif
     endif
 
     if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_NORTH) then
-        call ChangeElevatorWallBlocker(x, y + distToBlocker, 90, open)
+        if (not NearbyElevatorExists(x, y + distToNeighbor)) then
+            call ChangeElevatorWallBlocker(x, y + distToBlocker, 90, open)
+        endif
     endif
 
     if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_SOUTH) then
-        call ChangeElevatorWallBlocker(x, y - distToBlocker, 90, open)
+        if (not NearbyElevatorExists(x, y - distToNeighbor)) then
+            call ChangeElevatorWallBlocker(x, y - distToBlocker, 90, open)
+        endif
     endif
 
     if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_WEST) then
-        call ChangeElevatorWallBlocker(x - distToBlocker, y, 0, open)
+        if (not NearbyElevatorExists(x - distToNeighbor, y)) then
+            call ChangeElevatorWallBlocker(x - distToBlocker, y, 0, open)
+        endif
     endif
 endfunction
 
@@ -4384,6 +4501,12 @@ function SetPlayerAllianceStateBJ takes player sourcePlayer, player otherPlayer,
         call SetPlayerAllianceStateControlBJ(     sourcePlayer, otherPlayer, false )
         call SetPlayerAllianceStateFullControlBJ( sourcePlayer, otherPlayer, false )
         call SetPlayerAlliance( sourcePlayer, otherPlayer, ALLIANCE_PASSIVE, true )
+    elseif allianceState == bj_ALLIANCE_NEUTRAL_VISION then
+        call SetPlayerAllianceStateAllyBJ(        sourcePlayer, otherPlayer, false )
+        call SetPlayerAllianceStateVisionBJ(      sourcePlayer, otherPlayer, true  )
+        call SetPlayerAllianceStateControlBJ(     sourcePlayer, otherPlayer, false )
+        call SetPlayerAllianceStateFullControlBJ( sourcePlayer, otherPlayer, false )
+        call SetPlayerAlliance( sourcePlayer, otherPlayer, ALLIANCE_PASSIVE, true )
     else
         // Unrecognized alliance state - ignore the request.
     endif
@@ -4661,7 +4784,6 @@ endfunction
 function CustomVictoryOkBJ takes nothing returns nothing
     if bj_isSinglePlayer then
         call PauseGame( false )
-
         // Bump the difficulty back up to the default.
         call SetGameDifficulty(GetDefaultDifficulty())
     endif
@@ -4677,7 +4799,6 @@ endfunction
 function CustomVictoryQuitBJ takes nothing returns nothing
     if bj_isSinglePlayer then
         call PauseGame( false )
-
         // Bump the difficulty back up to the default.
         call SetGameDifficulty(GetDefaultDifficulty())
     endif
@@ -4707,6 +4828,7 @@ function CustomVictoryDialogBJ takes player whichPlayer returns nothing
         endif
     endif
 
+    call EnableUserUI(false)
     call DialogDisplay( whichPlayer, d, true )
     call VolumeGroupSetVolumeForPlayerBJ( whichPlayer, SOUND_VOLUMEGROUP_UI, 1.0 )
     call StartSoundForPlayerBJ( whichPlayer, bj_victoryDialogSound )
@@ -4826,6 +4948,7 @@ function CustomDefeatDialogBJ takes player whichPlayer, string message returns n
         endif
     endif
 
+    call EnableUserUI(false)
     call DialogDisplay( whichPlayer, d, true )
     call VolumeGroupSetVolumeForPlayerBJ( whichPlayer, SOUND_VOLUMEGROUP_UI, 1.0 )
     call StartSoundForPlayerBJ( whichPlayer, bj_defeatDialogSound )
@@ -5821,6 +5944,7 @@ function CinematicFadeCommonBJ takes real red, real green, real blue, real durat
         // so that we effectively do a set rather than a fade.
         set startTrans = endTrans
     endif
+    call EnableUserUI(false)
     call SetCineFilterTexture(tex)
     call SetCineFilterBlendMode(BLEND_MODE_BLEND)
     call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
@@ -5837,6 +5961,7 @@ function FinishCinematicFadeBJ takes nothing returns nothing
     call DestroyTimer(bj_cineFadeFinishTimer)
     set bj_cineFadeFinishTimer = null
     call DisplayCineFilter(false)
+    call EnableUserUI(true)
 endfunction
 
 //===========================================================================
@@ -6544,6 +6669,15 @@ endfunction
 //===========================================================================
 function GetDyingDestructable takes nothing returns destructable
     return GetTriggerWidget()
+endfunction
+
+//===========================================================================
+// Utility function for use by editor-generated item drop table triggers.
+// This function is added as an action to all destructable drop triggers,
+// so that a widget drop may be differentiated from a unit drop.
+//
+function SaveDyingWidget takes nothing returns nothing
+    set bj_lastDyingWidget = GetTriggerWidget()
 endfunction
 
 //===========================================================================
@@ -8024,19 +8158,22 @@ function MeleeTriggerTournamentFinishSoon takes nothing returns nothing
     call TimerDialogSetRealTimeRemaining(bj_finishSoonTimerDialog, timeRemaining)
 endfunction
 
-//===========================================================================
-function ComputePlayerScore takes player whichPlayer returns integer
-    local playerslotstate slotState = GetPlayerSlotState(whichPlayer)
 
-    if slotState == PLAYER_SLOT_STATE_PLAYING or slotState == PLAYER_SLOT_STATE_LEFT then
-        return GetTournamentScore(whichPlayer)
+//===========================================================================
+function MeleeWasUserPlayer takes player whichPlayer returns boolean
+    local playerslotstate slotState
+
+    if (GetPlayerController(whichPlayer) != MAP_CONTROL_USER) then
+        return false
     endif
 
-    return 0
+    set slotState = GetPlayerSlotState(whichPlayer)
+
+    return (slotState == PLAYER_SLOT_STATE_PLAYING or slotState == PLAYER_SLOT_STATE_LEFT)
 endfunction
 
 //===========================================================================
-function MeleeTriggerTournamentFinishNow takes nothing returns nothing
+function MeleeTournamentFinishNowRuleA takes integer multiplier returns nothing
     local integer array playerScore
     local integer array teamScore
     local force array   teamForce
@@ -8049,16 +8186,18 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
     local integer       bestScore
     local boolean       draw
 
-    // If the game is already over, do nothing
-    if bj_meleeGameOver then
-        return
-    endif
-
     // Compute individual player scores
     set index = 0
     loop
         set indexPlayer = Player(index)
-        set playerScore[index] = ComputePlayerScore(indexPlayer)
+        if MeleeWasUserPlayer(indexPlayer) then
+            set playerScore[index] = GetTournamentScore(indexPlayer)
+            if playerScore[index] <= 0 then
+                set playerScore[index] = 1
+            endif
+        else
+            set playerScore[index] = 0
+        endif
         set index = index + 1
         exitwhen index == bj_MAX_PLAYERS
     endloop
@@ -8075,17 +8214,21 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
 
             set index2 = index
             loop
-                set indexPlayer2 = Player(index2)
+                if playerScore[index2] != 0 then
+                    set indexPlayer2 = Player(index2)
 
-                if PlayersAreCoAllied(indexPlayer, indexPlayer2) then
-                    set teamScore[teamCount] = teamScore[teamCount] + playerScore[index]
-                    call ForceAddPlayer(teamForce[teamCount], indexPlayer2)
-                    set teamCount = teamCount + 1
+                    if PlayersAreCoAllied(indexPlayer, indexPlayer2) then
+                        set teamScore[teamCount] = teamScore[teamCount] + playerScore[index2]
+                        call ForceAddPlayer(teamForce[teamCount], indexPlayer2)
+                        set playerScore[index2] = 0
+                    endif
                 endif
 
                 set index2 = index2 + 1
                 exitwhen index2 == bj_MAX_PLAYERS
             endloop
+
+            set teamCount = teamCount + 1
         endif
 
         set index = index + 1
@@ -8112,13 +8255,14 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
             exitwhen index == teamCount
         endloop
 
-        // Check whether the best team's score is 3 times better than
-        // every other team
+        // Check whether the best team's score is 'multiplier' times better than
+        // every other team. In the case of multiplier == 1 and exactly equal team
+        // scores, the first team (which was randomly chosen by the server) will win.
         set draw = false
         set index = 0
         loop
             if index != bestTeam then
-                if bestScore < (3 * teamScore[index]) then
+                if bestScore < (multiplier * teamScore[index]) then
                     set draw = true
                 endif
             endif
@@ -8151,6 +8295,25 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
             // Give victory to all players on the best team
             call ForForce(teamForce[bestTeam], function MeleeDoVictoryEnum)
         endif
+    endif
+
+endfunction
+
+//===========================================================================
+function MeleeTriggerTournamentFinishNow takes nothing returns nothing
+    local integer rule = GetTournamentFinishNowRule()
+
+    // If the game is already over, do nothing
+    if bj_meleeGameOver then
+        return
+    endif
+
+    if (rule == 1) then
+        // Finals games
+        call MeleeTournamentFinishNowRuleA(1)
+    else
+        // Preliminary games
+        call MeleeTournamentFinishNowRuleA(3)
     endif
 
     // Since the game is over we should remove all observers
