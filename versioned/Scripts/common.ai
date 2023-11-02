@@ -29,6 +29,7 @@ native SetSlowChopping      takes boolean state                         returns 
                                                                         
 native InitAssault          takes nothing                               returns nothing
 native AddAssault           takes integer qty, integer id               returns boolean
+native AddDefenders         takes integer qty, integer id               returns boolean
 native GetMinorCreep        takes nothing                               returns unit
 native GetMajorCreep        takes nothing                               returns unit
 native GetEnemyBase         takes nothing                               returns unit
@@ -576,6 +577,12 @@ function SetAssaultGroup takes integer qty, integer max, integer unitid returns 
     set harass_max[harass_length] = max
     set harass_units[harass_length] = unitid
     set harass_length = harass_length + 1
+endfunction
+
+function CampaignDefender takes integer level, integer qty, integer unitid returns nothing
+    if difficulty >= level then 
+        call AddDefenders(qty,unitid)
+    endif
 endfunction
 
 function CampaignAttacker takes integer level, integer qty, integer unitid returns nothing
