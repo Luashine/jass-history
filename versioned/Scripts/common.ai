@@ -1,32 +1,38 @@
 //============================================================================
+//  common.ai
+//============================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
 native DebugUnitID          takes string str, integer val               returns nothing
-                                                                        
+
 native GetAiPlayer          takes nothing                               returns integer
 native GetHeroId            takes nothing                               returns integer
 native GetHeroLevelAI       takes nothing                               returns integer
-                                                                        
+
 native GetUnitCount         takes integer unitid                        returns integer
+native GetUnitCountDone     takes integer unitid                        returns integer
 native GetUnitGoldCost      takes integer unitid                        returns integer
 native GetUnitWoodCost      takes integer unitid                        returns integer
-                                                                        
+
 native GetUpgradeLevel      takes integer id                            returns integer
 native GetUpgradeGoldCost   takes integer id                            returns integer
 native GetUpgradeWoodCost   takes integer id                            returns integer
 native GetNextExpansion     takes nothing                               returns integer
 
 native SetProduce           takes integer qty, integer id, integer town returns boolean
+native MergeUnits           takes integer qty, integer a, integer b, integer make returns boolean
 native SetExpansion         takes unit peon, integer id                 returns boolean
 native SetUpgrade           takes integer id                            returns boolean
 native SetHeroLevels        takes code func                             returns nothing
 native SetNewHeroes         takes boolean state                         returns nothing
-                                                                        
+
 native SetHeroesFlee        takes boolean state                         returns nothing
 native SetUnitsFlee         takes boolean state                         returns nothing
 native SetGroupsFlee        takes boolean state                         returns nothing
 native SetSlowChopping      takes boolean state                         returns nothing
-                                                                        
+native SetCaptainChanges    takes boolean allow                         returns nothing
+native GroupTimedLife       takes boolean allow                         returns nothing
+
 native InitAssault          takes nothing                               returns nothing
 native AddAssault           takes integer qty, integer id               returns boolean
 native AddDefenders         takes integer qty, integer id               returns boolean
@@ -41,23 +47,25 @@ native AttackMoveXY         takes integer x, integer y                  returns 
 native AttackEnemy          takes nothing                               returns boolean
 native SuicidePlayer        takes player id                             returns boolean
 native CaptainInCombat      takes nothing                               returns boolean
-                                                                        
+
 native ClearHarvestAI       takes nothing                               returns nothing
 native HarvestGold          takes integer town, integer peons           returns nothing
 native HarvestWood          takes integer town, integer peons           returns nothing
 native GetExpansionPeon     takes nothing                               returns unit
-                                                                        
+
 native StopGathering        takes nothing                               returns nothing
 native AddGuardPost         takes integer id, real x, real y            returns nothing
 native FillGuardPosts       takes nothing                               returns nothing
 native ReturnGuardPosts     takes nothing                               returns nothing
 native CreateCaptains       takes nothing                               returns nothing
+native SetCaptainHome       takes integer which, real x, real y         returns nothing
 native CaptainGoHome        takes nothing                               returns nothing
 native CaptainIsHome        takes nothing                               returns boolean
 native CaptainIsFull        takes nothing                               returns boolean
 native CaptainIsEmpty       takes nothing                               returns boolean
 native CaptainGroupSize     takes nothing                               returns integer
 native CaptainReadiness     takes nothing                               returns integer
+native CaptainRetreating    takes nothing                               returns boolean
 native CaptainReadinessHP   takes nothing                               returns integer
 native CaptainReadinessMa   takes nothing                               returns integer
 native CaptainAtGoal        takes nothing                               returns boolean
@@ -67,7 +75,7 @@ native SuicideUnit          takes integer count, integer unitid         returns 
 native StartThread          takes code func                             returns nothing
 native Sleep                takes real seconds                          returns nothing
 native UnitAlive            takes unit id                               returns boolean
-                                                                        
+
 native CommandsWaiting      takes nothing                               returns integer
 native GetLastCommand       takes nothing                               returns integer
 native GetLastData          takes nothing                               returns integer
@@ -81,7 +89,9 @@ globals
     constant integer ARCHMAGE           = 'Hamg'
     constant integer PALADIN            = 'Hpal'
     constant integer MTN_KING           = 'Hmkg'
-                                        
+
+    constant integer JAINA              = 'Hjai'
+
     // human units                      
     constant integer COPTER             = 'hgyr'
     constant integer ELEMENTAL          = 'hwat'
@@ -94,7 +104,6 @@ globals
     constant integer PRIEST             = 'hmpr'
     constant integer RIFLEMAN           = 'hrif'
     constant integer RIFLEMEN           =  RIFLEMAN
-    constant integer SERPENT            = 'hegr'
     constant integer SORCERESS          = 'hsor'
     constant integer TANK               = 'hstt'
 
@@ -105,12 +114,12 @@ globals
     constant integer CANNON_TOWER       = 'hctw'
     constant integer CASTLE             = 'hcas'
     constant integer CHURCH             = 'htws'
+    constant integer MAGE_TOWER         =  CHURCH
     constant integer GUARD_TOWER        = 'hgtw'
     constant integer HOUSE              = 'hhou'
     constant integer HUMAN_ALTAR        = 'halt'
     constant integer KEEP               = 'hkee'
     constant integer LUMBER_MILL        = 'hlum'
-    constant integer MAGE_TOWER         = 'htws'
     constant integer SANCTUM            = 'hars'
     constant integer TOWN_HALL          = 'htow'
     constant integer WATCH_TOWER        = 'hwtw'
@@ -156,6 +165,23 @@ globals
     constant integer TAUREN             = 'otau'
     constant integer WYVERN             = 'owyv'
 
+    // Warcraft 2 orc units
+    constant integer OGRE_MAGI          = 'nomg'
+    constant integer ORC_DRAGON         = 'nrwm'
+    constant integer SAPPER             = 'ngsp'
+    constant integer ZEPPLIN            = 'nzep'
+    constant integer W2_WARLOCK         = 'nw2w'
+    constant integer PIG_FARM           = 'npgf'
+
+//nrwm	n2	Red Dragon
+//nrdk	n2	Red Dragon Whelp
+//nrdr	n2	Red Drake
+
+    // special orc units
+    constant integer CHAOS_GRUNT        = 'nchg'
+    constant integer CHAOS_WARLOCK      = 'nchw'
+    constant integer CHAOS_RAIDER       = 'nchr'
+
     // orc buildings
     constant integer ORC_ALTAR          = 'oalt'
     constant integer ORC_BARRACKS       = 'obar'
@@ -163,53 +189,57 @@ globals
     constant integer FORGE              = 'ofor'
     constant integer FORTRESS           = 'ofrt'
     constant integer GREAT_HALL         = 'ogre'
-    constant integer PIG_FARM           = 'ohut'
-    constant integer ORC_MILL           = 'olum'
+    //constant integer ORC_MILL         = 'olum'
     constant integer LODGE              = 'osld'
     constant integer STRONGHOLD         = 'ostr'
     constant integer BURROW             = 'otrb'
     constant integer TOTEM              = 'otto'
+    constant integer ORC_WATCH_TOWER    = 'owtw'
 
     // orc upgrades
-    constant integer UPG_ORC_MELEE      = 'Rome'	//melee attack	melee
-    constant integer UPG_ORC_RANGED     = 'Rora'	//ranged attack	ranged
-    constant integer UPG_ORC_ARTILLERY  = 'Roaa'	//artillery attack	artillery
-    constant integer UPG_ORC_ARMOR      = 'Roar'	//armor	armor
-    constant integer UPG_ORC_MINING     = 'Romi'	//mining	_
-    constant integer UPG_ORC_BLDGS      = 'Roac'	//architecture	armor
-    constant integer UPG_ORC_SIGHT      = 'Ross'	//structure sight	_
-    constant integer UPG_BERSERK        = 'Robs'	//grunt berserk	_
-    constant integer UPG_WAR_STOMP      = 'Rows'	//tauren warstomp	_
-    constant integer UPG_ENSNARE        = 'Roen'	//raider ensare	_
-    constant integer UPG_WYVERNS        = 'Rowt'	//wyvern taming	_
-    constant integer UPG_VENOM          = 'Rovs'	//wyvern venom spear	_
-    constant integer UPG_ORC_DOCS       = 'Rowd'	//witch doctor training	_
-    constant integer UPG_ORC_SHAMAN     = 'Rost'	//shaman training	_
-    constant integer UPG_ORC_WOOD       = 'Rolh'	//lumber harvesting	_
-    constant integer UPG_NIGHT_VISION   = 'Ronv'	//night vision	_
-    constant integer UPG_SPIKES         = 'Rosp'	//spiked barricade	_
+    constant integer UPG_ORC_MELEE      = 'Rome'
+    constant integer UPG_ORC_RANGED     = 'Rora'
+    constant integer UPG_ORC_ARTILLERY  = 'Roaa'
+    constant integer UPG_ORC_ARMOR      = 'Roar'
+    constant integer UPG_ORC_MINING     = 'Romi'
+    constant integer UPG_ORC_BLDGS      = 'Roac'
+    constant integer UPG_ORC_SIGHT      = 'Ross'
+    constant integer UPG_BERSERK        = 'Robs'
+    constant integer UPG_WAR_STOMP      = 'Rows'
+    constant integer UPG_ENSNARE        = 'Roen'
+    constant integer UPG_WYVERNS        = 'Rowt'
+    constant integer UPG_VENOM          = 'Rovs'
+    constant integer UPG_ORC_DOCS       = 'Rowd'
+    constant integer UPG_ORC_SHAMAN     = 'Rost'
+    constant integer UPG_ORC_WOOD       = 'Rolh'
+    constant integer UPG_NIGHT_VISION   = 'Ronv'
+    constant integer UPG_SPIKES         = 'Rosp'
+    constant integer UPG_WAR_DRUMS      = 'Rwdm'
 
     // undead heroes
     constant integer DEATH_KNIGHT       = 'Udea'
     constant integer DREAD_LORD         = 'Udre'
     constant integer LICH               = 'Ulic'
 
+    constant integer MALGANIS           = 'Umal'
+
     // undead units
     constant integer ABOMINATION        = 'uabo'
     constant integer ACOLYTE            = 'uaco'
     constant integer BANSHEE            = 'uban'
     constant integer PIT_FIEND          = 'ucry'
+    constant integer CRYPT_FIEND        =  PIT_FIEND
     constant integer FROST_WYRM         = 'ufro'
     constant integer GARGOYLE           = 'ugar'
+    constant integer GARGOYLE_MORPH     = 'ugrm'
     constant integer GHOUL              = 'ugho'
-    constant integer UNDEAD_MINE        = 'ugol'
     constant integer MEAT_WAGON         = 'umtw'
     constant integer NECRO              = 'unec'
-    constant integer SKEL_ARCHER        = 'uska'
     constant integer SKEL_WARRIOR       = 'uske'
-    constant integer SPIDERLING         = 'uspd'
+    constant integer SHADE              = 'ushd'
 
     // undead buildings
+    constant integer UNDEAD_MINE        = 'ugol'
     constant integer UNDEAD_ALTAR       = 'uaod'
     constant integer BONEYARD           = 'ubon'
     constant integer GARG_SPIRE         = 'ugsp'
@@ -222,30 +252,112 @@ globals
     constant integer DAMNED_TEMPLE      = 'utod'
     constant integer ZIGGURAT_1         = 'uzig'    // normal
     constant integer ZIGGURAT_2         = 'uzg1'    // upgraded
+    constant integer GRAVEYARD          = 'ugrv'
 
     // undead upgrades
+    constant integer UPG_UNHOLY_STR     = 'Rume'
+    constant integer UPG_CR_ATTACK      = 'Rura'
+    constant integer UPG_UNHOLY_ARMOR   = 'Ruar'
+    constant integer UPG_CANNIBALIZE    = 'Ruac'
+    constant integer UPG_GHOUL_FRENZY   = 'Rugf'
+    constant integer UPG_FIEND_WEB      = 'Ruwb'
+    constant integer UPG_ABOM           = 'Ruab'
+    constant integer UPG_STONE_FORM     = 'Rusf'
+    constant integer UPG_NECROS         = 'Rune'
+    constant integer UPG_BANSHEE        = 'Ruba'
+    constant integer UPG_MEAT_WAGON     = 'Rump'
+    constant integer UPG_WYRM_BREATH    = 'Rufb'
+    constant integer UPG_SKEL_LIFE      = 'Rusl'
+    constant integer UPG_SACRIFICE      = 'Rurs'
+    constant integer UPG_ABOM_EXPL      = 'Ruax'
+    constant integer UPG_CR_ARMOR       = 'Rucr'
+    constant integer UPG_PLAGUE         = 'Rupc'
 
+    // elf heroes
+    constant integer DEMON_HUNTER       = 'Edem'
+    constant integer DEMON_HUNTER_M     = 'Edmm'
+    constant integer KEEPER             = 'Ekee'
+    constant integer MOON_CHICK         = 'Emoo'
+
+    // elf units
+    constant integer WISP               = 'ewsp'
+    constant integer ARCHER             = 'earc'
+    constant integer DRUID_TALON        = 'edot'
+    constant integer DRUID_TALON_M      = 'edtm'
+    constant integer BALLISTA           = 'ebal'
+    constant integer DRUID_CLAW         = 'edoc'
+    constant integer DRUID_CLAW_M       = 'edcm'
+    constant integer DRYAD              = 'edry'
+    constant integer HIPPO              = 'ehip'
+    constant integer HIPPO_RIDER        = 'ehpr'
+    constant integer HUNTRESS           = 'esen'
+    constant integer CHIMAERA           = 'echm'
+    constant integer ENT                = 'efon'
+
+    // elf buildings
+    constant integer ANCIENT_LORE       = 'eaoe'
+    constant integer ANCIENT_WAR        = 'eaom'
+    constant integer ANCIENT_WIND       = 'eaow'
+    constant integer TREE_AGES          = 'etoa'
+    constant integer TREE_ETERNITY      = 'etoe'
+    constant integer TREE_LIFE          = 'etol'
+    constant integer ANCIENT_PROTECT    = 'etrp'
+    constant integer ELF_ALTAR          = 'eate'
+    constant integer BEAR_DEN           = 'edol'
+    constant integer CHIMAERA_ROOST     = 'edos'
+    constant integer HUNTERS_HALL       = 'edob'
+    constant integer MOON_WELL          = 'emow'
+
+    // elf upgrades
+    constant integer UPG_STR_MOON       = 'Resm'
+    constant integer UPG_STR_WILD       = 'Resw'
+    constant integer UPG_MOON_ARMOR     = 'Rema'
+    constant integer UPG_HIDES          = 'Rerh'
+    constant integer UPG_ULTRAVISION    = 'Reuv'
+    constant integer UPG_WISP_HEAL      = 'Rewh'
+    constant integer UPG_BLESSING       = 'Renb'
+    constant integer UPG_SCOUT          = 'Resc'
+    constant integer UPG_GLAIVE         = 'Remg'
+    constant integer UPG_BOWS           = 'Reib'
+    constant integer UPG_MARKSMAN       = 'Remk'
+    constant integer UPG_DRUID_TALON    = 'Redt'
+    constant integer UPG_DRUID_CLAW     = 'Redc'
+    constant integer UPG_SPELL_IMMUNE   = 'Resi'
+    constant integer UPG_CHIM_ACID      = 'Recb'
+    constant integer UPG_HYPPO_TAME     = 'Reht'
 
     constant integer EASY               = 1
     constant integer NORMAL             = 2
     constant integer HARD               = 3
+    constant integer INSANE             = 4
+
+    constant integer ATTACK_CAPTAIN     = 1
+    constant integer DEFENSE_CAPTAIN    = 2
+    constant integer BOTH_CAPTAINS      = 3
 
     player  ai_player
     integer sleep_seconds
-    integer total_gold
-    integer total_wood
-    integer hero_id
+    integer total_gold                  = 0
+    integer total_wood                  = 0
+    integer gold_buffer                 = 0 // usually for potion money
     integer racial_farm
     integer difficulty
+    integer hero_id
+    integer hero_id2
+    integer hero_id3
 
     integer array harass_qty
     integer array harass_max
     integer array harass_units
-    integer harass_length
+    integer harass_length               = 0
 
-    constant integer BUILD_UNIT     = 1
-    constant integer BUILD_UPGRADE  = 2
-    constant integer BUILD_EXPAND   = 3
+    integer array defense_qty
+    integer array defense_units
+    integer defense_length              = 0
+
+    constant integer BUILD_UNIT         = 1
+    constant integer BUILD_UPGRADE      = 2
+    constant integer BUILD_EXPAND       = 3
 
     integer array build_qty
     integer array build_type
@@ -253,11 +365,11 @@ globals
     integer array build_town
     integer build_length
 
-    integer campaign_gold_peons = 5
-    integer campaign_wood_peons = 3
-    boolean harvest_town1 = true
-    boolean harvest_town2 = true
-    boolean harvest_town3 = true
+    integer campaign_gold_peons         = 5
+    integer campaign_wood_peons         = 3
+    boolean harvest_town1               = true
+    boolean harvest_town2               = true
+    boolean harvest_town3               = true
 
     boolean expansion_cleared
 
@@ -305,6 +417,10 @@ endfunction
 
 function InitAssaultGroup takes nothing returns nothing
     set harass_length = 0
+endfunction
+
+function InitDefenseGroup takes nothing returns nothing
+    set defense_length = 0
 endfunction
 
 function StartTownBuilder takes code func returns nothing
@@ -368,29 +484,30 @@ function StartUnit takes integer ask_qty, integer unitid, integer town returns b
     //------------------------------------------------------------------------
     // if we have all we're asking for then make nothing
     //
-    if unitid == TOWN_HALL then
-        set have_qty = GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+    set have_qty = GetUnitCount(unitid)
 
+    if unitid == TOWN_HALL then
+        set have_qty = have_qty + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
     elseif unitid == KEEP then
-        set have_qty = GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+        set have_qty = have_qty + GetUnitCount(CASTLE)
 
     elseif unitid == GREAT_HALL then
-        set have_qty = GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
-
+        set have_qty = have_qty + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
     elseif unitid == STRONGHOLD then
-        set have_qty = GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+        set have_qty = have_qty + GetUnitCount(FORTRESS)
 
     elseif unitid == ZIGGURAT_1 then
-        set have_qty = GetUnitCount(ZIGGURAT_1) + GetUnitCount(ZIGGURAT_2)
+        set have_qty = have_qty + GetUnitCount(ZIGGURAT_2)
 
     elseif unitid == NECROPOLIS_1 then
-        set have_qty = GetUnitCount(NECROPOLIS_1) + GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
-
+        set have_qty = have_qty + GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
     elseif unitid == NECROPOLIS_2 then
-        set have_qty = GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
+        set have_qty = have_qty + GetUnitCount(NECROPOLIS_3)
 
-    else
-        set have_qty = GetUnitCount(unitid)
+    elseif unitid == TREE_LIFE then
+        set have_qty = have_qty + GetUnitCount(TREE_AGES) + GetUnitCount(TREE_ETERNITY)
+    elseif unitid == TREE_AGES then
+        set have_qty = have_qty + GetUnitCount(TREE_ETERNITY)
     endif
 
     if have_qty >= ask_qty then
@@ -451,22 +568,47 @@ function StartUnit takes integer ask_qty, integer unitid, integer town returns b
     return SetProduce(afford_qty,unitid,town)
 endfunction
 
+function TownCountDone takes integer base returns integer
+    if base == TOWN_HALL then
+        return GetUnitCountDone(TOWN_HALL) + GetUnitCountDone(KEEP) + GetUnitCountDone(CASTLE)
+
+    elseif base == NECROPOLIS_1 then
+        return GetUnitCountDone(NECROPOLIS_1) + GetUnitCountDone(NECROPOLIS_2) + GetUnitCountDone(NECROPOLIS_3)
+
+    elseif base == GREAT_HALL then
+        return GetUnitCountDone(GREAT_HALL) + GetUnitCountDone(STRONGHOLD) + GetUnitCountDone(FORTRESS)
+
+    elseif base == TREE_LIFE then
+        return GetUnitCountDone(TREE_LIFE) + GetUnitCountDone(TREE_AGES) + GetUnitCountDone(TREE_ETERNITY)
+    else
+        return 0
+    endif
+endfunction
+
+function TownCount takes integer base returns integer
+    if base == TOWN_HALL then
+        return GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+
+    elseif base == NECROPOLIS_1 then
+        return GetUnitCount(NECROPOLIS_1) + GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
+
+    elseif base == GREAT_HALL then
+        return GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+
+    elseif base == TREE_LIFE then
+        return GetUnitCount(TREE_LIFE) + GetUnitCount(TREE_AGES) + GetUnitCount(TREE_ETERNITY)
+    else
+        return 0
+    endif
+endfunction
+
 function StartExpansion takes integer qty, integer hall returns boolean
     local integer count
     local integer town
     local unit    peon
     local integer gold_cost
 
-    if hall == TOWN_HALL then
-        set count = GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
-
-    elseif hall == GREAT_HALL then
-        set count = GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
-
-    else
-        set count = 0 //xxx do other races here
-    endif
-
+    set count = TownCount(hall)
     if count >= qty then
         return true
     endif
@@ -496,7 +638,7 @@ function OneBuildLoop takes nothing returns nothing
     local integer id
     local integer tp
 
-    set total_gold   = GetGold()
+    set total_gold   = GetGold() - gold_buffer
     set total_wood   = GetWood()
 
     loop
@@ -570,7 +712,11 @@ function SleepForever takes nothing returns nothing
 endfunction
 
 function SetAssaultGroup takes integer qty, integer max, integer unitid returns nothing
-    if qty == 0 and GetUnitCount(unitid) == 0 then
+    if unitid == HIPPO_RIDER then
+        call MergeUnits(max,ARCHER,HIPPO,HIPPO_RIDER)
+    endif
+
+    if qty <= 0 and GetUnitCount(unitid) == 0 then
         return
     endif
     set harass_qty[harass_length] = qty
@@ -580,8 +726,15 @@ function SetAssaultGroup takes integer qty, integer max, integer unitid returns 
 endfunction
 
 function CampaignDefender takes integer level, integer qty, integer unitid returns nothing
-    if difficulty >= level then 
-        call AddDefenders(qty,unitid)
+
+    if qty > 0 and difficulty >= level then
+        set defense_qty[defense_length] = qty
+        set defense_units[defense_length] = unitid
+        set defense_length = defense_length + 1
+
+        if unitid == HIPPO_RIDER then
+            call MergeUnits(qty,ARCHER,HIPPO,HIPPO_RIDER)
+        endif
     endif
 endfunction
 
@@ -599,7 +752,6 @@ function FormGroup takes integer seconds returns nothing
 
     loop
         call SuicideSleep(seconds)
-
         call InitAssault()
 
         set index = 0
@@ -610,7 +762,11 @@ function FormGroup takes integer seconds returns nothing
             set desire = harass_max[index]
             set count = GetUnitCount(unitid)
 
-            if count > desire then
+            if unitid == HIPPO_RIDER then
+                call MergeUnits(desire,ARCHER,HIPPO,HIPPO_RIDER)
+            endif
+
+            if count >= desire then
                 call AddAssault(desire,unitid)
             else
                 set desire = harass_qty[index]
@@ -638,6 +794,9 @@ endfunction
 function SuicideOnPlayer takes integer seconds, player p returns nothing
     call AddSleepSeconds(seconds)
     debug call DebugSleepSecond()
+    if sleep_seconds-60 > 0 then
+        call SuicideSleep(sleep_seconds-60)
+    endif
     loop
         loop
             call FormGroup(5)
@@ -648,7 +807,6 @@ function SuicideOnPlayer takes integer seconds, player p returns nothing
     endloop
     loop
         exitwhen CaptainIsEmpty()
-        debug call DebugFI("%d Jass-SuicideOnPlayer waiting for empty captain\n",GetAiPlayer())
         call SuicideSleep(10)
     endloop
 endfunction
@@ -674,8 +832,8 @@ endfunction
 
 function SleepUntilTargetDead takes unit target returns nothing
     loop
+        exitwhen CaptainRetreating()
         exitwhen not UnitAlive(target)  // target killed
-        exitwhen CaptainGroupSize() < 2
         exitwhen CaptainReadinessHP() <= 40
         call Sleep(3)
     endloop
@@ -683,6 +841,7 @@ endfunction
 
 function SleepUntilAtGoal takes nothing returns nothing
     loop
+        exitwhen CaptainRetreating()
         exitwhen CaptainAtGoal()        // reached goal
         exitwhen CaptainIsHome()        // failed to path and returned home
         exitwhen CaptainIsEmpty()       // all units died
@@ -745,27 +904,12 @@ function ExpansionAttack takes nothing returns nothing
     endif
 endfunction
 
-function TownCount takes integer base returns integer
-    if base == TOWN_HALL then
-        return GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
-
-    elseif base == GREAT_HALL then
-        return GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
-    else
-        return 0
-    endif
+function FoodUsed takes nothing returns integer
+    return GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_FOOD_USED)
 endfunction
 
-function BuildFarms takes nothing returns nothing
-    local integer food_used = GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_FOOD_USED)
-    local integer farms = GetUnitCount(racial_farm)
-
-    set total_gold = GetGold()
-    set total_wood = GetWood()
-
-    if (food_used+9) > 10*(farms+1) then
-        call StartUnit(farms+1,racial_farm,-1)
-    endif
+function FoodAvail takes integer base returns integer
+    return 10 * (GetUnitCount(racial_farm) + TownCount(base))
 endfunction
 
 function BuildAttackers takes nothing returns nothing
@@ -791,7 +935,28 @@ function BuildAttackers takes nothing returns nothing
     endloop
 endfunction
 
+function BuildDefenders takes nothing returns nothing
+    local integer index = 0
+    local integer unitid
+    local integer qty
+    loop
+        exitwhen index == defense_length
+
+        set unitid = defense_units[index]
+        set qty = defense_qty[index]
+
+        if unitid == HIPPO_RIDER then
+            call MergeUnits(qty,ARCHER,HIPPO,HIPPO_RIDER)
+        endif
+        call AddDefenders(qty,unitid)
+
+        set index = index + 1
+    endloop
+endfunction
+
 function CampaignBasics takes nothing returns nothing
+    local integer food_each = 10
+
 	call Sleep(1)
     loop
         call ClearHarvestAI()
@@ -817,15 +982,34 @@ function CampaignBasics takes nothing returns nothing
         call FillGuardPosts()
         call ReturnGuardPosts()
 
-        call BuildFarms()
+//xxx
+if racial_farm == HOUSE then
+    set food_each = 5
+endif
+
+        if FoodUsed()+food_each-1 > food_each*(GetUnitCount(racial_farm)+1) then
+            call StartUnit(GetUnitCount(racial_farm)+1,racial_farm,-1)
+        endif
+
         call BuildAttackers()
+        call BuildDefenders()
 
         call Sleep(5)
     endloop
 endfunction
 
 function CampaignAI takes integer farms, code heroes returns nothing
-    set difficulty = NORMAL //xxx get from code when there's a way to get it
+    if GetGameDifficulty() == MAP_DIFFICULTY_EASY then
+        set difficulty = EASY
+
+    elseif GetGameDifficulty() == MAP_DIFFICULTY_NORMAL then
+        set difficulty = NORMAL
+
+    elseif GetGameDifficulty() == MAP_DIFFICULTY_HARD then
+        set difficulty = HARD
+    else
+        set difficulty = INSANE
+    endif
 
     call InitAI()
     call InitBuildArray()
@@ -879,29 +1063,23 @@ function PickMeleeHero takes race raceid returns integer
     //------------------------------------------------------------------------
     elseif raceid == RACE_NIGHTELF then
     //------------------------------------------------------------------------
-
-//xxx incomplete
-
         if hero_roll == 1 then
-            set hero_id = BLADE_MASTER
+            set hero_id = KEEPER
         elseif hero_roll == 2 then
-            set hero_id = FAR_SEER
+            set hero_id = MOON_CHICK
         else
-            set hero_id = TAUREN_CHIEF
+            set hero_id = DEMON_HUNTER
         endif
 
     //------------------------------------------------------------------------
     elseif raceid == RACE_UNDEAD then
     //------------------------------------------------------------------------
-
-//xxx incomplete
-
         if hero_roll == 1 then
-            set hero_id = BLADE_MASTER
+            set hero_id = LICH
         elseif hero_roll == 2 then
-            set hero_id = FAR_SEER
+            set hero_id = DEATH_KNIGHT
         else
-            set hero_id = TAUREN_CHIEF
+            set hero_id = DREAD_LORD
         endif
     else
         set hero_id = 0
@@ -911,19 +1089,17 @@ function PickMeleeHero takes race raceid returns integer
 endfunction
 
 function TestCheats takes nothing returns nothing
-
     call Cheat("warnings")
     call Cheat("viewres")
-    call Cheat("alliance 1 0 vision on")
-    call Cheat("alliance 2 0 vision on")
-    call Cheat("alliance 3 0 vision on")
+    call Cheat("vision 1")
+    call Cheat("vision 2")
+    call Cheat("vision 3")
+    call Cheat("vision 12")
+    call Cheat("control 1")
+    call Cheat("control 2")
+    call Cheat("control 3")
+    call Cheat("control 12")
     call Cheat("av")
     call Cheat("dg")
-
-//    call Cheat("superspeed")
-//    call Cheat("gold 500")
-//    call Cheat("lumber 500")
-//    call Cheat("todrate .1")
-//    call Cheat("dawn")
-//    call Cheat("fb")
+    call Cheat("ca")
 endfunction
