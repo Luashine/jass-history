@@ -1,5 +1,5 @@
 //==================================================================================================
-//  $Id: common.ai,v 1.28 2003/03/21 13:36:50 bfitch Exp $
+//  $Id: common.ai,v 1.33 2003/03/27 09:52:17 rpardo Exp $
 //==================================================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
@@ -539,6 +539,11 @@ globals
     constant integer UPG_CHIM_ACID      = 'Recb'
     constant integer UPG_HIPPO_TAME     = 'Reht'
     constant integer UPG_BOLT           = 'Repd'
+    constant integer UPG_MARK_CLAW      = 'Reeb'
+    constant integer UPG_MARK_TALON     = 'Reec'
+    constant integer UPG_HARD_SKIN      = 'Rehs'
+    constant integer UPG_RESIST_SKIN    = 'Rers'
+    constant integer UPG_WELL_SPRING    = 'Rews'
 
     //--------------------------------------------------------------------
     // Neutral
@@ -574,13 +579,15 @@ globals
     constant integer NAGA_DRAGON        = 'nsnp'        // old names
     constant integer NAGA_WITCH         = 'nnsw'
     constant integer NAGA_SERPENT       = 'nwgs' 
+    constant integer NAGA_HYDRA         = 'nhyc'    
 
     constant integer NAGA_SLAVE         = 'nmpe'        // peon
     constant integer NAGA_SNAP_DRAGON   =  NAGA_DRAGON  // weak ranged
     constant integer NAGA_COUATL        =  NAGA_SERPENT // weak air
     constant integer NAGA_SIREN         =  NAGA_WITCH   // caster
     constant integer NAGA_MYRMIDON      = 'nmyr'        // knight
-    constant integer NAGA_HYDRA         = 'nhyc'        // siege
+    constant integer NAGA_REAVER        = 'nnmg'        // footman
+    constant integer NAGA_TURTLE        = 'nhyc'        // siege
 
     // naga buildings
     constant integer NAGA_TEMPLE        = 'nntt'        // town hall
@@ -588,6 +595,7 @@ globals
     constant integer NAGA_SHRINE        = 'nnsa'        // sirens & couatls
     constant integer NAGA_SPAWNING      = 'nnsg'        // myrm, snap dragon, hydra
     constant integer NAGA_GUARDIAN      = 'nntg'        // tower
+	constant integer NAGA_ALTAR			= 'nnad'        // altar
 
     //--------------------------------------------------------------------
     constant integer M1                 =    60
@@ -622,6 +630,9 @@ globals
     constant integer BUILD_UNIT         = 1
     constant integer BUILD_UPGRADE      = 2
     constant integer BUILD_EXPAND       = 3
+
+    constant integer UPKEEP_TIER1       = 50
+    constant integer UPKEEP_TIER2       = 80
 
     //--------------------------------------------------------------------
 
@@ -660,6 +671,9 @@ globals
     integer campaign_gold_peons     = 5
     integer campaign_wood_peons     = 3
     integer campaign_basics_speed   = 5
+
+    integer min_creeps              = -1
+    integer max_creeps              = -1
 
     boolean harvest_town1           = true
     boolean harvest_town2           = true
@@ -868,6 +882,15 @@ endfunction
 //============================================================================
 function SetBuildUnit takes integer qty, integer unitid returns nothing
     call SetBuildAll(BUILD_UNIT,qty,unitid,-1)
+endfunction
+
+//============================================================================
+function SetBuildNext takes integer qty, integer unitid returns nothing
+    local integer has = GetUnitCount(unitid)
+    if has >= qty then
+        return
+    endif
+    call SetBuildAll(BUILD_UNIT,GetUnitCountDone(unitid)+1,unitid,-1)
 endfunction
 
 //============================================================================
@@ -1848,6 +1871,14 @@ function MajorCreepAttack takes nothing returns nothing
 endfunction
 
 //============================================================================
+function CreepAttackEx takes nothing returns nothing
+    local unit target = GetCreepCamp(min_creeps,max_creeps,allow_air_creeps)
+    call SetAllianceTarget(target)
+    call FormGroup(3,true)
+    call AttackMoveKillA(target)
+endfunction
+
+//============================================================================
 function AnyPlayerAttack takes nothing returns nothing
     local unit hall
 
@@ -1933,8 +1964,12 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     local unit      creep
     local unit      common
     local integer   minimum
+    local boolean   allies
+
+    call Trace("===SingleMeleeAttack===\n") //xxx
 
     if TownThreatened() then
+        call Trace("sleep 2, town threatened\n") //xxx
         call Sleep(2)
         return
     endif
@@ -1942,6 +1977,7 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     // purchase zeppelins
     //
     if get_zeppelin and GetGold() > 300 and GetWood() > 100 then
+        call Trace("purchase zep\n") //xxx
         call PurchaseZeppelin()
         set get_zeppelin = false
         set ready_for_zeppelin = false
@@ -1951,9 +1987,11 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
 
     // coordinate with allies
     //
-    if MeleeDifficulty() != MELEE_NEWBIE then
+    set allies = GetAllyCount(ai_player) > 0
+    if allies and MeleeDifficulty() != MELEE_NEWBIE then
         set common = GetAllianceTarget()
         if common != null then
+            call Trace("join ally force\n") //xxx
             if GetMegaTarget() != null then
                 call AddSiege()
             endif
@@ -1967,8 +2005,10 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     // take expansions as needed
     //
     if needs_exp then
+        call Trace("needs exp\n") //xxx
         set creep = GetExpansionFoe()
         if creep != null then
+            call Trace("attack exp\n") //xxx
             call SetAllianceTarget(creep)
             call FormGroup(3,true)
             call AttackMoveKillA(creep)
@@ -1983,6 +2023,7 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     if MeleeDifficulty() != MELEE_NEWBIE then
         set mega = GetMegaTarget()
         if mega != null then
+            call Trace("MEGA TARGET!!!\n") //xxx
             call AddSiege()
             call FormGroup(3,true)
             call AttackMoveKillA(mega)
@@ -1998,15 +2039,18 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
 
     if hall!=null and (can_siege or not IsTowered(hall)) then
 
+        call Trace("test player town attack\n") //xxx
+
         if MeleeDifficulty() == MELEE_NEWBIE then
             set minimum = 3
-        elseif MeleeDifficulty() == MELEE_NORMAL and GetAllyCount(ai_player) > 0 then
+        elseif allies and MeleeDifficulty() == MELEE_NORMAL then
             set minimum = 1
         else
-            set minimum = 0 // HARD & INSANE
+            set minimum = 0 // HARD, INSANE, and NORMAL with no allies
         endif
 
         if exp_seen >= minimum then
+            call Trace("do player town attack\n") //xxx
             set exp_seen = 0
             call AddSiege()
             call SetAllianceTarget(hall)
@@ -2021,18 +2065,29 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     // attack player's main base when siege is available
     //
     if can_siege then
+        call Trace("attack player's town\n") //xxx
         call AddSiege()
         call AnyPlayerAttack()
+        return
+    endif
+
+    // extended, more specific method of determining creep levels
+    //
+    if min_creeps != -1 then
+        call TraceI("custom creep attack %d\n",max_creeps) //xxx
+        call CreepAttackEx()
         return
     endif
 
     // nothing better to do, so kill a creep camp
     //
     if major_ok then
+        call Trace("major creep attack\n") //xxx
         call MajorCreepAttack()
         return
     endif
 
+    call Trace("minor creep attack\n") //xxx
     call MinorCreepAttack()
 endfunction
 
@@ -2046,6 +2101,16 @@ endfunction
 //============================================================================
 function FoodUsed takes nothing returns integer
     return GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_FOOD_USED)
+endfunction
+
+//============================================================================
+function FoodCap takes nothing returns integer
+    return GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_FOOD_CAP)
+endfunction
+
+//============================================================================
+function FoodSpace takes nothing returns integer
+    return FoodCap() - FoodUsed()
 endfunction
 
 //============================================================================

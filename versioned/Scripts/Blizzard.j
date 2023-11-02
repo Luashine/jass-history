@@ -12,6 +12,7 @@ globals
     constant real      bj_PI                            = 3.14159
     constant real      bj_E                             = 2.71828
     constant real      bj_CELLWIDTH                     = 128.0
+    constant real      bj_CLIFFHEIGHT                   = 128.0
     constant real      bj_UNIT_FACING                   = 270.0
     constant real      bj_RADTODEG                      = 180.0/bj_PI
     constant real      bj_DEGTORAD                      = bj_PI/180.0
@@ -141,101 +142,111 @@ globals
     constant integer   bj_CAMPAIGN_INDEX_U        = 2
     constant integer   bj_CAMPAIGN_INDEX_O        = 3
     constant integer   bj_CAMPAIGN_INDEX_N        = 4
-    constant integer   bj_CAMPAIGN_INDEX_XN       = 4  // %%% Temp until the campaign screen is fixed
-    constant integer   bj_CAMPAIGN_INDEX_XH       = 1  // %%% Temp until the campaign screen is fixed
-    constant integer   bj_CAMPAIGN_INDEX_XU       = 2  // %%% Temp until the campaign screen is fixed
+    constant integer   bj_CAMPAIGN_INDEX_XN       = 5
+    constant integer   bj_CAMPAIGN_INDEX_XH       = 6
+    constant integer   bj_CAMPAIGN_INDEX_XU       = 7
+
+    // Campaign offset constants (for mission indexing)
+    constant integer   bj_CAMPAIGN_OFFSET_T       = 0
+    constant integer   bj_CAMPAIGN_OFFSET_H       = 1
+    constant integer   bj_CAMPAIGN_OFFSET_U       = 2
+    constant integer   bj_CAMPAIGN_OFFSET_O       = 3
+    constant integer   bj_CAMPAIGN_OFFSET_N       = 4
+    constant integer   bj_CAMPAIGN_OFFSET_XN      = 0
+    constant integer   bj_CAMPAIGN_OFFSET_XH      = 1
+    constant integer   bj_CAMPAIGN_OFFSET_XU      = 2
 
     // Mission indexing constants
     // Tutorial
-    constant integer   bj_MISSION_INDEX_T00       = bj_CAMPAIGN_INDEX_T * 1000 + 0
-    constant integer   bj_MISSION_INDEX_T01       = bj_CAMPAIGN_INDEX_T * 1000 + 1
+    constant integer   bj_MISSION_INDEX_T00       = bj_CAMPAIGN_OFFSET_T * 1000 + 0
+    constant integer   bj_MISSION_INDEX_T01       = bj_CAMPAIGN_OFFSET_T * 1000 + 1
     // Human
-    constant integer   bj_MISSION_INDEX_H00       = bj_CAMPAIGN_INDEX_H * 1000 + 0
-    constant integer   bj_MISSION_INDEX_H01       = bj_CAMPAIGN_INDEX_H * 1000 + 1
-    constant integer   bj_MISSION_INDEX_H02       = bj_CAMPAIGN_INDEX_H * 1000 + 2
-    constant integer   bj_MISSION_INDEX_H03       = bj_CAMPAIGN_INDEX_H * 1000 + 3
-    constant integer   bj_MISSION_INDEX_H04       = bj_CAMPAIGN_INDEX_H * 1000 + 4
-    constant integer   bj_MISSION_INDEX_H05       = bj_CAMPAIGN_INDEX_H * 1000 + 5
-    constant integer   bj_MISSION_INDEX_H06       = bj_CAMPAIGN_INDEX_H * 1000 + 6
-    constant integer   bj_MISSION_INDEX_H07       = bj_CAMPAIGN_INDEX_H * 1000 + 7
-    constant integer   bj_MISSION_INDEX_H08       = bj_CAMPAIGN_INDEX_H * 1000 + 8
-    constant integer   bj_MISSION_INDEX_H09       = bj_CAMPAIGN_INDEX_H * 1000 + 9
-    constant integer   bj_MISSION_INDEX_H10       = bj_CAMPAIGN_INDEX_H * 1000 + 10
-    constant integer   bj_MISSION_INDEX_H11       = bj_CAMPAIGN_INDEX_H * 1000 + 11
+    constant integer   bj_MISSION_INDEX_H00       = bj_CAMPAIGN_OFFSET_H * 1000 + 0
+    constant integer   bj_MISSION_INDEX_H01       = bj_CAMPAIGN_OFFSET_H * 1000 + 1
+    constant integer   bj_MISSION_INDEX_H02       = bj_CAMPAIGN_OFFSET_H * 1000 + 2
+    constant integer   bj_MISSION_INDEX_H03       = bj_CAMPAIGN_OFFSET_H * 1000 + 3
+    constant integer   bj_MISSION_INDEX_H04       = bj_CAMPAIGN_OFFSET_H * 1000 + 4
+    constant integer   bj_MISSION_INDEX_H05       = bj_CAMPAIGN_OFFSET_H * 1000 + 5
+    constant integer   bj_MISSION_INDEX_H06       = bj_CAMPAIGN_OFFSET_H * 1000 + 6
+    constant integer   bj_MISSION_INDEX_H07       = bj_CAMPAIGN_OFFSET_H * 1000 + 7
+    constant integer   bj_MISSION_INDEX_H08       = bj_CAMPAIGN_OFFSET_H * 1000 + 8
+    constant integer   bj_MISSION_INDEX_H09       = bj_CAMPAIGN_OFFSET_H * 1000 + 9
+    constant integer   bj_MISSION_INDEX_H10       = bj_CAMPAIGN_OFFSET_H * 1000 + 10
+    constant integer   bj_MISSION_INDEX_H11       = bj_CAMPAIGN_OFFSET_H * 1000 + 11
     // Undead
-    constant integer   bj_MISSION_INDEX_U00       = bj_CAMPAIGN_INDEX_U * 1000 + 0
-    constant integer   bj_MISSION_INDEX_U01       = bj_CAMPAIGN_INDEX_U * 1000 + 1
-    constant integer   bj_MISSION_INDEX_U02       = bj_CAMPAIGN_INDEX_U * 1000 + 2
-    constant integer   bj_MISSION_INDEX_U03       = bj_CAMPAIGN_INDEX_U * 1000 + 3
-    constant integer   bj_MISSION_INDEX_U05       = bj_CAMPAIGN_INDEX_U * 1000 + 4
-    constant integer   bj_MISSION_INDEX_U07       = bj_CAMPAIGN_INDEX_U * 1000 + 5
-    constant integer   bj_MISSION_INDEX_U08       = bj_CAMPAIGN_INDEX_U * 1000 + 6
-    constant integer   bj_MISSION_INDEX_U09       = bj_CAMPAIGN_INDEX_U * 1000 + 7
-    constant integer   bj_MISSION_INDEX_U10       = bj_CAMPAIGN_INDEX_U * 1000 + 8
-    constant integer   bj_MISSION_INDEX_U11       = bj_CAMPAIGN_INDEX_U * 1000 + 9
+    constant integer   bj_MISSION_INDEX_U00       = bj_CAMPAIGN_OFFSET_U * 1000 + 0
+    constant integer   bj_MISSION_INDEX_U01       = bj_CAMPAIGN_OFFSET_U * 1000 + 1
+    constant integer   bj_MISSION_INDEX_U02       = bj_CAMPAIGN_OFFSET_U * 1000 + 2
+    constant integer   bj_MISSION_INDEX_U03       = bj_CAMPAIGN_OFFSET_U * 1000 + 3
+    constant integer   bj_MISSION_INDEX_U05       = bj_CAMPAIGN_OFFSET_U * 1000 + 4
+    constant integer   bj_MISSION_INDEX_U07       = bj_CAMPAIGN_OFFSET_U * 1000 + 5
+    constant integer   bj_MISSION_INDEX_U08       = bj_CAMPAIGN_OFFSET_U * 1000 + 6
+    constant integer   bj_MISSION_INDEX_U09       = bj_CAMPAIGN_OFFSET_U * 1000 + 7
+    constant integer   bj_MISSION_INDEX_U10       = bj_CAMPAIGN_OFFSET_U * 1000 + 8
+    constant integer   bj_MISSION_INDEX_U11       = bj_CAMPAIGN_OFFSET_U * 1000 + 9
     // Orc
-    constant integer   bj_MISSION_INDEX_O00       = bj_CAMPAIGN_INDEX_O * 1000 + 0
-    constant integer   bj_MISSION_INDEX_O01       = bj_CAMPAIGN_INDEX_O * 1000 + 1
-    constant integer   bj_MISSION_INDEX_O02       = bj_CAMPAIGN_INDEX_O * 1000 + 2
-    constant integer   bj_MISSION_INDEX_O03       = bj_CAMPAIGN_INDEX_O * 1000 + 3
-    constant integer   bj_MISSION_INDEX_O04       = bj_CAMPAIGN_INDEX_O * 1000 + 4
-    constant integer   bj_MISSION_INDEX_O05       = bj_CAMPAIGN_INDEX_O * 1000 + 5
-    constant integer   bj_MISSION_INDEX_O06       = bj_CAMPAIGN_INDEX_O * 1000 + 6
-    constant integer   bj_MISSION_INDEX_O07       = bj_CAMPAIGN_INDEX_O * 1000 + 7
-    constant integer   bj_MISSION_INDEX_O08       = bj_CAMPAIGN_INDEX_O * 1000 + 8
-    constant integer   bj_MISSION_INDEX_O09       = bj_CAMPAIGN_INDEX_O * 1000 + 9
-    constant integer   bj_MISSION_INDEX_O10       = bj_CAMPAIGN_INDEX_O * 1000 + 10
+    constant integer   bj_MISSION_INDEX_O00       = bj_CAMPAIGN_OFFSET_O * 1000 + 0
+    constant integer   bj_MISSION_INDEX_O01       = bj_CAMPAIGN_OFFSET_O * 1000 + 1
+    constant integer   bj_MISSION_INDEX_O02       = bj_CAMPAIGN_OFFSET_O * 1000 + 2
+    constant integer   bj_MISSION_INDEX_O03       = bj_CAMPAIGN_OFFSET_O * 1000 + 3
+    constant integer   bj_MISSION_INDEX_O04       = bj_CAMPAIGN_OFFSET_O * 1000 + 4
+    constant integer   bj_MISSION_INDEX_O05       = bj_CAMPAIGN_OFFSET_O * 1000 + 5
+    constant integer   bj_MISSION_INDEX_O06       = bj_CAMPAIGN_OFFSET_O * 1000 + 6
+    constant integer   bj_MISSION_INDEX_O07       = bj_CAMPAIGN_OFFSET_O * 1000 + 7
+    constant integer   bj_MISSION_INDEX_O08       = bj_CAMPAIGN_OFFSET_O * 1000 + 8
+    constant integer   bj_MISSION_INDEX_O09       = bj_CAMPAIGN_OFFSET_O * 1000 + 9
+    constant integer   bj_MISSION_INDEX_O10       = bj_CAMPAIGN_OFFSET_O * 1000 + 10
     // Night Elf
-    constant integer   bj_MISSION_INDEX_N00       = bj_CAMPAIGN_INDEX_N * 1000 + 0
-    constant integer   bj_MISSION_INDEX_N01       = bj_CAMPAIGN_INDEX_N * 1000 + 1
-    constant integer   bj_MISSION_INDEX_N02       = bj_CAMPAIGN_INDEX_N * 1000 + 2
-    constant integer   bj_MISSION_INDEX_N03       = bj_CAMPAIGN_INDEX_N * 1000 + 3
-    constant integer   bj_MISSION_INDEX_N04       = bj_CAMPAIGN_INDEX_N * 1000 + 4
-    constant integer   bj_MISSION_INDEX_N05       = bj_CAMPAIGN_INDEX_N * 1000 + 5
-    constant integer   bj_MISSION_INDEX_N06       = bj_CAMPAIGN_INDEX_N * 1000 + 6
-    constant integer   bj_MISSION_INDEX_N07       = bj_CAMPAIGN_INDEX_N * 1000 + 7
-    constant integer   bj_MISSION_INDEX_N08       = bj_CAMPAIGN_INDEX_N * 1000 + 8
-    constant integer   bj_MISSION_INDEX_N09       = bj_CAMPAIGN_INDEX_N * 1000 + 9
+    constant integer   bj_MISSION_INDEX_N00       = bj_CAMPAIGN_OFFSET_N * 1000 + 0
+    constant integer   bj_MISSION_INDEX_N01       = bj_CAMPAIGN_OFFSET_N * 1000 + 1
+    constant integer   bj_MISSION_INDEX_N02       = bj_CAMPAIGN_OFFSET_N * 1000 + 2
+    constant integer   bj_MISSION_INDEX_N03       = bj_CAMPAIGN_OFFSET_N * 1000 + 3
+    constant integer   bj_MISSION_INDEX_N04       = bj_CAMPAIGN_OFFSET_N * 1000 + 4
+    constant integer   bj_MISSION_INDEX_N05       = bj_CAMPAIGN_OFFSET_N * 1000 + 5
+    constant integer   bj_MISSION_INDEX_N06       = bj_CAMPAIGN_OFFSET_N * 1000 + 6
+    constant integer   bj_MISSION_INDEX_N07       = bj_CAMPAIGN_OFFSET_N * 1000 + 7
+    constant integer   bj_MISSION_INDEX_N08       = bj_CAMPAIGN_OFFSET_N * 1000 + 8
+    constant integer   bj_MISSION_INDEX_N09       = bj_CAMPAIGN_OFFSET_N * 1000 + 9
     // Expansion Night Elf
-    constant integer   bj_MISSION_INDEX_XN00       = bj_CAMPAIGN_INDEX_XN * 1000 + 0
-    constant integer   bj_MISSION_INDEX_XN01       = bj_CAMPAIGN_INDEX_XN * 1000 + 1
-    constant integer   bj_MISSION_INDEX_XN02       = bj_CAMPAIGN_INDEX_XN * 1000 + 2
-    constant integer   bj_MISSION_INDEX_XN03       = bj_CAMPAIGN_INDEX_XN * 1000 + 3
-    constant integer   bj_MISSION_INDEX_XN04       = bj_CAMPAIGN_INDEX_XN * 1000 + 4
-    constant integer   bj_MISSION_INDEX_XN05       = bj_CAMPAIGN_INDEX_XN * 1000 + 5
-    constant integer   bj_MISSION_INDEX_XN06       = bj_CAMPAIGN_INDEX_XN * 1000 + 6
-    constant integer   bj_MISSION_INDEX_XN07       = bj_CAMPAIGN_INDEX_XN * 1000 + 7
-    constant integer   bj_MISSION_INDEX_XN08       = bj_CAMPAIGN_INDEX_XN * 1000 + 8
-    constant integer   bj_MISSION_INDEX_XN09       = bj_CAMPAIGN_INDEX_XN * 1000 + 9
-    constant integer   bj_MISSION_INDEX_XN10       = bj_CAMPAIGN_INDEX_XN * 1000 + 10
-    constant integer   bj_MISSION_INDEX_XN11       = bj_CAMPAIGN_INDEX_XN * 1000 + 11
+    constant integer   bj_MISSION_INDEX_XN00       = bj_CAMPAIGN_OFFSET_XN * 1000 + 0
+    constant integer   bj_MISSION_INDEX_XN01       = bj_CAMPAIGN_OFFSET_XN * 1000 + 1
+    constant integer   bj_MISSION_INDEX_XN02       = bj_CAMPAIGN_OFFSET_XN * 1000 + 2
+    constant integer   bj_MISSION_INDEX_XN03       = bj_CAMPAIGN_OFFSET_XN * 1000 + 3
+    constant integer   bj_MISSION_INDEX_XN04       = bj_CAMPAIGN_OFFSET_XN * 1000 + 4
+    constant integer   bj_MISSION_INDEX_XN05       = bj_CAMPAIGN_OFFSET_XN * 1000 + 5
+    constant integer   bj_MISSION_INDEX_XN06       = bj_CAMPAIGN_OFFSET_XN * 1000 + 6
+    constant integer   bj_MISSION_INDEX_XN07       = bj_CAMPAIGN_OFFSET_XN * 1000 + 7
+    constant integer   bj_MISSION_INDEX_XN08       = bj_CAMPAIGN_OFFSET_XN * 1000 + 8
+    constant integer   bj_MISSION_INDEX_XN09       = bj_CAMPAIGN_OFFSET_XN * 1000 + 9
+    constant integer   bj_MISSION_INDEX_XN10       = bj_CAMPAIGN_OFFSET_XN * 1000 + 10
+    constant integer   bj_MISSION_INDEX_XN11       = bj_CAMPAIGN_OFFSET_XN * 1000 + 11
     // Expansion Human
-    constant integer   bj_MISSION_INDEX_XH00       = bj_CAMPAIGN_INDEX_XH * 1000 + 0
-    constant integer   bj_MISSION_INDEX_XH01       = bj_CAMPAIGN_INDEX_XH * 1000 + 1
-    constant integer   bj_MISSION_INDEX_XH02       = bj_CAMPAIGN_INDEX_XH * 1000 + 2
-    constant integer   bj_MISSION_INDEX_XH03       = bj_CAMPAIGN_INDEX_XH * 1000 + 3
-    constant integer   bj_MISSION_INDEX_XH04       = bj_CAMPAIGN_INDEX_XH * 1000 + 4
-    constant integer   bj_MISSION_INDEX_XH05       = bj_CAMPAIGN_INDEX_XH * 1000 + 5
-    constant integer   bj_MISSION_INDEX_XH06       = bj_CAMPAIGN_INDEX_XH * 1000 + 6
-    constant integer   bj_MISSION_INDEX_XH07       = bj_CAMPAIGN_INDEX_XH * 1000 + 7
-    constant integer   bj_MISSION_INDEX_XH08       = bj_CAMPAIGN_INDEX_XH * 1000 + 8
-    constant integer   bj_MISSION_INDEX_XH09       = bj_CAMPAIGN_INDEX_XH * 1000 + 9
-    constant integer   bj_MISSION_INDEX_XH10       = bj_CAMPAIGN_INDEX_XH * 1000 + 10
+    constant integer   bj_MISSION_INDEX_XH00       = bj_CAMPAIGN_OFFSET_XH * 1000 + 0
+    constant integer   bj_MISSION_INDEX_XH01       = bj_CAMPAIGN_OFFSET_XH * 1000 + 1
+    constant integer   bj_MISSION_INDEX_XH02       = bj_CAMPAIGN_OFFSET_XH * 1000 + 2
+    constant integer   bj_MISSION_INDEX_XH03       = bj_CAMPAIGN_OFFSET_XH * 1000 + 3
+    constant integer   bj_MISSION_INDEX_XH04       = bj_CAMPAIGN_OFFSET_XH * 1000 + 4
+    constant integer   bj_MISSION_INDEX_XH05       = bj_CAMPAIGN_OFFSET_XH * 1000 + 5
+    constant integer   bj_MISSION_INDEX_XH06       = bj_CAMPAIGN_OFFSET_XH * 1000 + 6
+    constant integer   bj_MISSION_INDEX_XH07       = bj_CAMPAIGN_OFFSET_XH * 1000 + 7
+    constant integer   bj_MISSION_INDEX_XH08       = bj_CAMPAIGN_OFFSET_XH * 1000 + 8
+    constant integer   bj_MISSION_INDEX_XH09       = bj_CAMPAIGN_OFFSET_XH * 1000 + 9
+    constant integer   bj_MISSION_INDEX_XH10       = bj_CAMPAIGN_OFFSET_XH * 1000 + 10
     // Expansion Undead
-    constant integer   bj_MISSION_INDEX_XU00       = bj_CAMPAIGN_INDEX_XU * 1000 + 0
-    constant integer   bj_MISSION_INDEX_XU01       = bj_CAMPAIGN_INDEX_XU * 1000 + 1
-    constant integer   bj_MISSION_INDEX_XU02       = bj_CAMPAIGN_INDEX_XU * 1000 + 2
-    constant integer   bj_MISSION_INDEX_XU03       = bj_CAMPAIGN_INDEX_XU * 1000 + 3
-    constant integer   bj_MISSION_INDEX_XU04       = bj_CAMPAIGN_INDEX_XU * 1000 + 4
-    constant integer   bj_MISSION_INDEX_XU05       = bj_CAMPAIGN_INDEX_XU * 1000 + 5
-    constant integer   bj_MISSION_INDEX_XU06       = bj_CAMPAIGN_INDEX_XU * 1000 + 6
-    constant integer   bj_MISSION_INDEX_XU07       = bj_CAMPAIGN_INDEX_XU * 1000 + 7
-    constant integer   bj_MISSION_INDEX_XU08       = bj_CAMPAIGN_INDEX_XU * 1000 + 8
-    constant integer   bj_MISSION_INDEX_XU09       = bj_CAMPAIGN_INDEX_XU * 1000 + 9
-    constant integer   bj_MISSION_INDEX_XU10       = bj_CAMPAIGN_INDEX_XU * 1000 + 10
-    constant integer   bj_MISSION_INDEX_XU11       = bj_CAMPAIGN_INDEX_XU * 1000 + 11
-    constant integer   bj_MISSION_INDEX_XU12       = bj_CAMPAIGN_INDEX_XU * 1000 + 12
-    constant integer   bj_MISSION_INDEX_XU13       = bj_CAMPAIGN_INDEX_XU * 1000 + 13
+    constant integer   bj_MISSION_INDEX_XU00       = bj_CAMPAIGN_OFFSET_XU * 1000 + 0
+    constant integer   bj_MISSION_INDEX_XU01       = bj_CAMPAIGN_OFFSET_XU * 1000 + 1
+    constant integer   bj_MISSION_INDEX_XU02       = bj_CAMPAIGN_OFFSET_XU * 1000 + 2
+    constant integer   bj_MISSION_INDEX_XU03       = bj_CAMPAIGN_OFFSET_XU * 1000 + 3
+    constant integer   bj_MISSION_INDEX_XU04       = bj_CAMPAIGN_OFFSET_XU * 1000 + 4
+    constant integer   bj_MISSION_INDEX_XU05       = bj_CAMPAIGN_OFFSET_XU * 1000 + 5
+    constant integer   bj_MISSION_INDEX_XU06       = bj_CAMPAIGN_OFFSET_XU * 1000 + 6
+    constant integer   bj_MISSION_INDEX_XU07       = bj_CAMPAIGN_OFFSET_XU * 1000 + 7
+    constant integer   bj_MISSION_INDEX_XU08       = bj_CAMPAIGN_OFFSET_XU * 1000 + 8
+    constant integer   bj_MISSION_INDEX_XU09       = bj_CAMPAIGN_OFFSET_XU * 1000 + 9
+    constant integer   bj_MISSION_INDEX_XU10       = bj_CAMPAIGN_OFFSET_XU * 1000 + 10
+    constant integer   bj_MISSION_INDEX_XU11       = bj_CAMPAIGN_OFFSET_XU * 1000 + 11
+    constant integer   bj_MISSION_INDEX_XU12       = bj_CAMPAIGN_OFFSET_XU * 1000 + 12
+    constant integer   bj_MISSION_INDEX_XU13       = bj_CAMPAIGN_OFFSET_XU * 1000 + 13
 
     // Cinematic indexing constants
     constant integer   bj_CINEMATICINDEX_TOP      = 0
@@ -349,6 +360,11 @@ globals
     // Itemcode status types
     constant integer   bj_ITEMCODE_STATUS_POWERUP  = 0
     constant integer   bj_ITEMCODE_STATUS_SELLABLE = 1
+
+    // Minimap ping styles
+    constant integer   bj_MINIMAPPINGSTYLE_SIMPLE  = 0
+    constant integer   bj_MINIMAPPINGSTYLE_FLASHY  = 1
+    constant integer   bj_MINIMAPPINGSTYLE_ATTACK  = 2
 
     // Elevator pathing-blocker destructable code
     constant integer   bj_ELEVATOR_BLOCKER_CODE    = 'DTep'
@@ -1801,6 +1817,11 @@ endfunction
 //===========================================================================
 function GetTerrainCliffLevelBJ takes location where returns integer
     return GetTerrainCliffLevel(GetLocationX(where), GetLocationY(where))
+endfunction
+
+//===========================================================================
+function SetWaterBaseColorBJ takes real red, real green, real blue, real transparency returns nothing
+    call SetWaterBaseColor(PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-transparency))
 endfunction
 
 //===========================================================================
@@ -3432,9 +3453,9 @@ endfunction
 
 //===========================================================================
 // To properly animate an elevator, we must know not only what height we
-// want to change to, but also what height we are currently at.  Since
-// elevators are indestructable destructables (ugh), we store the current
-// height of the elevator as the elevator's life.
+// want to change to, but also what height we are currently at.  This code
+// determines the elevator's current height from its occlusion height.
+// Arbitrarily changing an elevator's occlusion height is thus inadvisable.
 //
 function ChangeElevatorHeight takes destructable d, integer newHeight returns nothing
     local integer oldHeight
@@ -3444,13 +3465,13 @@ function ChangeElevatorHeight takes destructable d, integer newHeight returns no
     set newHeight = IMinBJ(3, newHeight)
 
     // Find out what height the elevator is already at.
-    set oldHeight = R2I(GetDestructableLife(d))
+    set oldHeight = 1 + R2I(GetDestructableOccluderHeight(d) / bj_CLIFFHEIGHT)
     if (oldHeight < 1) or (oldHeight > 3) then
         set oldHeight = 1
     endif
 
-    // Store the elevator height as the destructable's life.
-    call SetDestructableLife(d, I2R(newHeight))
+    // Set the elevator's occlusion height.
+    call SetDestructableOccluderHeight(d, bj_CLIFFHEIGHT*(newHeight-1))
 
     if (newHeight == 1) then
         if (oldHeight == 2) then
@@ -3502,6 +3523,30 @@ function FindElevatorWallBlockerEnum takes nothing returns nothing
 endfunction
 
 //===========================================================================
+// Grab the unit and throw his own coords in his face, forcing him to push
+// and shove until he finds a spot where noone will bother him.
+//
+function NudgeUnitsInRectEnum takes nothing returns nothing
+    local unit nudgee = GetEnumUnit()
+
+    call SetUnitPositionLoc(nudgee, GetUnitLoc(nudgee))
+endfunction
+
+//===========================================================================
+// Nudge the units within a given rect ever so gently, so as to encourage
+// them to find locations where they can peacefully coexist with pathing
+// restrictions, and live happy, fruitful lives.
+//
+function NudgeUnitsInRect takes rect nudgeArea returns nothing
+    local group        g
+
+    set g = CreateGroup()
+    call GroupEnumUnitsInRect(g, nudgeArea, null)
+    call ForGroup(g, function NudgeUnitsInRectEnum)
+    call DestroyGroup(g)
+endfunction
+
+//===========================================================================
 // This toggles pathing on or off for one wall of an elevator by killing
 // or reviving a pathing blocker at the appropriate location (and creating
 // the pathing blocker in the first place, if it does not yet exist).
@@ -3509,6 +3554,8 @@ endfunction
 function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean open returns nothing
     local destructable blocker = null
     local real         findThreshold = 32
+    local real         nudgeLength   = 4.25 * bj_CELLWIDTH
+    local real         nudgeWidth    = 1.25 * bj_CELLWIDTH
     local rect         r
 
     // Search for the pathing blocker within the general area.
@@ -3528,6 +3575,15 @@ function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean op
             set blocker = CreateDestructable(bj_ELEVATOR_BLOCKER_CODE, x, y, facing, 1, 0)
         elseif (GetDestructableLife(blocker) <= 0) then
             call DestructableRestoreLife(blocker, GetDestructableMaxLife(blocker), false)
+        endif
+
+        // Nudge any units standing in the blocker's way.
+        if (facing == 0) then
+            call NudgeUnitsInRect(Rect(x - nudgeWidth/2, y - nudgeLength/2, x + nudgeWidth/2, y + nudgeLength/2))
+        elseif (facing == 90) then
+            call NudgeUnitsInRect(Rect(x - nudgeLength/2, y - nudgeWidth/2, x + nudgeLength/2, y + nudgeWidth/2))
+        else
+            // Unrecognized blocker angle - don't nudge anyone.
         endif
     endif
 endfunction
@@ -3771,6 +3827,8 @@ function GetUnitsOfTypeIdAll takes integer unitid returns group
         set index = index + 1
         exitwhen index == bj_MAX_PLAYER_SLOTS
     endloop
+
+    //%%% Destroying the group results in problems upon subsequent calls.
     call DestroyGroup(g)
 
     return result
@@ -3993,6 +4051,11 @@ endfunction
 //===========================================================================
 function QueueDestructableAnimationBJ takes destructable d, string whichAnimation returns nothing
     call QueueDestructableAnimation(d, whichAnimation)
+endfunction
+
+//===========================================================================
+function SetDestAnimationSpeedPercent takes destructable d, real percentScale returns nothing
+    call SetDestructableAnimationSpeed(d, percentScale * 0.01)
 endfunction
 
 
@@ -5160,6 +5223,39 @@ function PingMinimapLocForPlayer takes player whichPlayer, location loc, real du
 endfunction
 
 //===========================================================================
+function PingMinimapForForceEx takes force whichForce, real x, real y, real duration, integer style, real red, real green, real blue returns nothing
+    local integer red255   = PercentTo255(red)
+    local integer green255 = PercentTo255(green)
+    local integer blue255  = PercentTo255(blue)
+
+    if (IsPlayerInForce(GetLocalPlayer(), whichForce)) then
+        // Use only local code (no net traffic) within this block to avoid desyncs.
+
+        // Prevent 100% red simple and flashy pings, as they become "attack" pings.
+        if (red255 == 255) and (green255 == 0) and (blue255 == 0) then
+            set red255 = 254
+        endif
+
+        if (style == bj_MINIMAPPINGSTYLE_SIMPLE) then
+            call PingMinimapEx(x, y, duration, red255, green255, blue255, false)
+        elseif (style == bj_MINIMAPPINGSTYLE_FLASHY) then
+            call PingMinimapEx(x, y, duration, red255, green255, blue255, true)
+        elseif (style == bj_MINIMAPPINGSTYLE_ATTACK) then
+            call PingMinimapEx(x, y, duration, 255, 0, 0, false)
+        else
+            // Unrecognized ping style - ignore the request.
+        endif
+        
+        //call StartSound(bj_pingMinimapSound)
+    endif
+endfunction
+
+//===========================================================================
+function PingMinimapLocForForceEx takes force whichForce, location loc, real duration, integer style, real red, real green, real blue returns nothing
+    call PingMinimapForForceEx(whichForce, GetLocationX(loc), GetLocationY(loc), duration, style, red, green, blue)
+endfunction
+
+//===========================================================================
 function EnableWorldFogBoundaryBJ takes boolean enable, force f returns nothing
     if (IsPlayerInForce(GetLocalPlayer(), f)) then
         // Use only local code (no net traffic) within this block to avoid desyncs.
@@ -5564,7 +5660,7 @@ endfunction
 // and optionally a unit color change.
 //
 function RescueUnitBJ takes unit whichUnit, player rescuer, boolean changeColor returns nothing
-    if IsUnitDeadBJ(whichUnit) then
+    if IsUnitDeadBJ(whichUnit) or (GetOwningPlayer(whichUnit) == rescuer) then
         return
     endif
 
@@ -5710,14 +5806,11 @@ function SetCampaignMenuRaceBJ takes integer campaignNumber returns nothing
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_N) then
         call SetCampaignMenuRace(RACE_NIGHTELF)
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XN) then
-        // %%% Temp until the campaign screen is fixed
-        call SetCampaignMenuRace(RACE_NIGHTELF)
+        call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XN)
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XH) then
-        // %%% Temp until the campaign screen is fixed
-        call SetCampaignMenuRace(RACE_HUMAN)
+        call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XH)
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XU) then
-        // %%% Temp until the campaign screen is fixed
-        call SetCampaignMenuRace(RACE_UNDEAD)
+        call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XU)
     else
         // Unrecognized campaign - ignore the request
     endif
@@ -5742,6 +5835,15 @@ function SetCampaignAvailableBJ takes boolean available, integer campaignNumber 
     if (campaignNumber == bj_CAMPAIGN_INDEX_H) then
         call SetTutorialCleared(true)
     endif
+
+    if (campaignNumber == bj_CAMPAIGN_INDEX_XN) then
+        set campaignNumber = bj_CAMPAIGN_OFFSET_XN
+    elseif (campaignNumber == bj_CAMPAIGN_INDEX_XH) then
+        set campaignNumber = bj_CAMPAIGN_OFFSET_XH
+    elseif (campaignNumber == bj_CAMPAIGN_INDEX_XU) then
+        set campaignNumber = bj_CAMPAIGN_OFFSET_XU
+    endif
+
     call SetCampaignAvailable(campaignNumber, available)
     call SetCampaignMenuRaceBJ(campaignNumber)
     call ForceCampaignSelectScreen()
