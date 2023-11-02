@@ -32,6 +32,7 @@ type gamestate          extends     handle
 type igamestate         extends     gamestate
 type fgamestate         extends     gamestate
 type playerstate        extends     handle
+type playerscore        extends     handle
 type playergameresult   extends     handle
 type unitstate          extends     handle
 type aidifficulty       extends     handle
@@ -91,6 +92,7 @@ constant native ConvertRacePref             takes integer i returns racepreferen
 constant native ConvertIGameState           takes integer i returns igamestate
 constant native ConvertFGameState           takes integer i returns fgamestate
 constant native ConvertPlayerState          takes integer i returns playerstate
+constant native ConvertPlayerScore          takes integer i returns playerscore
 constant native ConvertPlayerGameResult     takes integer i returns playergameresult
 constant native ConvertUnitState            takes integer i returns unitstate
 constant native ConvertAIDifficulty         takes integer i returns aidifficulty
@@ -132,6 +134,8 @@ constant native UnitId2String               takes integer unitId            retu
 constant native AbilityId                   takes string  abilityIdString   returns integer
 constant native AbilityId2String            takes integer abilityId         returns string
 
+// Looks up the "name" field for any object (unit, item, ability)
+constant native GetObjectName               takes integer objectId          returns string
 
 globals
 
@@ -331,6 +335,33 @@ globals
     constant aidifficulty AI_DIFFICULTY_NEWBIE                  = ConvertAIDifficulty(0)
     constant aidifficulty AI_DIFFICULTY_NORMAL                  = ConvertAIDifficulty(1)
     constant aidifficulty AI_DIFFICULTY_INSANE                  = ConvertAIDifficulty(2)
+
+    // player score values
+    constant playerscore PLAYER_SCORE_UNITS_TRAINED             = ConvertPlayerScore(0)
+    constant playerscore PLAYER_SCORE_UNITS_KILLED              = ConvertPlayerScore(1)
+    constant playerscore PLAYER_SCORE_STRUCT_BUILT              = ConvertPlayerScore(2)
+    constant playerscore PLAYER_SCORE_STRUCT_RAZED              = ConvertPlayerScore(3)
+    constant playerscore PLAYER_SCORE_TECH_PERCENT              = ConvertPlayerScore(4)
+    constant playerscore PLAYER_SCORE_FOOD_MAXPROD              = ConvertPlayerScore(5)
+    constant playerscore PLAYER_SCORE_FOOD_MAXUSED              = ConvertPlayerScore(6)
+    constant playerscore PLAYER_SCORE_HEROES_KILLED             = ConvertPlayerScore(7)
+    constant playerscore PLAYER_SCORE_ITEMS_GAINED              = ConvertPlayerScore(8)
+    constant playerscore PLAYER_SCORE_MERCS_HIRED               = ConvertPlayerScore(9)
+    constant playerscore PLAYER_SCORE_GOLD_MINED_TOTAL          = ConvertPlayerScore(10)
+    constant playerscore PLAYER_SCORE_GOLD_MINED_UPKEEP         = ConvertPlayerScore(11)
+    constant playerscore PLAYER_SCORE_GOLD_LOST_UPKEEP          = ConvertPlayerScore(12)
+    constant playerscore PLAYER_SCORE_GOLD_LOST_TAX             = ConvertPlayerScore(13)
+    constant playerscore PLAYER_SCORE_GOLD_GIVEN                = ConvertPlayerScore(14)
+    constant playerscore PLAYER_SCORE_GOLD_RECEIVED             = ConvertPlayerScore(15)
+    constant playerscore PLAYER_SCORE_LUMBER_TOTAL              = ConvertPlayerScore(16)
+    constant playerscore PLAYER_SCORE_LUMBER_LOST_UPKEEP        = ConvertPlayerScore(17)
+    constant playerscore PLAYER_SCORE_LUMBER_LOST_TAX           = ConvertPlayerScore(18)
+    constant playerscore PLAYER_SCORE_LUMBER_GIVEN              = ConvertPlayerScore(19)
+    constant playerscore PLAYER_SCORE_LUMBER_RECEIVED           = ConvertPlayerScore(20)
+    constant playerscore PLAYER_SCORE_UNIT_TOTAL                = ConvertPlayerScore(21)
+    constant playerscore PLAYER_SCORE_HERO_TOTAL                = ConvertPlayerScore(22)
+    constant playerscore PLAYER_SCORE_RESOURCE_TOTAL            = ConvertPlayerScore(23)
+    constant playerscore PLAYER_SCORE_TOTAL                     = ConvertPlayerScore(24)
         
 //===================================================
 // Game, Player and Unit Events
@@ -534,6 +565,7 @@ globals
     constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(274)
     constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(275)
     constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(276)
+    constant playerunitevent    EVENT_PLAYER_UNIT_PAWN_ITEM             = ConvertPlayerUnitEvent(277)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
@@ -547,6 +579,7 @@ globals
     constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(291)
     constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(292)
     constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(293)
+    constant unitevent          EVENT_UNIT_PAWN_ITEM                    = ConvertUnitEvent(294)
 
     //===================================================
     // Limit Event API constants    
@@ -696,6 +729,8 @@ native R2SW takes real r, integer width, integer precision returns string
 native S2I  takes string s returns integer
 native S2R  takes string s returns real
 native SubString takes string source, integer start, integer end returns string
+native StringLength takes string s returns integer
+native StringCase takes string source, boolean upper returns string
 
 native GetLocalizedString takes string source returns string
 native GetLocalizedHotkey takes string source returns integer
@@ -1109,6 +1144,10 @@ constant native GetOrderTargetUnit          takes nothing returns unit
 constant native GetSpellAbilityUnit         takes nothing returns unit
 constant native GetSpellAbilityId           takes nothing returns integer
 constant native GetSpellAbility             takes nothing returns ability
+constant native GetSpellTargetLoc           takes nothing returns location
+constant native GetSpellTargetDestructable  takes nothing returns destructable
+constant native GetSpellTargetItem          takes nothing returns item
+constant native GetSpellTargetUnit          takes nothing returns unit
 
 native TriggerRegisterPlayerAllianceChange takes trigger whichTrigger, player whichPlayer, alliancetype whichAlliance returns event
 native TriggerRegisterPlayerStateEvent takes trigger whichTrigger, player whichPlayer, playerstate whichState, limitop opcode, real limitval returns event
@@ -1244,6 +1283,7 @@ native          SetDestructableAnimationSpeed takes destructable d, real speedFa
 native          ShowDestructable            takes destructable d, boolean flag returns nothing
 native          GetDestructableOccluderHeight takes destructable d returns real
 native          SetDestructableOccluderHeight takes destructable d, real height returns nothing
+native          GetDestructableName         takes destructable d returns string
 
 //============================================================================
 // Item API
@@ -1273,6 +1313,11 @@ native          EnumItemsInRect     takes rect r, boolexpr filter, code actionFu
 native          GetItemLevel    takes item whichItem returns integer
 native          GetItemType     takes item whichItem returns itemtype
 native          SetItemDropID   takes item whichItem, integer unitId returns nothing
+constant native GetItemName     takes item whichItem returns string
+native          GetItemCharges  takes item whichItem returns integer
+native          SetItemCharges  takes item whichItem, integer charges returns nothing
+native          GetItemUserData takes item whichItem returns integer
+native          SetItemUserData takes item whichItem, integer data returns nothing
 
 //============================================================================
 // Unit API
@@ -1350,9 +1395,11 @@ native          UnitModifySkillPoints   takes unit whichHero, integer skillPoint
 native          AddHeroXP           takes unit whichHero, integer xpToAdd,   boolean showEyeCandy returns nothing
 native          SetHeroLevel        takes unit whichHero, integer level,  boolean showEyeCandy returns nothing
 constant native GetHeroLevel        takes unit whichHero returns integer
+constant native GetUnitLevel        takes unit whichUnit returns integer
 native          SuspendHeroXP       takes unit whichHero, boolean flag returns nothing
 native          IsSuspendedXP       takes unit whichHero returns boolean
 native          SelectHeroSkill     takes unit whichHero, integer abilcode returns nothing
+native          GetUnitAbilityLevel takes unit whichUnit, integer abilcode returns integer
 native          ReviveHero          takes unit whichHero, real x, real y, boolean doEyecandy returns boolean
 native          ReviveHeroLoc       takes unit whichHero, location loc, boolean doEyecandy returns boolean
 native          SetUnitExploded     takes unit whichUnit, boolean exploded returns nothing
@@ -1397,6 +1444,10 @@ constant native GetFoodMade         takes integer unitId returns integer
 constant native GetFoodUsed         takes integer unitId returns integer
 native          SetUnitUseFood      takes unit whichUnit, boolean useFood returns nothing
 
+constant native GetUnitRallyPoint           takes unit whichUnit returns location
+constant native GetUnitRallyUnit            takes unit whichUnit returns unit
+constant native GetUnitRallyDestructable    takes unit whichUnit returns destructable
+
 constant native IsUnitInGroup       takes unit whichUnit, group whichGroup returns boolean
 constant native IsUnitInForce       takes unit whichUnit, force whichForce returns boolean
 constant native IsUnitOwnedByPlayer takes unit whichUnit, player whichPlayer returns boolean
@@ -1428,6 +1479,7 @@ native UnitSuspendDecay             takes unit whichUnit, boolean suspend return
 
 native UnitAddAbility               takes unit whichUnit, integer abilityId returns boolean
 native UnitRemoveAbility            takes unit whichUnit, integer abilityId returns boolean
+native UnitMakeAbilityPermanent     takes unit whichUnit, boolean permanent, integer abilityId returns boolean
 native UnitRemoveBuffs              takes unit whichUnit, boolean removePositive, boolean removeNegative returns nothing
 native UnitRemoveBuffsEx            takes unit whichUnit, boolean removePositive, boolean removeNegative, boolean magic, boolean physical, boolean timedLife, boolean aura, boolean autoDispel returns nothing
 native UnitHasBuffsEx               takes unit whichUnit, boolean removePositive, boolean removeNegative, boolean magic, boolean physical, boolean timedLife, boolean aura, boolean autoDispel returns boolean
@@ -1465,6 +1517,8 @@ native IssueNeutralPointOrder           takes player forWhichPlayer,unit neutral
 native IssueNeutralPointOrderById       takes player forWhichPlayer,unit neutralStructure, integer unitId, real x, real y returns boolean
 native IssueNeutralTargetOrder          takes player forWhichPlayer,unit neutralStructure, string unitToBuild, widget target returns boolean
 native IssueNeutralTargetOrderById      takes player forWhichPlayer,unit neutralStructure, integer unitId, widget target returns boolean
+
+native GetUnitCurrentOrder          takes unit whichUnit returns integer
 
 native SetResourceAmount            takes unit whichUnit, integer amount returns nothing
 native AddResourceAmount            takes unit whichUnit, integer amount returns nothing
@@ -1515,6 +1569,7 @@ constant native GetPlayerUnitCount      takes player whichPlayer, boolean includ
 constant native GetPlayerTypedUnitCount takes player whichPlayer, string unitName, boolean includeIncomplete, boolean includeUpgrades returns integer
 constant native GetPlayerStructureCount takes player whichPlayer, boolean includeIncomplete returns integer
 constant native GetPlayerState          takes player whichPlayer, playerstate whichPlayerState returns integer
+constant native GetPlayerScore          takes player whichPlayer, playerscore whichPlayerScore returns integer
 constant native GetPlayerAlliance       takes player sourcePlayer, player otherPlayer, alliancetype whichAllianceSetting returns boolean
 
 constant native GetPlayerHandicap       takes player whichPlayer returns real
@@ -1577,9 +1632,6 @@ native          SetCampaignMenuRace takes race r returns nothing
 native          SetCampaignMenuRaceEx takes integer campaignIndex returns nothing
 native          ForceCampaignSelectScreen takes nothing returns nothing
 
-// NOTE: These funcs are reserved for Blizzard maps as they
-// could be used for nefarious scripting otherwise
-//
 native          LoadGame            takes string saveFileName, boolean doScoreScreen returns nothing
 native          SaveGame            takes string saveFileName returns nothing
 native          RenameSaveDirectory takes string sourceDirName, string destDirName returns boolean
@@ -1729,6 +1781,9 @@ native SetTextTagVisibility         takes texttag t, boolean flag returns nothin
 native SetReservedLocalHeroButtons  takes integer reserved returns nothing
 native GetAllyColorFilterState      takes nothing returns integer
 native SetAllyColorFilterState      takes integer state returns nothing
+native GetCreepCampFilterState      takes nothing returns boolean
+native SetCreepCampFilterState      takes boolean state returns nothing
+native EnableMinimapFilterButtons   takes boolean enableAlly, boolean enableCreep returns nothing
 
 //============================================================================
 // Trackable API
@@ -2030,6 +2085,7 @@ native AddSpellEffectTargetById     takes integer abilityId, effecttype t, widge
 //
 native GetTerrainCliffLevel         takes real x, real y returns integer
 native SetWaterBaseColor            takes integer red, integer green, integer blue, integer alpha returns nothing
+native SetWaterDeforms              takes boolean val returns nothing
 
 //============================================================================
 // Blight API
@@ -2039,6 +2095,7 @@ native SetBlightRect            takes player whichPlayer, rect r, boolean addBli
 native SetBlightPoint           takes player whichPlayer, real x, real y, boolean addBlight returns nothing
 native SetBlightLoc             takes player whichPlayer, location whichLocation, real radius, boolean addBlight returns nothing
 native CreateBlightedGoldmine   takes player id, real x, real y, real face returns unit
+native IsPointBlighted          takes real x, real y returns boolean
 
 //============================================================================
 // Doodad API

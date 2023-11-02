@@ -598,6 +598,7 @@ globals
     timer              bj_lastStartedTimer         = CreateTimer()
     timerdialog        bj_lastCreatedTimerDialog   = null
     leaderboard        bj_lastCreatedLeaderboard   = null
+    multiboard         bj_lastCreatedMultiboard    = null
     sound              bj_lastPlayedSound          = null
     string             bj_lastPlayedMusic          = ""
     real               bj_lastTransmissionDuration = 0
@@ -1149,7 +1150,6 @@ function IntegerTertiaryOp takes boolean flag, integer valueA, integer valueB re
 endfunction
 
 
-
 //***************************************************************************
 //*
 //*  General Utility Functions
@@ -1171,12 +1171,10 @@ function CommentString takes string commentString returns nothing
 endfunction
 
 //===========================================================================
-// This seemingly useless function is used to trick the trigger editor into
-// externalizing arbitrary strings.  Especially useful for storing externalized
-// string references in variables.
+// This function returns the input string, converting it from the localized text, if necessary
 //
 function StringIdentity takes string theString returns string
-    return theString
+    return GetLocalizedString(theString)
 endfunction
 
 //===========================================================================
@@ -1719,6 +1717,11 @@ endfunction
 //===========================================================================
 function TriggerRegisterPlayerEventDefeat takes trigger trig, player whichPlayer returns event
     return TriggerRegisterPlayerEvent(trig, whichPlayer, EVENT_PLAYER_DEFEAT)
+endfunction
+
+//===========================================================================
+function TriggerRegisterPlayerEventLeave takes trigger trig, player whichPlayer returns event
+    return TriggerRegisterPlayerEvent(trig, whichPlayer, EVENT_PLAYER_LEAVE)
 endfunction
 
 //===========================================================================
@@ -2430,6 +2433,21 @@ function SetHeroLevelBJ takes unit whichHero, integer newLevel, boolean showEyeC
 endfunction
 
 //===========================================================================
+function GetUnitAbilityLevelSwapped takes integer abilcode, unit whichUnit returns integer
+    return GetUnitAbilityLevel(whichUnit, abilcode)
+endfunction
+
+//===========================================================================
+function UnitHasBuffBJ takes unit whichUnit, integer buffcode returns boolean
+    return (GetUnitAbilityLevel(whichUnit, buffcode) > 0)
+endfunction
+
+//===========================================================================
+function UnitRemoveBuffBJ takes integer buffcode, unit whichUnit returns boolean
+    return UnitRemoveAbility(whichUnit, buffcode)
+endfunction
+
+//===========================================================================
 function UnitAddItemSwapped takes item whichItem, unit whichHero returns boolean
     return UnitAddItem(whichHero, whichItem)
 endfunction
@@ -2622,6 +2640,23 @@ endfunction
 //===========================================================================
 function UnitHasItemOfTypeBJ takes unit whichUnit, integer itemId returns boolean
     return GetInventoryIndexOfItemTypeBJ(whichUnit, itemId) > 0
+endfunction
+
+//===========================================================================
+function UnitInventoryCount takes unit whichUnit returns integer
+    local integer index = 0
+    local integer count = 0
+
+    loop
+        if (UnitItemInSlot(whichUnit, index) != null) then
+            set count = count + 1
+        endif
+
+        set index = index + 1
+        exitwhen index >= bj_MAX_INVENTORY
+    endloop
+
+    return count
 endfunction
 
 //===========================================================================
@@ -3435,6 +3470,11 @@ endfunction
 //===========================================================================
 function UnitAddAbilityBJ takes integer abilityId, unit whichUnit returns boolean
     return UnitAddAbility(whichUnit, abilityId)
+endfunction
+
+//===========================================================================
+function UnitMakeAbilityPermanentBJ takes boolean permanent, integer abilityId, unit whichUnit returns boolean
+    return UnitMakeAbilityPermanent(whichUnit, permanent, abilityId)
 endfunction
 
 //===========================================================================
@@ -4667,13 +4707,17 @@ function SetForceAllianceStateBJ takes force sourceForce, force targetForce, int
     set sourceIndex = 0
     loop
 
-        set targetIndex = 0
-        loop
-            call SetPlayerAllianceStateBJ(Player(sourceIndex), Player(targetIndex), allianceState)
+        if (sourceForce==bj_FORCE_ALL_PLAYERS or IsPlayerInForce(Player(sourceIndex), sourceForce)) then
+            set targetIndex = 0
+            loop
+                if (targetForce==bj_FORCE_ALL_PLAYERS or IsPlayerInForce(Player(targetIndex), targetForce)) then
+                    call SetPlayerAllianceStateBJ(Player(sourceIndex), Player(targetIndex), allianceState)
+                endif
 
-            set targetIndex = targetIndex + 1
-            exitwhen targetIndex == bj_MAX_PLAYER_SLOTS
-        endloop
+                set targetIndex = targetIndex + 1
+                exitwhen targetIndex == bj_MAX_PLAYER_SLOTS
+            endloop
+        endif
 
         set sourceIndex = sourceIndex + 1
         exitwhen sourceIndex == bj_MAX_PLAYER_SLOTS
@@ -4971,9 +5015,9 @@ function CustomVictoryDialogBJ takes player whichPlayer returns nothing
         if bj_isSinglePlayer then
             call PauseGame( true )
         endif
+        call EnableUserUI(false)
     endif
 
-    call EnableUserUI(false)
     call DialogDisplay( whichPlayer, d, true )
     call VolumeGroupSetVolumeForPlayerBJ( whichPlayer, SOUND_VOLUMEGROUP_UI, 1.0 )
     call StartSoundForPlayerBJ( whichPlayer, bj_victoryDialogSound )
@@ -5091,9 +5135,9 @@ function CustomDefeatDialogBJ takes player whichPlayer, string message returns n
         if bj_isSinglePlayer then
             call PauseGame( true )
         endif
+        call EnableUserUI(false)
     endif
 
-    call EnableUserUI(false)
     call DialogDisplay( whichPlayer, d, true )
     call VolumeGroupSetVolumeForPlayerBJ( whichPlayer, SOUND_VOLUMEGROUP_UI, 1.0 )
     call StartSoundForPlayerBJ( whichPlayer, bj_defeatDialogSound )
@@ -5597,9 +5641,210 @@ function GetLastCreatedLeaderboard takes nothing returns leaderboard
     return bj_lastCreatedLeaderboard
 endfunction
 
+//***************************************************************************
+//*
+//*  Multiboard Utility Functions
+//*
+//***************************************************************************
+
+//===========================================================================
+function CreateMultiboardBJ takes integer cols, integer rows, string title returns multiboard
+    set bj_lastCreatedMultiboard = CreateMultiboard()
+    call MultiboardSetRowCount(bj_lastCreatedMultiboard, rows)
+    call MultiboardSetColumnCount(bj_lastCreatedMultiboard, cols)
+    call MultiboardSetTitleText(bj_lastCreatedMultiboard, title)
+    call MultiboardDisplay(bj_lastCreatedMultiboard, true)
+    return bj_lastCreatedMultiboard
+endfunction
+
+//===========================================================================
+function DestroyMultiboardBJ takes multiboard mb returns nothing
+    call DestroyMultiboard(mb)
+endfunction
+
+//===========================================================================
+function GetLastCreatedMultiboard takes nothing returns multiboard
+    return bj_lastCreatedMultiboard
+endfunction
+
+//===========================================================================
+function MultiboardDisplayBJ takes boolean show, multiboard mb returns nothing
+    call MultiboardDisplay(mb, show)
+endfunction
+
+//===========================================================================
+function MultiboardMinimizeBJ takes boolean minimize, multiboard mb returns nothing
+    call MultiboardMinimize(mb, minimize)
+endfunction
+
+//===========================================================================
+function MultiboardSetTitleTextColorBJ takes multiboard mb, real red, real green, real blue, real transparency returns nothing
+    call MultiboardSetTitleTextColor(mb, PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-transparency))
+endfunction
+
 //===========================================================================
 function MultiboardAllowDisplayBJ takes boolean flag returns nothing
     call MultiboardSuppressDisplay(not flag)
+endfunction
+
+//===========================================================================
+function MultiboardSetItemStyleBJ takes multiboard mb, integer col, integer row, boolean showValue, boolean showIcon returns nothing
+    local integer curRow = 0
+    local integer curCol = 0
+    local integer numRows = MultiboardGetRowCount(mb)
+    local integer numCols = MultiboardGetColumnCount(mb)
+    local multiboarditem mbitem = null
+
+    // Loop over rows, using 1-based index
+    loop
+        set curRow = curRow + 1
+        exitwhen curRow > numRows
+
+        // Apply setting to the requested row, or all rows (if row is 0)
+        if (row == 0 or row == curRow) then
+            // Loop over columns, using 1-based index
+            set curCol = 0
+            loop
+                set curCol = curCol + 1
+                exitwhen curCol > numCols
+
+                // Apply setting to the requested column, or all columns (if col is 0)
+                if (col == 0 or col == curCol) then
+                    set mbitem = MultiboardGetItem(mb, curRow - 1, curCol - 1)
+                    call MultiboardSetItemStyle(mbitem, showValue, showIcon)
+                    call MultiboardReleaseItem(mbitem)
+                endif
+            endloop
+        endif
+    endloop
+endfunction
+
+//===========================================================================
+function MultiboardSetItemValueBJ takes multiboard mb, integer col, integer row, string val returns nothing
+    local integer curRow = 0
+    local integer curCol = 0
+    local integer numRows = MultiboardGetRowCount(mb)
+    local integer numCols = MultiboardGetColumnCount(mb)
+    local multiboarditem mbitem = null
+
+    // Loop over rows, using 1-based index
+    loop
+        set curRow = curRow + 1
+        exitwhen curRow > numRows
+
+        // Apply setting to the requested row, or all rows (if row is 0)
+        if (row == 0 or row == curRow) then
+            // Loop over columns, using 1-based index
+            set curCol = 0
+            loop
+                set curCol = curCol + 1
+                exitwhen curCol > numCols
+
+                // Apply setting to the requested column, or all columns (if col is 0)
+                if (col == 0 or col == curCol) then
+                    set mbitem = MultiboardGetItem(mb, curRow - 1, curCol - 1)
+                    call MultiboardSetItemValue(mbitem, val)
+                    call MultiboardReleaseItem(mbitem)
+                endif
+            endloop
+        endif
+    endloop
+endfunction
+
+//===========================================================================
+function MultiboardSetItemColorBJ takes multiboard mb, integer col, integer row, real red, real green, real blue, real transparency returns nothing
+    local integer curRow = 0
+    local integer curCol = 0
+    local integer numRows = MultiboardGetRowCount(mb)
+    local integer numCols = MultiboardGetColumnCount(mb)
+    local multiboarditem mbitem = null
+
+    // Loop over rows, using 1-based index
+    loop
+        set curRow = curRow + 1
+        exitwhen curRow > numRows
+
+        // Apply setting to the requested row, or all rows (if row is 0)
+        if (row == 0 or row == curRow) then
+            // Loop over columns, using 1-based index
+            set curCol = 0
+            loop
+                set curCol = curCol + 1
+                exitwhen curCol > numCols
+
+                // Apply setting to the requested column, or all columns (if col is 0)
+                if (col == 0 or col == curCol) then
+                    set mbitem = MultiboardGetItem(mb, curRow - 1, curCol - 1)
+                    call MultiboardSetItemValueColor(mbitem, PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-transparency))
+                    call MultiboardReleaseItem(mbitem)
+                endif
+            endloop
+        endif
+    endloop
+endfunction
+
+//===========================================================================
+function MultiboardSetItemWidthBJ takes multiboard mb, integer col, integer row, real width returns nothing
+    local integer curRow = 0
+    local integer curCol = 0
+    local integer numRows = MultiboardGetRowCount(mb)
+    local integer numCols = MultiboardGetColumnCount(mb)
+    local multiboarditem mbitem = null
+
+    // Loop over rows, using 1-based index
+    loop
+        set curRow = curRow + 1
+        exitwhen curRow > numRows
+
+        // Apply setting to the requested row, or all rows (if row is 0)
+        if (row == 0 or row == curRow) then
+            // Loop over columns, using 1-based index
+            set curCol = 0
+            loop
+                set curCol = curCol + 1
+                exitwhen curCol > numCols
+
+                // Apply setting to the requested column, or all columns (if col is 0)
+                if (col == 0 or col == curCol) then
+                    set mbitem = MultiboardGetItem(mb, curRow - 1, curCol - 1)
+                    call MultiboardSetItemWidth(mbitem, width/100.0)
+                    call MultiboardReleaseItem(mbitem)
+                endif
+            endloop
+        endif
+    endloop
+endfunction
+
+//===========================================================================
+function MultiboardSetItemIconBJ takes multiboard mb, integer col, integer row, string iconFileName returns nothing
+    local integer curRow = 0
+    local integer curCol = 0
+    local integer numRows = MultiboardGetRowCount(mb)
+    local integer numCols = MultiboardGetColumnCount(mb)
+    local multiboarditem mbitem = null
+
+    // Loop over rows, using 1-based index
+    loop
+        set curRow = curRow + 1
+        exitwhen curRow > numRows
+
+        // Apply setting to the requested row, or all rows (if row is 0)
+        if (row == 0 or row == curRow) then
+            // Loop over columns, using 1-based index
+            set curCol = 0
+            loop
+                set curCol = curCol + 1
+                exitwhen curCol > numCols
+
+                // Apply setting to the requested column, or all columns (if col is 0)
+                if (col == 0 or col == curCol) then
+                    set mbitem = MultiboardGetItem(mb, curRow - 1, curCol - 1)
+                    call MultiboardSetItemIcon(mbitem, iconFileName)
+                    call MultiboardReleaseItem(mbitem)
+                endif
+            endloop
+        endif
+    endloop
 endfunction
 
 
@@ -6749,6 +6994,11 @@ function GetLastHauntedGoldMine takes nothing returns unit
 endfunction
 
 //===========================================================================
+function IsPointBlightedBJ takes location where returns boolean
+    return IsPointBlighted(GetLocationX(where), GetLocationY(where))
+endfunction
+
+//===========================================================================
 function SetPlayerColorBJEnum takes nothing returns nothing
     call SetUnitColor(GetEnumUnit(), bj_setPlayerTargetColor)
 endfunction
@@ -6838,6 +7088,23 @@ function GetDyingDestructable takes nothing returns destructable
 endfunction
 
 //===========================================================================
+// Rally point setting
+//
+function SetUnitRallyPoint takes unit whichUnit, location targPos returns nothing
+    call IssuePointOrderLocBJ(whichUnit, "setrally", targPos)
+endfunction
+
+//===========================================================================
+function SetUnitRallyUnit takes unit whichUnit, unit targUnit returns nothing
+    call IssueTargetOrder(whichUnit, "setrally", targUnit)
+endfunction
+
+//===========================================================================
+function SetUnitRallyDestructable takes unit whichUnit, destructable targDest returns nothing
+    call IssueTargetOrder(whichUnit, "setrally", targDest)
+endfunction
+
+//===========================================================================
 // Utility function for use by editor-generated item drop table triggers.
 // This function is added as an action to all destructable drop triggers,
 // so that a widget drop may be differentiated from a unit drop.
@@ -6856,6 +7123,10 @@ function SetBlightRadiusLocBJ takes boolean addBlight, player whichPlayer, locat
     call SetBlightLoc(whichPlayer, loc, radius, addBlight)
 endfunction
 
+//===========================================================================
+function GetAbilityName takes integer abilcode returns string
+    return GetObjectName(abilcode)
+endfunction
 
 
 //***************************************************************************
@@ -7225,6 +7496,7 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc, bo
     local location heroLoc
     local real     peonX
     local real     peonY
+    local unit     townHall = null
 
     if (doPreload) then
         call Preloader( "scripts\\HumanMelee.pld" )
@@ -7233,7 +7505,7 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc, bo
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
         // Spawn Town Hall at the start location.
-        call CreateUnitAtLoc(whichPlayer, 'htow', startLoc, bj_UNIT_FACING)
+        set townHall = CreateUnitAtLoc(whichPlayer, 'htow', startLoc, bj_UNIT_FACING)
         
         // Spawn Peasants near the mine.
         set nearMineLoc = MeleeGetProjectedLoc(GetUnitLoc(nearestMine), startLoc, 320, 0)
@@ -7249,7 +7521,7 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc, bo
         set heroLoc = MeleeGetProjectedLoc(GetUnitLoc(nearestMine), startLoc, 384, 45)
     else
         // Spawn Town Hall at the start location.
-        call CreateUnitAtLoc(whichPlayer, 'htow', startLoc, bj_UNIT_FACING)
+        set townHall = CreateUnitAtLoc(whichPlayer, 'htow', startLoc, bj_UNIT_FACING)
         
         // Spawn Peasants directly south of the town hall.
         set peonX = GetLocationX(startLoc)
@@ -7262,6 +7534,11 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc, bo
 
         // Set random hero spawn point to be just south of the start location.
         set heroLoc = Location(peonX, peonY - 2.00 * unitSpacing)
+    endif
+
+    if (townHall != null) then
+        call UnitAddAbilityBJ('Amic', townHall)
+        call UnitMakeAbilityPermanentBJ(true, 'Amic', townHall)
     endif
 
     if (doHeroes) then
@@ -8877,8 +9154,16 @@ function InitSummonableCaps takes nothing returns nothing
     set index = 0
     loop
         // upgraded units
-        call SetPlayerTechMaxAllowed(Player(index), 'hrtt', 0)
-        call SetPlayerTechMaxAllowed(Player(index), 'otbk', 0)
+        // Note: Only do this if the corresponding upgrade is not yet researched
+        // Barrage - Siege Engines
+        if (not GetPlayerTechResearched(Player(index), 'Rhrt', true)) then
+            call SetPlayerTechMaxAllowed(Player(index), 'hrtt', 0)
+        endif
+
+        // Berserker Upgrade - Troll Berserkers
+        if (not GetPlayerTechResearched(Player(index), 'Robk', true)) then
+            call SetPlayerTechMaxAllowed(Player(index), 'otbk', 0)
+        endif
 
         // max skeletons per player
         call SetPlayerTechMaxAllowed(Player(index), 'uske', bj_MAX_SKELETONS)
