@@ -3473,6 +3473,16 @@ function UnitAddAbilityBJ takes integer abilityId, unit whichUnit returns boolea
 endfunction
 
 //===========================================================================
+function UnitRemoveTypeBJ takes unittype whichType, unit whichUnit returns boolean
+    return UnitRemoveType(whichUnit, whichType)
+endfunction
+
+//===========================================================================
+function UnitAddTypeBJ takes unittype whichType, unit whichUnit returns boolean
+    return UnitAddType(whichUnit, whichType)
+endfunction
+
+//===========================================================================
 function UnitMakeAbilityPermanentBJ takes boolean permanent, integer abilityId, unit whichUnit returns boolean
     return UnitMakeAbilityPermanent(whichUnit, permanent, abilityId)
 endfunction
@@ -6927,6 +6937,16 @@ function SetPlayerFlagBJ takes playerstate whichPlayerFlag, boolean flag, player
 endfunction
 
 //===========================================================================
+function SetPlayerTaxRateBJ takes integer rate, playerstate whichResource, player sourcePlayer, player otherPlayer returns nothing
+    call SetPlayerTaxRate(sourcePlayer, otherPlayer, whichResource, rate)
+endfunction
+
+//===========================================================================
+function GetPlayerTaxRateBJ takes playerstate whichResource, player sourcePlayer, player otherPlayer returns integer
+    return GetPlayerTaxRate(sourcePlayer, otherPlayer, whichResource)
+endfunction
+
+//===========================================================================
 function IsPlayerFlagSetBJ takes playerstate whichPlayerFlag, player whichPlayer returns boolean
     return GetPlayerState(whichPlayer, whichPlayerFlag) == 1
 endfunction
@@ -7054,6 +7074,10 @@ function IssueTargetDestructableOrder takes unit whichUnit, string order, widget
     return IssueTargetOrder( whichUnit, order, targetWidget )
 endfunction
 
+function IssueTargetItemOrder takes unit whichUnit, string order, widget targetWidget returns boolean
+    return IssueTargetOrder( whichUnit, order, targetWidget )
+endfunction
+
 //===========================================================================
 function IssueImmediateOrderBJ takes unit whichUnit, string order returns boolean
     return IssueImmediateOrder( whichUnit, order )
@@ -7079,6 +7103,10 @@ endfunction
 // dummy function simply mimics the behavior of an existing call.
 //
 function GroupTargetDestructableOrder takes group whichGroup, string order, widget targetWidget returns boolean
+    return GroupTargetOrder( whichGroup, order, targetWidget )
+endfunction
+
+function GroupTargetItemOrder takes group whichGroup, string order, widget targetWidget returns boolean
     return GroupTargetOrder( whichGroup, order, targetWidget )
 endfunction
 
@@ -7236,6 +7264,7 @@ function MeleeStartingHeroLimit takes nothing returns nothing
         call ReducePlayerTechMaxAllowed(Player(index), 'Nngs', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nplh', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nbst', bj_MELEE_HERO_TYPE_LIMIT)
+        call ReducePlayerTechMaxAllowed(Player(index), 'Ntin', bj_MELEE_HERO_TYPE_LIMIT)
 
         set index = index + 1
         exitwhen index == bj_MAX_PLAYERS
