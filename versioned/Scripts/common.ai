@@ -123,6 +123,7 @@ native CommandsWaiting      takes nothing                               returns 
 native GetLastCommand       takes nothing                               returns integer
 native GetLastData          takes nothing                               returns integer
 native PopLastCommand       takes nothing                               returns nothing
+native MeleeDifficulty      takes nothing                               returns integer
 
 //============================================================================
 //  Globals for all AI scripts
@@ -525,7 +526,11 @@ globals
     constant integer EASY               = 1
     constant integer NORMAL             = 2
     constant integer HARD               = 3
-    constant integer INSANE             = 4
+    constant integer INSANE             = 4 // not used
+
+    constant integer MELEE_NEWBIE       = 1
+    constant integer MELEE_NORMAL       = 2
+    constant integer MELEE_INSANE       = 3
 
     constant integer ATTACK_CAPTAIN     = 1
     constant integer DEFENSE_CAPTAIN    = 2
@@ -611,17 +616,26 @@ endfunction
 //============================================================================
 function StandardAI takes code heroes, code peons, code attacks returns nothing
     call InitAI()
+
+    if MeleeDifficulty() == MELEE_NEWBIE then
+        call SetTargetHeroes(false)
+        call SetUnitsFlee(false)
+        call SetGroupsFlee(false)
+        call SetSmartArtillery(false)
+    else
     call SetTargetHeroes(true)
+        call SetUnitsFlee(true)
+        call SetGroupsFlee(true)
+        call SetSmartArtillery(true)
+    endif
+
     call SetMeleeAI()
     call SetHeroesFlee(true)
     call SetWatchMegaTargets(true)
     call SetHeroesTakeItems(true)
     call SetIgnoreInjured(true)
-    call SetUnitsFlee(true)
-    call SetGroupsFlee(true)
     call SetPeonsRepair(true)
     call CreateCaptains()
-    call SetSmartArtillery(true)
     call SetHeroLevels(heroes)
     call Sleep(0.1)
     call StartThread(peons)
