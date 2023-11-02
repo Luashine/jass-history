@@ -81,7 +81,7 @@ function main takes nothing returns nothing
 	//*** WAVE 6 Time elapsed 15min ***
     call InitAssaultGroup()
     call CampaignAttackerEx( 3,3,4, GHOUL       )
-    call CampaignAttackerEx( 2,2,1, NECRO       )
+    call CampaignAttackerEx( 1,1,1, NECRO       )
     call CampaignAttackerEx( 0,0,2, ABOMINATION )
 	call CampaignAttackerEx( 1,1,2, MEAT_WAGON  )
     call SuicideOnPlayer(M3,user)
@@ -101,7 +101,7 @@ function main takes nothing returns nothing
 	//*** WAVE 8 Time elapsed 21min ***
     call InitAssaultGroup()
     call CampaignAttackerEx( 3,3,4, GHOUL       )
-    call CampaignAttackerEx( 1,1,1, NECRO       )
+    call CampaignAttackerEx( 0,0,1, NECRO       )
     call CampaignAttackerEx( 0,0,2, ABOMINATION )
 	call CampaignAttackerEx( 0,0,2, MEAT_WAGON  )
 	call CampaignAttackerEx( 0,0,1, LICH		)
