@@ -1,0 +1,81 @@
+//==================================================================================================
+//  $Id: h06xD.ai,v 1.1 2003/03/11 14:15:12 bfitch Exp $
+//==================================================================================================
+globals
+    player user    = Player(0)
+    integer gates  = 4              // initial number of gates
+    integer start  = 60             // separate demon waves by 'N' seconds
+    integer decr   = 10             // seconds to reduce waves when a gate is destroyed
+    integer delays
+endglobals
+
+//--------------------------------------------------------------------------------------------------
+//  set_first_delay
+//--------------------------------------------------------------------------------------------------
+function set_first_delay takes nothing returns nothing
+    loop
+        exitwhen CommandsWaiting() != 0
+    endloop
+    set delays = gates * start
+    call Sleep(GetLastData() * start)
+    call PopLastCommand()
+    debug call Trace("set_first_delay done\n")
+endfunction
+
+//--------------------------------------------------------------------------------------------------
+//  wait_for_wave
+//--------------------------------------------------------------------------------------------------
+function wait_for_wave takes nothing returns nothing
+    local integer t = delays
+    debug call TraceI("wait_for_wave %d\n",delays)
+    loop
+        if CommandsWaiting() != 0 then
+            set delays = (delays / gates - decr) * (gates - 1)
+            set gates = gates - 1
+            call PopLastCommand()
+        endif
+
+        call Sleep(1)
+
+        set t = t - 1
+        exitwhen t <= 0
+    endloop
+endfunction
+
+//--------------------------------------------------------------------------------------------------
+//  main
+//--------------------------------------------------------------------------------------------------
+function main takes nothing returns nothing
+    call CampaignAI(BURROW,null)
+
+    debug call Trace("h06xD.ai loaded\n")
+
+    call set_first_delay()
+	call InitAssaultGroup()
+	call CampaignAttackerEx( 1,2,3, FELLHOUND   )
+	call SuicideOnPlayerEx(1,1,1,user)
+
+    call wait_for_wave()
+	call InitAssaultGroup()
+	call CampaignAttackerEx( 1,1,2, INFERNAL    )
+	call SuicideOnPlayerEx(1,1,1,user)
+
+    call wait_for_wave()
+	call InitAssaultGroup()
+	call CampaignAttackerEx( 1,1,1, DOOMGUARD   )
+	call SuicideOnPlayerEx(1,1,1,user)
+
+    loop
+        call wait_for_wave()
+	    call InitAssaultGroup()
+	    call CampaignAttackerEx( 1,2,3, FELLHOUND   )
+	    call CampaignAttackerEx( 1,1,2, INFERNAL    )
+	    call SuicideOnPlayerEx(1,1,1,user)
+
+        call wait_for_wave()
+	    call InitAssaultGroup()
+	    call CampaignAttackerEx( 1,2,3, FELLHOUND   )
+    	call CampaignAttackerEx( 1,1,2, DOOMGUARD   )
+	    call SuicideOnPlayerEx(1,1,1,user)
+    endloop
+endfunction

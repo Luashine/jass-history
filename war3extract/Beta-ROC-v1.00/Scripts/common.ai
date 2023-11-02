@@ -1,0 +1,922 @@
+//============================================================================
+native DebugS               takes string str                            returns nothing
+native DebugFI              takes string str, integer val               returns nothing
+native DebugUnitID          takes string str, integer val               returns nothing
+                                                                        
+native GetAiPlayer          takes nothing                               returns integer
+native GetHeroId            takes nothing                               returns integer
+native GetHeroLevelAI       takes nothing                               returns integer
+                                                                        
+native GetUnitCount         takes integer unitid                        returns integer
+native GetUnitGoldCost      takes integer unitid                        returns integer
+native GetUnitWoodCost      takes integer unitid                        returns integer
+                                                                        
+native GetUpgradeLevel      takes integer id                            returns integer
+native GetUpgradeGoldCost   takes integer id                            returns integer
+native GetUpgradeWoodCost   takes integer id                            returns integer
+native GetNextExpansion     takes nothing                               returns integer
+
+native SetProduce           takes integer qty, integer id, integer town returns boolean
+native SetExpansion         takes unit peon, integer id                 returns boolean
+native SetUpgrade           takes integer id                            returns boolean
+native SetHeroLevels        takes code func                             returns nothing
+native SetNewHeroes         takes boolean state                         returns nothing
+                                                                        
+native SetHeroesFlee        takes boolean state                         returns nothing
+native SetUnitsFlee         takes boolean state                         returns nothing
+native SetGroupsFlee        takes boolean state                         returns nothing
+native SetSlowChopping      takes boolean state                         returns nothing
+                                                                        
+native InitAssault          takes nothing                               returns nothing
+native AddAssault           takes integer qty, integer id               returns boolean
+native GetMinorCreep        takes nothing                               returns unit
+native GetMajorCreep        takes nothing                               returns unit
+native GetEnemyBase         takes nothing                               returns unit
+native GetExpansionFoe      takes nothing                               returns unit
+native GetExpansionX        takes nothing                               returns integer
+native GetExpansionY        takes nothing                               returns integer
+native AttackMoveKill       takes unit target                           returns nothing
+native AttackMoveXY         takes integer x, integer y                  returns nothing
+native AttackEnemy          takes nothing                               returns boolean
+native SuicidePlayer        takes player id                             returns boolean
+native CaptainInCombat      takes nothing                               returns boolean
+                                                                        
+native ClearHarvestAI       takes nothing                               returns nothing
+native HarvestGold          takes integer town, integer peons           returns nothing
+native HarvestWood          takes integer town, integer peons           returns nothing
+native GetExpansionPeon     takes nothing                               returns unit
+                                                                        
+native StopGathering        takes nothing                               returns nothing
+native AddGuardPost         takes integer id, real x, real y            returns nothing
+native FillGuardPosts       takes nothing                               returns nothing
+native ReturnGuardPosts     takes nothing                               returns nothing
+native CreateCaptains       takes nothing                               returns nothing
+native CaptainGoHome        takes nothing                               returns nothing
+native CaptainIsHome        takes nothing                               returns boolean
+native CaptainIsFull        takes nothing                               returns boolean
+native CaptainIsEmpty       takes nothing                               returns boolean
+native CaptainGroupSize     takes nothing                               returns integer
+native CaptainReadiness     takes nothing                               returns integer
+native CaptainReadinessHP   takes nothing                               returns integer
+native CaptainReadinessMa   takes nothing                               returns integer
+native CaptainAtGoal        takes nothing                               returns boolean
+native CaptainHealth        takes nothing                               returns integer
+native CreepsOnMap          takes nothing                               returns boolean
+native SuicideUnit          takes integer count, integer unitid         returns nothing
+native StartThread          takes code func                             returns nothing
+native Sleep                takes real seconds                          returns nothing
+native UnitAlive            takes unit id                               returns boolean
+                                                                        
+native CommandsWaiting      takes nothing                               returns integer
+native GetLastCommand       takes nothing                               returns integer
+native GetLastData          takes nothing                               returns integer
+native PopLastCommand       takes nothing                               returns nothing
+
+//============================================================================
+//  Globals for all AI scripts
+//============================================================================
+globals
+    // human heroes
+    constant integer ARCHMAGE           = 'Hamg'
+    constant integer PALADIN            = 'Hpal'
+    constant integer MTN_KING           = 'Hmkg'
+                                        
+    // human units                      
+    constant integer COPTER             = 'hgyr'
+    constant integer ELEMENTAL          = 'hwat'
+    constant integer FOOTMAN            = 'hfoo'
+    constant integer FOOTMEN            =  FOOTMAN
+    constant integer GRYPHON            = 'hgry'
+    constant integer KNIGHT             = 'hkni'
+    constant integer MORTAR             = 'hmtm'
+    constant integer PEASANT            = 'hpea'
+    constant integer PRIEST             = 'hmpr'
+    constant integer RIFLEMAN           = 'hrif'
+    constant integer RIFLEMEN           =  RIFLEMAN
+    constant integer SERPENT            = 'hegr'
+    constant integer SORCERESS          = 'hsor'
+    constant integer TANK               = 'hstt'
+
+    // human buildings
+    constant integer AVIARY             = 'hgra'
+    constant integer BARRACKS           = 'hbar'
+    constant integer BLACKSMITH         = 'hbla'
+    constant integer CANNON_TOWER       = 'hctw'
+    constant integer CASTLE             = 'hcas'
+    constant integer CHURCH             = 'htws'
+    constant integer GUARD_TOWER        = 'hgtw'
+    constant integer HOUSE              = 'hhou'
+    constant integer HUMAN_ALTAR        = 'halt'
+    constant integer KEEP               = 'hkee'
+    constant integer LUMBER_MILL        = 'hlum'
+    constant integer MAGE_TOWER         = 'htws'
+    constant integer SANCTUM            = 'hars'
+    constant integer TOWN_HALL          = 'htow'
+    constant integer WATCH_TOWER        = 'hwtw'
+    constant integer WORKSHOP           = 'harm'
+
+    // human upgrades
+    constant integer UPG_MELEE          = 'Rhme'
+    constant integer UPG_RANGED         = 'Rhra'
+    constant integer UPG_ARTILLERY      = 'Rhaa'
+    constant integer UPG_ARMOR          = 'Rhar'
+    constant integer UPG_GOLD           = 'Rhmi'
+    constant integer UPG_MASONRY        = 'Rhac'
+    constant integer UPG_SIGHT          = 'Rhss'
+    constant integer UPG_DEFEND         = 'Rhde'
+    constant integer UPG_BREEDING       = 'Rhan'
+    constant integer UPG_PRAYING        = 'Rhpt'
+    constant integer UPG_SORCERY        = 'Rhst'
+    constant integer UPG_LEATHER        = 'Rhla'
+    constant integer UPG_GUN_RANGE      = 'Rhri'
+    constant integer UPG_WOOD           = 'Rhlh'
+    constant integer UPG_SENTINEL	    = 'Rhse'
+    constant integer UPG_SCATTER		= 'Rhsr'
+
+    // orc heroes
+    constant integer BLADE_MASTER       = 'Obla'
+    constant integer FAR_SEER           = 'Ofar'
+    constant integer TAUREN_CHIEF       = 'Otch'
+
+    // blade master
+    constant integer CRITICAL_STRIKE    = 'AOcr'
+    constant integer MIRROR_IMAGE       = 'AOmi'
+
+    // orc units
+    constant integer GUARDIAN           = 'oang'
+    constant integer CATAPULT           = 'ocat'
+    constant integer WITCH_DOCTOR       = 'odoc'
+    constant integer GRUNT              = 'ogru'
+    constant integer HEAD_HUNTER        = 'ohun'
+    constant integer KODO_BEAST         = 'okod'
+    constant integer PEON               = 'opeo'
+    constant integer RAIDER             = 'orai'
+    constant integer SHAMAN             = 'oshm'
+    constant integer TAUREN             = 'otau'
+    constant integer WYVERN             = 'owyv'
+
+    // orc buildings
+    constant integer ORC_ALTAR          = 'oalt'
+    constant integer ORC_BARRACKS       = 'obar'
+    constant integer BESTIARY           = 'obea'
+    constant integer FORGE              = 'ofor'
+    constant integer FORTRESS           = 'ofrt'
+    constant integer GREAT_HALL         = 'ogre'
+    constant integer PIG_FARM           = 'ohut'
+    constant integer ORC_MILL           = 'olum'
+    constant integer LODGE              = 'osld'
+    constant integer STRONGHOLD         = 'ostr'
+    constant integer BURROW             = 'otrb'
+    constant integer TOTEM              = 'otto'
+
+    // orc upgrades
+    constant integer UPG_ORC_MELEE      = 'Rome'	//melee attack	melee
+    constant integer UPG_ORC_RANGED     = 'Rora'	//ranged attack	ranged
+    constant integer UPG_ORC_ARTILLERY  = 'Roaa'	//artillery attack	artillery
+    constant integer UPG_ORC_ARMOR      = 'Roar'	//armor	armor
+    constant integer UPG_ORC_MINING     = 'Romi'	//mining	_
+    constant integer UPG_ORC_BLDGS      = 'Roac'	//architecture	armor
+    constant integer UPG_ORC_SIGHT      = 'Ross'	//structure sight	_
+    constant integer UPG_BERSERK        = 'Robs'	//grunt berserk	_
+    constant integer UPG_WAR_STOMP      = 'Rows'	//tauren warstomp	_
+    constant integer UPG_ENSNARE        = 'Roen'	//raider ensare	_
+    constant integer UPG_WYVERNS        = 'Rowt'	//wyvern taming	_
+    constant integer UPG_VENOM          = 'Rovs'	//wyvern venom spear	_
+    constant integer UPG_ORC_DOCS       = 'Rowd'	//witch doctor training	_
+    constant integer UPG_ORC_SHAMAN     = 'Rost'	//shaman training	_
+    constant integer UPG_ORC_WOOD       = 'Rolh'	//lumber harvesting	_
+    constant integer UPG_NIGHT_VISION   = 'Ronv'	//night vision	_
+    constant integer UPG_SPIKES         = 'Rosp'	//spiked barricade	_
+
+    // undead heroes
+    constant integer DEATH_KNIGHT       = 'Udea'
+    constant integer DREAD_LORD         = 'Udre'
+    constant integer LICH               = 'Ulic'
+
+    // undead units
+    constant integer ABOMINATION        = 'uabo'
+    constant integer ACOLYTE            = 'uaco'
+    constant integer BANSHEE            = 'uban'
+    constant integer PIT_FIEND          = 'ucry'
+    constant integer FROST_WYRM         = 'ufro'
+    constant integer GARGOYLE           = 'ugar'
+    constant integer GHOUL              = 'ugho'
+    constant integer UNDEAD_MINE        = 'ugol'
+    constant integer MEAT_WAGON         = 'umtw'
+    constant integer NECRO              = 'unec'
+    constant integer SKEL_ARCHER        = 'uska'
+    constant integer SKEL_WARRIOR       = 'uske'
+    constant integer SPIDERLING         = 'uspd'
+
+    // undead buildings
+    constant integer UNDEAD_ALTAR       = 'uaod'
+    constant integer BONEYARD           = 'ubon'
+    constant integer GARG_SPIRE         = 'ugsp'
+    constant integer NECROPOLIS_1       = 'unpl'    // normal
+    constant integer NECROPOLIS_2       = 'unp1'    // upgraded once
+    constant integer NECROPOLIS_3       = 'unp2'    // full upgrade
+    constant integer SAC_PIT            = 'usap'
+    constant integer CRYPT              = 'usep'
+    constant integer SLAUGHTERHOUSE     = 'uslh'
+    constant integer DAMNED_TEMPLE      = 'utod'
+    constant integer ZIGGURAT_1         = 'uzig'    // normal
+    constant integer ZIGGURAT_2         = 'uzg1'    // upgraded
+
+    // undead upgrades
+
+
+    constant integer EASY               = 1
+    constant integer NORMAL             = 2
+    constant integer HARD               = 3
+
+    player  ai_player
+    integer sleep_seconds
+    integer total_gold
+    integer total_wood
+    integer hero_id
+    integer racial_farm
+    integer difficulty
+
+    integer array harass_qty
+    integer array harass_max
+    integer array harass_units
+    integer harass_length
+
+    constant integer BUILD_UNIT     = 1
+    constant integer BUILD_UPGRADE  = 2
+    constant integer BUILD_EXPAND   = 3
+
+    integer array build_qty
+    integer array build_type
+    integer array build_item
+    integer array build_town
+    integer build_length
+
+    integer campaign_gold_peons = 5
+    integer campaign_wood_peons = 3
+    boolean harvest_town1 = true
+    boolean harvest_town2 = true
+    boolean harvest_town3 = true
+
+    boolean expansion_cleared
+
+    boolean debug_fast_attacks = false
+endglobals
+
+//============================================================================
+function InitAI takes nothing returns nothing
+    set ai_player = Player(GetAiPlayer())
+    set sleep_seconds = 0
+    set expansion_cleared = false
+    call StopGathering()
+endfunction
+
+function StandardAI takes code heroes, code peons, code attacks returns nothing
+    call InitAI()
+    call CreateCaptains()
+    call SetHeroLevels(heroes)
+    call StartThread(peons)
+    call StartThread(attacks)
+endfunction
+
+//============================================================================
+//  Utility Functions
+//============================================================================
+function WaitForSignal takes nothing returns nothing
+    loop
+        exitwhen CommandsWaiting() != 0
+        call Sleep(5)
+    endloop
+    call PopLastCommand()
+endfunction
+
+function GetGold takes nothing returns integer
+    return GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_GOLD)
+endfunction
+
+function GetWood takes nothing returns integer
+    return GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_LUMBER)
+endfunction
+
+function InitBuildArray takes nothing returns nothing
+    set build_length = 0
+endfunction
+
+function InitAssaultGroup takes nothing returns nothing
+    set harass_length = 0
+endfunction
+
+function StartTownBuilder takes code func returns nothing
+    call StartThread(func)
+endfunction
+
+function SetBuildAll takes integer t, integer qty, integer unitid, integer town returns nothing
+    set build_qty[build_length] = qty
+    set build_type[build_length] = t
+    set build_item[build_length] = unitid
+    set build_town[build_length] = town
+    set build_length = build_length + 1
+endfunction
+
+function SetBuildUnit takes integer qty, integer unitid returns nothing
+    call SetBuildAll(BUILD_UNIT,qty,unitid,-1)
+endfunction
+
+function SecondaryTown takes integer town, integer qty, integer unitid returns nothing
+    call SetBuildAll(BUILD_UNIT,qty,unitid,town)
+endfunction
+
+function SetBuildUpgr takes integer qty, integer unitid returns nothing
+    call SetBuildAll(BUILD_UPGRADE,qty,unitid,-1)
+endfunction
+
+function SetBuildExpa takes integer qty, integer unitid returns nothing
+    call SetBuildAll(BUILD_EXPAND,qty,unitid,-1)
+endfunction
+
+function StartUpgrade takes integer level, integer upgid returns boolean
+    local integer gold_cost
+    local integer wood_cost
+
+    if GetUpgradeLevel(upgid) >= level then
+        return true
+    endif
+
+    set gold_cost = GetUpgradeGoldCost(upgid)
+    if total_gold < gold_cost then
+        return false
+    endif
+
+    set wood_cost = GetUpgradeWoodCost(upgid)
+    if total_wood < wood_cost then
+        return false
+    endif
+
+    return SetUpgrade(upgid)
+endfunction
+
+function StartUnit takes integer ask_qty, integer unitid, integer town returns boolean
+    local integer have_qty
+    local integer need_qty
+    local integer afford_gold
+    local integer afford_wood
+    local integer afford_qty
+    local integer gold_cost
+    local integer wood_cost
+
+    //------------------------------------------------------------------------
+    // if we have all we're asking for then make nothing
+    //
+    if unitid == TOWN_HALL then
+        set have_qty = GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+
+    elseif unitid == KEEP then
+        set have_qty = GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+
+    elseif unitid == GREAT_HALL then
+        set have_qty = GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+
+    elseif unitid == STRONGHOLD then
+        set have_qty = GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+
+    elseif unitid == ZIGGURAT_1 then
+        set have_qty = GetUnitCount(ZIGGURAT_1) + GetUnitCount(ZIGGURAT_2)
+
+    elseif unitid == NECROPOLIS_1 then
+        set have_qty = GetUnitCount(NECROPOLIS_1) + GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
+
+    elseif unitid == NECROPOLIS_2 then
+        set have_qty = GetUnitCount(NECROPOLIS_2) + GetUnitCount(NECROPOLIS_3)
+
+    else
+        set have_qty = GetUnitCount(unitid)
+    endif
+
+    if have_qty >= ask_qty then
+        return true
+    endif
+    set need_qty = ask_qty - have_qty
+
+    //------------------------------------------------------------------------
+    // limit the qty we're requesting to the amount of resources available
+    //
+    set gold_cost = GetUnitGoldCost(unitid)
+    set wood_cost = GetUnitWoodCost(unitid)
+
+    if gold_cost == 0 then
+        set afford_gold = need_qty
+    else
+        set afford_gold = total_gold / gold_cost
+    endif
+    if afford_gold < need_qty then
+        set afford_qty = afford_gold
+    else
+        set afford_qty = need_qty
+    endif
+
+    if wood_cost == 0 then
+        set afford_wood = need_qty
+    else
+        set afford_wood = total_wood / wood_cost
+    endif
+    if afford_wood < afford_qty then
+        set afford_qty = afford_wood
+    endif
+
+    // if we're waiting on gold/wood; pause build orders
+    if afford_qty < 1 then
+        return false
+    endif
+
+    //------------------------------------------------------------------------
+    // whether we make right now what we're requesting or not, assume we will
+    // and deduct the cost of the units from our fake gold total right away
+    //
+    set total_gold   = total_gold   - gold_cost  * need_qty
+    set total_wood   = total_wood   - wood_cost  * need_qty
+
+    if total_gold < 0 then
+        set total_gold = 0
+    endif
+    if total_wood < 0 then
+        set total_wood = 0
+    endif
+
+    //------------------------------------------------------------------------
+    // give the AI a chance to make the units (it may not be able to right now
+    // but that doesn't stop us from trying other units after this as long
+    // as we have enough money to make this AND the needed, unbuilt ones)
+    //
+    return SetProduce(afford_qty,unitid,town)
+endfunction
+
+function StartExpansion takes integer qty, integer hall returns boolean
+    local integer count
+    local integer town
+    local unit    peon
+    local integer gold_cost
+
+    if hall == TOWN_HALL then
+        set count = GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+
+    elseif hall == GREAT_HALL then
+        set count = GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+
+    else
+        set count = 0 //xxx do other races here
+    endif
+
+    if count >= qty then
+        return true
+    endif
+
+    set gold_cost = GetUnitGoldCost(hall)
+    if gold_cost > total_gold then
+        return false
+    endif
+    set total_gold = total_gold - gold_cost
+
+    set town = GetNextExpansion()
+    if town == -1 then
+        return true
+    endif
+
+    set peon = GetExpansionPeon()
+    if peon != null then
+        return SetExpansion(peon,hall)
+    endif
+
+    return true
+endfunction
+
+function OneBuildLoop takes nothing returns nothing
+    local integer index = 0
+    local integer qty
+    local integer id
+    local integer tp
+
+    set total_gold   = GetGold()
+    set total_wood   = GetWood()
+
+    loop
+        exitwhen index == build_length
+
+        set qty  = build_qty[index]
+        set id   = build_item[index]
+        set tp   = build_type[index]
+
+        //--------------------------------------------------------------------
+        if tp == BUILD_UNIT then
+            if not StartUnit(qty,id,build_town[index]) then
+                return
+            endif
+
+        //--------------------------------------------------------------------
+        elseif tp == BUILD_UPGRADE then
+            if not StartUpgrade(qty,id) then
+                return
+            endif
+
+        //--------------------------------------------------------------------
+        else // tp == BUILD_EXPAND
+            if not StartExpansion(qty,id) then
+                return
+            endif
+        endif
+
+        set index = index + 1
+    endloop
+endfunction
+
+function BuildLoop takes nothing returns nothing
+    loop
+        call OneBuildLoop()
+        call Sleep(2)
+    endloop
+endfunction
+
+function StartBuildLoop takes nothing returns nothing
+    call StartThread(function BuildLoop)
+endfunction
+
+function BuildTown takes integer qty, integer unitid returns boolean
+    if GetUnitCount(unitid) >= qty then
+        return true
+    endif
+    return SetProduce(qty,unitid,-1)
+endfunction
+
+function SetInitialWave takes integer seconds returns nothing
+    set sleep_seconds = seconds
+endfunction
+
+function AddSleepSeconds takes integer seconds returns nothing
+    set sleep_seconds = sleep_seconds + seconds
+    if sleep_seconds < 0 then
+        set sleep_seconds = 1
+    endif
+endfunction
+
+function SuicideSleep takes integer seconds returns nothing
+    set sleep_seconds = sleep_seconds - seconds
+    call Sleep(seconds)
+endfunction
+
+function SleepForever takes nothing returns nothing
+    loop
+        call Sleep(100)
+    endloop
+endfunction
+
+function SetAssaultGroup takes integer qty, integer max, integer unitid returns nothing
+    if qty == 0 and GetUnitCount(unitid) == 0 then
+        return
+    endif
+    set harass_qty[harass_length] = qty
+    set harass_max[harass_length] = max
+    set harass_units[harass_length] = unitid
+    set harass_length = harass_length + 1
+endfunction
+
+function CampaignAttacker takes integer level, integer qty, integer unitid returns nothing
+    if difficulty >= level then 
+        call SetAssaultGroup(qty,qty,unitid)
+    endif
+endfunction
+
+function FormGroup takes integer seconds returns nothing
+    local integer index
+    local integer count
+    local integer unitid
+    local integer desire
+
+    loop
+        call SuicideSleep(seconds)
+
+        call InitAssault()
+
+        set index = 0
+        loop
+            exitwhen index == harass_length
+
+            set unitid = harass_units[index]
+            set desire = harass_max[index]
+            set count = GetUnitCount(unitid)
+
+            if count > desire then
+                call AddAssault(desire,unitid)
+            else
+                set desire = harass_qty[index]
+
+                if count < desire then
+                    call AddAssault(desire,unitid)
+                else
+                    call AddAssault(count,unitid)
+                endif
+            endif
+
+            set index = index + 1
+        endloop
+
+        exitwhen CaptainIsFull() and CaptainReadiness() >= 50
+    endloop
+endfunction
+
+function DebugSleepSecond takes nothing returns nothing
+    if debug_fast_attacks then
+        set sleep_seconds = 10
+    endif
+endfunction
+
+function SuicideOnPlayer takes integer seconds, player p returns nothing
+    call AddSleepSeconds(seconds)
+    debug call DebugSleepSecond()
+    loop
+        loop
+            call FormGroup(5)
+            exitwhen sleep_seconds <= 0
+        endloop
+        exitwhen SuicidePlayer(p)
+        call SuicideSleep(3)
+    endloop
+    loop
+        exitwhen CaptainIsEmpty()
+        debug call DebugFI("%d Jass-SuicideOnPlayer waiting for empty captain\n",GetAiPlayer())
+        call SuicideSleep(10)
+    endloop
+endfunction
+
+function ForeverSuicideOnPlayer takes integer seconds, player p returns nothing
+    loop
+        call SuicideOnPlayer(seconds,p)
+    endloop
+endfunction
+
+function SleepInCombat takes nothing returns nothing
+    local integer count = 0
+    loop
+        loop
+            exitwhen not CaptainInCombat()  // goal is cleared
+            call Sleep(1)
+        endloop
+
+        set count = count + 1
+        exitwhen count >= 8
+    endloop
+endfunction
+
+function SleepUntilTargetDead takes unit target returns nothing
+    loop
+        exitwhen not UnitAlive(target)  // target killed
+        exitwhen CaptainGroupSize() < 2
+        exitwhen CaptainReadinessHP() <= 40
+        call Sleep(3)
+    endloop
+endfunction
+
+function SleepUntilAtGoal takes nothing returns nothing
+    loop
+        exitwhen CaptainAtGoal()        // reached goal
+        exitwhen CaptainIsHome()        // failed to path and returned home
+        exitwhen CaptainIsEmpty()       // all units died
+        call Sleep(3)
+    endloop
+endfunction
+
+function AttackMoveKillA takes unit target returns nothing
+    if target == null then
+        call Sleep(3)
+        return
+    endif
+
+    call AttackMoveKill(target)
+    call SleepUntilTargetDead(target)
+    call SleepInCombat()
+endfunction
+
+function AttackMoveXYA takes integer x, integer y returns nothing
+    call AttackMoveXY(x,y)
+    call SleepUntilAtGoal()
+    call SleepInCombat()
+endfunction
+
+function MinorCreepAttack takes nothing returns nothing
+    call FormGroup(3)
+    call AttackMoveKillA(GetMinorCreep())
+endfunction
+
+function MajorCreepAttack takes nothing returns nothing
+    local unit creep
+    call FormGroup(3)
+    set creep = GetMajorCreep()
+    if creep == null then
+        call AttackMoveKillA(GetEnemyBase())
+    else
+        call AttackMoveKillA(creep)
+    endif
+endfunction
+
+function AnyPlayerAttack takes nothing returns nothing
+    call FormGroup(3)
+    call AttackMoveKillA(GetEnemyBase())
+endfunction
+
+function ExpansionAttack takes nothing returns nothing
+    local unit creep = GetExpansionFoe()
+    local integer x
+
+    call FormGroup(3)
+    if creep == null then
+        set x = GetExpansionX()
+        if x != -1 then
+            call AttackMoveXYA(x,GetExpansionY())
+            set expansion_cleared = true
+        endif
+    else
+        call AttackMoveKillA(creep)
+        set expansion_cleared = true
+    endif
+endfunction
+
+function TownCount takes integer base returns integer
+    if base == TOWN_HALL then
+        return GetUnitCount(TOWN_HALL) + GetUnitCount(KEEP) + GetUnitCount(CASTLE)
+
+    elseif base == GREAT_HALL then
+        return GetUnitCount(GREAT_HALL) + GetUnitCount(STRONGHOLD) + GetUnitCount(FORTRESS)
+    else
+        return 0
+    endif
+endfunction
+
+function BuildFarms takes nothing returns nothing
+    local integer food_used = GetPlayerState(ai_player,PLAYER_STATE_RESOURCE_FOOD_USED)
+    local integer farms = GetUnitCount(racial_farm)
+
+    set total_gold = GetGold()
+    set total_wood = GetWood()
+
+    if (food_used+9) > 10*(farms+1) then
+        call StartUnit(farms+1,racial_farm,-1)
+    endif
+endfunction
+
+function BuildAttackers takes nothing returns nothing
+    local integer index = 0
+    local integer unitid
+    local integer desire
+    local integer count
+
+    loop
+        exitwhen index == harass_length
+
+        set unitid = harass_units[index]
+        set desire = harass_qty[index]
+        set count = GetUnitCount(unitid)
+
+        if count != desire then
+            if not StartUnit(desire,unitid,-1) then
+                return
+            endif
+        endif
+
+        set index = index + 1
+    endloop
+endfunction
+
+function CampaignBasics takes nothing returns nothing
+	call Sleep(1)
+    loop
+        call ClearHarvestAI()
+
+        call HarvestGold(0,campaign_gold_peons)
+        call HarvestWood(0,campaign_wood_peons)
+
+        if harvest_town1 then
+            call HarvestGold(1,campaign_gold_peons)
+            call HarvestWood(1,campaign_wood_peons)
+        endif
+
+        if harvest_town2 then
+            call HarvestGold(2,campaign_gold_peons)
+            call HarvestWood(2,campaign_wood_peons)
+        endif
+
+        if harvest_town3 then
+            call HarvestGold(3,campaign_gold_peons)
+            call HarvestWood(3,campaign_wood_peons)
+        endif
+
+        call FillGuardPosts()
+        call ReturnGuardPosts()
+
+        call BuildFarms()
+        call BuildAttackers()
+
+        call Sleep(5)
+    endloop
+endfunction
+
+function CampaignAI takes integer farms, code heroes returns nothing
+    set difficulty = NORMAL //xxx get from code when there's a way to get it
+
+    call InitAI()
+    call InitBuildArray()
+    call InitAssaultGroup()
+    call CreateCaptains()
+
+    call SetNewHeroes(false)
+    if heroes != null then
+        call SetHeroLevels(heroes)
+    endif
+
+    call SetHeroesFlee(false)
+    call SetUnitsFlee(false)
+    call SetGroupsFlee(false)
+    call SetSlowChopping(true)
+
+    set racial_farm = farms
+    call StartThread(function CampaignBasics)
+	call Sleep(1)
+    call StartBuildLoop()
+endfunction
+
+//============================================================================
+//  PickMeleeHero 
+//============================================================================
+function PickMeleeHero takes race raceid returns integer
+    local integer hero_roll = GetRandomInt(1,3)
+
+    //------------------------------------------------------------------------
+    if raceid == RACE_HUMAN then
+    //------------------------------------------------------------------------
+        if hero_roll == 1 then
+            set hero_id = MTN_KING
+        elseif hero_roll == 2 then
+            set hero_id = ARCHMAGE
+        else
+            set hero_id = PALADIN
+        endif
+
+    //------------------------------------------------------------------------
+    elseif raceid == RACE_ORC then
+    //------------------------------------------------------------------------
+        if hero_roll == 1 then
+            set hero_id = BLADE_MASTER
+        elseif hero_roll == 2 then
+            set hero_id = FAR_SEER
+        else
+            set hero_id = TAUREN_CHIEF
+        endif
+
+    //------------------------------------------------------------------------
+    elseif raceid == RACE_NIGHTELF then
+    //------------------------------------------------------------------------
+
+//xxx incomplete
+
+        if hero_roll == 1 then
+            set hero_id = BLADE_MASTER
+        elseif hero_roll == 2 then
+            set hero_id = FAR_SEER
+        else
+            set hero_id = TAUREN_CHIEF
+        endif
+
+    //------------------------------------------------------------------------
+    elseif raceid == RACE_UNDEAD then
+    //------------------------------------------------------------------------
+
+//xxx incomplete
+
+        if hero_roll == 1 then
+            set hero_id = BLADE_MASTER
+        elseif hero_roll == 2 then
+            set hero_id = FAR_SEER
+        else
+            set hero_id = TAUREN_CHIEF
+        endif
+    else
+        set hero_id = 0
+    endif
+
+    return hero_id
+endfunction
+
+function TestCheats takes nothing returns nothing
+
+    call Cheat("warnings")
+    call Cheat("viewres")
+    call Cheat("alliance 1 0 vision on")
+    call Cheat("alliance 2 0 vision on")
+    call Cheat("alliance 3 0 vision on")
+    call Cheat("av")
+    call Cheat("dg")
+
+//    call Cheat("superspeed")
+//    call Cheat("gold 500")
+//    call Cheat("lumber 500")
+//    call Cheat("todrate .1")
+//    call Cheat("dawn")
+//    call Cheat("fb")
+endfunction
