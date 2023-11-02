@@ -577,9 +577,9 @@ globals
     widget             bj_lastDyingWidget          = null
 
     // Random distribution vars
-	integer            bj_randDistCount            = 0
-	integer array      bj_randDistID
-	integer array      bj_randDistChance
+    integer            bj_randDistCount            = 0
+    integer array      bj_randDistID
+    integer array      bj_randDistChance
 
     // Last X'd vars
     unit               bj_lastCreatedUnit          = null
@@ -608,6 +608,8 @@ globals
     unit               bj_lastReplacedUnit         = null
     texttag            bj_lastCreatedTextTag       = null
     lightning          bj_lastCreatedLightning     = null
+    image              bj_lastCreatedImage         = null
+    ubersplat          bj_lastCreatedUbersplat     = null
 
     // Filter function vars
     boolexpr           filterIssueHauntOrderAtLocBJ      = null
@@ -1911,7 +1913,7 @@ endfunction
 
 //===========================================================================
 function AddLightningLoc takes string codeName, location where1, location where2 returns lightning
-    set bj_lastCreatedLightning = AddLightning(codeName, true, GetLocationX(where1), GetLocationY(where1), GetLocationX(where2), GetLocationY(where2))
+    set bj_lastCreatedLightning = AddLightningEx(codeName, true, GetLocationX(where1), GetLocationY(where1), GetLocationZ(where1), GetLocationX(where2), GetLocationY(where2), GetLocationZ(where2))
     return bj_lastCreatedLightning
 endfunction
 
@@ -1922,7 +1924,7 @@ endfunction
 
 //===========================================================================
 function MoveLightningLoc takes lightning whichBolt, location where1, location where2 returns boolean
-    return MoveLightning(whichBolt, true, GetLocationX(where1), GetLocationY(where1), GetLocationX(where2), GetLocationY(where2))
+    return MoveLightningEx(whichBolt, true, GetLocationX(where1), GetLocationY(where1), GetLocationZ(where1), GetLocationX(where2), GetLocationY(where2), GetLocationZ(where2))
 endfunction
 
 //===========================================================================
@@ -1956,19 +1958,44 @@ function GetLastCreatedLightningBJ takes nothing returns lightning
 endfunction
 
 //===========================================================================
-function GetAbilityEffectBJ takes string abilityString, effecttype t, integer index returns string
-    return GetAbilityEffect(abilityString, t, index)
+function GetAbilityEffectBJ takes integer abilcode, effecttype t, integer index returns string
+    return GetAbilityEffectById(abilcode, t, index)
 endfunction
 
 //===========================================================================
-function GetAbilitySoundBJ takes string abilityString, soundtype t returns string
-    return GetAbilitySound(abilityString, t)
+function GetAbilitySoundBJ takes integer abilcode, soundtype t returns string
+    return GetAbilitySoundById(abilcode, t)
 endfunction
 
 
 //===========================================================================
 function GetTerrainCliffLevelBJ takes location where returns integer
     return GetTerrainCliffLevel(GetLocationX(where), GetLocationY(where))
+endfunction
+
+//===========================================================================
+function GetTerrainTypeBJ takes location where returns integer
+    return GetTerrainType(GetLocationX(where), GetLocationY(where))
+endfunction
+
+//===========================================================================
+function GetTerrainVarianceBJ takes location where returns integer
+    return GetTerrainVariance(GetLocationX(where), GetLocationY(where))
+endfunction
+
+//===========================================================================
+function SetTerrainTypeBJ takes location where, integer terrainType, integer variation, integer area, integer shape returns nothing
+    call SetTerrainType(GetLocationX(where), GetLocationY(where), terrainType, variation, area, shape)
+endfunction
+
+//===========================================================================
+function IsTerrainPathableBJ takes location where, pathingtype t returns boolean
+    return IsTerrainPathable(GetLocationX(where), GetLocationY(where), t)
+endfunction
+
+//===========================================================================
+function SetTerrainPathableBJ takes location where, pathingtype t, boolean flag returns nothing
+    call SetTerrainPathable(GetLocationX(where), GetLocationY(where), t, flag)
 endfunction
 
 //===========================================================================
@@ -2069,6 +2096,48 @@ function AddUnitAnimationPropertiesBJ takes boolean add, string animProperties, 
     call AddUnitAnimationProperties(whichUnit, animProperties, add)
 endfunction
 
+
+//============================================================================
+function CreateImageBJ takes string file, real size, location where, real zOffset, integer imageType returns image
+    set bj_lastCreatedImage = CreateImage(file, size, size, size, GetLocationX(where), GetLocationY(where), zOffset, 0, 0, 0, imageType)
+    return bj_lastCreatedImage
+endfunction
+
+//============================================================================
+function ShowImageBJ takes boolean flag, image whichImage returns nothing
+    call ShowImage(whichImage, flag)
+endfunction
+
+//============================================================================
+function SetImagePositionBJ takes image whichImage, location where, real zOffset returns nothing
+    call SetImagePosition(whichImage, GetLocationX(where), GetLocationY(where), zOffset)
+endfunction
+
+//============================================================================
+function SetImageColorBJ takes image whichImage, real red, real green, real blue, real alpha returns nothing
+    call SetImageColor(whichImage, PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-alpha))
+endfunction
+
+//============================================================================
+function GetLastCreatedImage takes nothing returns image
+    return bj_lastCreatedImage
+endfunction
+
+//============================================================================
+function CreateUbersplatBJ takes location where, string name, real red, real green, real blue, real alpha, boolean forcePaused, boolean noBirthTime returns ubersplat
+    set bj_lastCreatedUbersplat = CreateUbersplat(GetLocationX(where), GetLocationY(where), name, PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-alpha), forcePaused, noBirthTime)
+    return bj_lastCreatedUbersplat
+endfunction
+
+//============================================================================
+function ShowUbersplatBJ takes boolean flag, ubersplat whichSplat returns nothing
+    call ShowUbersplat(whichSplat, flag)
+endfunction
+
+//============================================================================
+function GetLastCreatedUbersplat takes nothing returns ubersplat
+    return bj_lastCreatedUbersplat
+endfunction
 
 
 //***************************************************************************
@@ -5995,12 +6064,61 @@ function SetTextTagColorBJ takes texttag tt, real red, real green, real blue, re
 endfunction
 
 //===========================================================================
-function CreateTextTagLocBJ takes string s, location loc, real zOffset, real size, real red, real green, real blue, real transparency returns texttag
+function SetTextTagVelocityBJ takes texttag tt, real speed, real angle returns nothing
+    local real vel = TextTagSpeed2Velocity(speed)
+    local real xvel = vel * Cos(angle * bj_DEGTORAD)
+    local real yvel = vel * Sin(angle * bj_DEGTORAD)
+
+    call SetTextTagVelocity(tt, xvel, yvel)
+endfunction
+
+//===========================================================================
+function SetTextTagTextBJ takes texttag tt, string s, real size returns nothing
     local real textHeight = TextTagSize2Height(size)
 
+    call SetTextTagText(tt, s, textHeight)
+endfunction
+
+//===========================================================================
+function SetTextTagPosBJ takes texttag tt, location loc, real zOffset returns nothing
+    call SetTextTagPos(tt, GetLocationX(loc), GetLocationY(loc), zOffset)
+endfunction
+
+//===========================================================================
+function SetTextTagPosUnitBJ takes texttag tt, unit whichUnit, real zOffset returns nothing
+    call SetTextTagPosUnit(tt, whichUnit, zOffset)
+endfunction
+
+//===========================================================================
+function SetTextTagSuspendedBJ takes texttag tt, boolean flag returns nothing
+    call SetTextTagSuspended(tt, flag)
+endfunction
+
+//===========================================================================
+function SetTextTagPermanentBJ takes texttag tt, boolean flag returns nothing
+    call SetTextTagPermanent(tt, flag)
+endfunction
+
+//===========================================================================
+function SetTextTagAgeBJ takes texttag tt, real age returns nothing
+    call SetTextTagAge(tt, age)
+endfunction
+
+//===========================================================================
+function SetTextTagLifespanBJ takes texttag tt, real lifespan returns nothing
+    call SetTextTagLifespan(tt, lifespan)
+endfunction
+
+//===========================================================================
+function SetTextTagFadepointBJ takes texttag tt, real fadepoint returns nothing
+    call SetTextTagFadepoint(tt, fadepoint)
+endfunction
+
+//===========================================================================
+function CreateTextTagLocBJ takes string s, location loc, real zOffset, real size, real red, real green, real blue, real transparency returns texttag
     set bj_lastCreatedTextTag = CreateTextTag()
-    call SetTextTagText(bj_lastCreatedTextTag, s, textHeight)
-    call SetTextTagPos(bj_lastCreatedTextTag, GetLocationX(loc), GetLocationY(loc), zOffset)
+    call SetTextTagTextBJ(bj_lastCreatedTextTag, s, size)
+    call SetTextTagPosBJ(bj_lastCreatedTextTag, loc, zOffset)
     call SetTextTagColorBJ(bj_lastCreatedTextTag, red, green, blue, transparency)
 
     return bj_lastCreatedTextTag
@@ -6008,11 +6126,9 @@ endfunction
 
 //===========================================================================
 function CreateTextTagUnitBJ takes string s, unit whichUnit, real zOffset, real size, real red, real green, real blue, real transparency returns texttag
-    local real textHeight = TextTagSize2Height(size)
-
     set bj_lastCreatedTextTag = CreateTextTag()
-    call SetTextTagText(bj_lastCreatedTextTag, s, textHeight)
-    call SetTextTagPosUnit(bj_lastCreatedTextTag, whichUnit, zOffset)
+    call SetTextTagTextBJ(bj_lastCreatedTextTag, s, size)
+    call SetTextTagPosUnitBJ(bj_lastCreatedTextTag, whichUnit, zOffset)
     call SetTextTagColorBJ(bj_lastCreatedTextTag, red, green, blue, transparency)
 
     return bj_lastCreatedTextTag
@@ -6021,15 +6137,6 @@ endfunction
 //===========================================================================
 function DestroyTextTagBJ takes texttag tt returns nothing
     call DestroyTextTag(tt)
-endfunction
-
-//===========================================================================
-function SetTextTagVelocityBJ takes texttag tt, real speed, real angle returns nothing
-    local real vel = TextTagSpeed2Velocity(speed)
-    local real xvel = vel * Cos(angle * bj_DEGTORAD)
-    local real yvel = vel * Sin(angle * bj_DEGTORAD)
-
-    call SetTextTagVelocity(tt, xvel, yvel)
 endfunction
 
 //===========================================================================
@@ -7560,7 +7667,7 @@ endfunction
 //===========================================================================
 function MeleeRandomHeroLoc takes player p, integer id1, integer id2, integer id3, integer id4, location loc returns unit
     local unit    hero = null
-	local integer roll
+    local integer roll
     local integer pick
     local version v
 
@@ -8216,7 +8323,7 @@ endfunction
 function MeleeDoDrawEnum takes nothing returns nothing
     local player thePlayer = GetEnumPlayer()
 
-	call CachePlayerHeroData(thePlayer)
+    call CachePlayerHeroData(thePlayer)
     call RemovePlayerPreserveUnitsBJ(thePlayer, PLAYER_GAME_RESULT_TIE, false)
 endfunction
 
@@ -8229,7 +8336,7 @@ function MeleeDoVictoryEnum takes nothing returns nothing
 
     if (not bj_meleeVictoried[playerIndex]) then
         set bj_meleeVictoried[playerIndex] = true
-		call CachePlayerHeroData(thePlayer)
+        call CachePlayerHeroData(thePlayer)
         call RemovePlayerPreserveUnitsBJ(thePlayer, PLAYER_GAME_RESULT_VICTORY, false)
     endif
 endfunction
@@ -8248,8 +8355,8 @@ endfunction
 function MeleeDoDefeatEnum takes nothing returns nothing
     local player thePlayer = GetEnumPlayer()
 
-	// needs to happen before ownership change
-	call CachePlayerHeroData(thePlayer)
+    // needs to happen before ownership change
+    call CachePlayerHeroData(thePlayer)
     call MakeUnitsPassiveForTeam(thePlayer)
     call MeleeDoDefeat(thePlayer)
 endfunction
@@ -8663,7 +8770,7 @@ endfunction
 //===========================================================================
 function MeleeTriggerActionPlayerDefeated takes nothing returns nothing
     local player thePlayer = GetTriggerPlayer()
-	call CachePlayerHeroData(thePlayer)
+    call CachePlayerHeroData(thePlayer)
 
     if (MeleeGetAllyCount(thePlayer) > 0) then
         // If at least one ally is still alive and kicking, share units with
@@ -8693,7 +8800,7 @@ function MeleeTriggerActionPlayerLeft takes nothing returns nothing
         return
     endif
 
-	call CachePlayerHeroData(thePlayer)
+    call CachePlayerHeroData(thePlayer)
 
     // This is the same as defeat except the player generates the message 
     // "player left the game" as opposed to "player was defeated".
@@ -9518,49 +9625,49 @@ endfunction
 //===========================================================================
 function RandomDistChoose takes nothing returns integer
     local integer sum = 0
-	local integer chance = 0
-	local integer index
-	local integer foundID = -1
-	local boolean done
+    local integer chance = 0
+    local integer index
+    local integer foundID = -1
+    local boolean done
 
-	// No items?
-	if (bj_randDistCount == 0) then
+    // No items?
+    if (bj_randDistCount == 0) then
         return -1
     endif
 
-	// Find sum of all chances
-	set index = 0
-	loop
+    // Find sum of all chances
+    set index = 0
+    loop
         set sum = sum + bj_randDistChance[index]
 
-		set index = index + 1
+        set index = index + 1
         exitwhen index == bj_randDistCount
     endloop
 
-	// Choose random number within the total range
-	set chance = GetRandomInt(1, sum)
+    // Choose random number within the total range
+    set chance = GetRandomInt(1, sum)
 
-	// Find ID which corresponds to this chance
-	set index = 0
-	set sum = 0
-	set done = false
-	loop
+    // Find ID which corresponds to this chance
+    set index = 0
+    set sum = 0
+    set done = false
+    loop
         set sum = sum + bj_randDistChance[index]
 
-		if (chance <= sum) then
+        if (chance <= sum) then
             set foundID = bj_randDistID[index]
-			set done = true
-		endif
-
-		set index = index + 1
-		if (index == bj_randDistCount) then
             set done = true
-		endif
+        endif
+
+        set index = index + 1
+        if (index == bj_randDistCount) then
+            set done = true
+        endif
 
         exitwhen done == true
     endloop
 
-	return foundID
+    return foundID
 endfunction
 
 
@@ -9579,21 +9686,21 @@ endfunction
 
 function UnitDropItem takes unit inUnit, integer inItemID returns item
     local real x
-	local real y
-	local real radius = 32
-	local real unitX
-	local real unitY
+    local real y
+    local real radius = 32
+    local real unitX
+    local real unitY
     local item droppedItem
 
-	if (inItemID == -1) then
+    if (inItemID == -1) then
         return null
     endif
 
     set unitX = GetUnitX(inUnit)
-	set unitY = GetUnitY(inUnit)
+    set unitY = GetUnitY(inUnit)
 
-	set x = GetRandomReal(unitX - radius, unitX + radius)
-	set y = GetRandomReal(unitY - radius, unitY + radius)
+    set x = GetRandomReal(unitX - radius, unitX + radius)
+    set y = GetRandomReal(unitY - radius, unitY + radius)
 
     set droppedItem = CreateItem(inItemID, x, y)
 
@@ -9606,20 +9713,20 @@ endfunction
 //===========================================================================
 function WidgetDropItem takes widget inWidget, integer inItemID returns item
     local real x
-	local real y
-	local real radius = 32
-	local real widgetX
-	local real widgetY
+    local real y
+    local real radius = 32
+    local real widgetX
+    local real widgetY
 
-	if (inItemID == -1) then
+    if (inItemID == -1) then
         return null
     endif
 
     set widgetX = GetWidgetX(inWidget)
-	set widgetY = GetWidgetY(inWidget)
+    set widgetY = GetWidgetY(inWidget)
 
-	set x = GetRandomReal(widgetX - radius, widgetX + radius)
-	set y = GetRandomReal(widgetY - radius, widgetY + radius)
+    set x = GetRandomReal(widgetX - radius, widgetX + radius)
+    set y = GetRandomReal(widgetY - radius, widgetY + radius)
 
     return CreateItem(inItemID, x, y)
 endfunction
