@@ -9,6 +9,7 @@ globals
     constant string   bj_DEBUG_CHAT_GIMME         = "gimme"
     constant string   bj_DEBUG_CHAT_DEMO          = "demo"
     constant string   bj_DEBUG_CHAT_TELEPORT      = "teleport"
+    constant string   bj_DEBUG_CHAT_TELEPORT2     = "ttt"
     constant string   bj_DEBUG_CHAT_UNITINFO      = "unitinfo"
     constant string   bj_DEBUG_CHAT_UNITINFO2     = "ui"
     constant string   bj_DEBUG_CHAT_CAMINFO       = "caminfo"
@@ -20,11 +21,14 @@ globals
     constant string   bj_DEBUG_CHAT_CAMROLL       = "camroll"
     constant string   bj_DEBUG_CHAT_CAMROT        = "camrot"
     constant string   bj_DEBUG_CHAT_CAMRESET      = "camreset"
-    constant string   bj_DEBUG_CHAT_REMOVEUNIT    = "ru"
+    constant string   bj_DEBUG_CHAT_CLONE         = "clone"
+    constant string   bj_DEBUG_CHAT_DISPEL        = "dispel"
     constant string   bj_DEBUG_CHAT_GOTOX         = "gotox"
     constant string   bj_DEBUG_CHAT_GOTOY         = "gotoy"
     constant string   bj_DEBUG_CHAT_GOTOXY        = "gotoxy"
     constant string   bj_DEBUG_CHAT_GOTOUNIT      = "gotounit"
+    constant string   bj_DEBUG_CHAT_BLACKMASK     = "blackmask"
+    constant string   bj_DEBUG_CHAT_BLACKMASK2    = "bm"
     constant string   bj_DEBUG_CHAT_DIFFICULTY    = "difficulty"
     constant string   bj_DEBUG_CHAT_FINGEROFDEATH = "fingerofdeath"
 
@@ -40,11 +44,13 @@ globals
     trigger           bj_debugCamRollTrig
     trigger           bj_debugCamRotTrig
     trigger           bj_debugCamResetTrig
-    trigger           bj_debugRuTrig
+    trigger           bj_debugCloneTrig
+    trigger           bj_debugDispelTrig
     trigger           bj_debugGotoXTrig
     trigger           bj_debugGotoYTrig
     trigger           bj_debugGotoXYTrig
     trigger           bj_debugGotoUnitTrig
+    trigger           bj_debug_BlackMaskTrig
     trigger           bj_debugDifficultyTrig
     trigger  array    bj_debugFingerOfDeathTrig
     trigger  array    bj_debugToolOfDeathTrig
@@ -89,6 +95,7 @@ function DebugDemo takes nothing returns nothing
     local integer lumber = GetRandomInt(200, 450)
 
     call ForForce(bj_FORCE_ALL_PLAYERS, function DebugDemoEnum)
+    call MultiboardSuppressDisplay(true)
     if (GetLocalPlayer() == GetTriggerPlayer()) then
         call Cheat("warnings")
         call Cheat("fastbuild")
@@ -153,7 +160,7 @@ function DebugUnitInfoEnum takes nothing returns nothing
     local unit   theUnit   = GetEnumUnit()
     local string message
 
-    set message = "Player" + I2S(GetPlayerId(GetOwningPlayer(theUnit)))
+    set message = "Player " + I2S(GetPlayerId(GetOwningPlayer(theUnit))+1)
     set message = message + " '" + DebugIdInteger2IdString(GetUnitTypeId(theUnit)) + "'"
     set message = message + " " + GetUnitName(theUnit)
     set message = message + " (" + R2SW(GetUnitX(theUnit), 0, 0) + ", " + R2SW(GetUnitY(theUnit), 0, 0)
@@ -256,16 +263,30 @@ function DebugCamReset takes nothing returns nothing
 endfunction
 
 //===========================================================================
-function DebugRemoveUnitEnum takes nothing returns nothing
-    call RemoveUnit(GetEnumUnit())
+function DebugCloneUnitEnum takes nothing returns nothing
+    local unit u = GetEnumUnit()
+    call CreateUnit(GetOwningPlayer(u), GetUnitTypeId(u), GetUnitX(u), GetUnitY(u), GetUnitFacing(u))
 endfunction
 
 //===========================================================================
-function DebugRemoveUnit takes nothing returns nothing
+function DebugCloneUnit takes nothing returns nothing
     local group g = CreateGroup()
     call SyncSelections()
     call GroupEnumUnitsSelected(g, GetTriggerPlayer(), null)
-    call ForGroup(g, function DebugRemoveUnitEnum)
+    call ForGroup(g, function DebugCloneUnitEnum)
+endfunction
+
+//===========================================================================
+function DebugDispelUnitEnum takes nothing returns nothing
+    call UnitRemoveBuffs(GetEnumUnit(), true, true)
+endfunction
+
+//===========================================================================
+function DebugDispelUnit takes nothing returns nothing
+    local group g = CreateGroup()
+    call SyncSelections()
+    call GroupEnumUnitsSelected(g, GetTriggerPlayer(), null)
+    call ForGroup(g, function DebugDispelUnitEnum)
 endfunction
 
 //===========================================================================
@@ -344,6 +365,11 @@ function DebugGotoUnit takes nothing returns nothing
 endfunction
 
 //===========================================================================
+function DebugBlackMask takes nothing returns nothing
+    call SetFogStateRect(GetTriggerPlayer(), FOG_OF_WAR_MASKED, GetWorldBounds(), true)
+endfunction
+
+//===========================================================================
 function DebugDifficulty takes nothing returns nothing
     local player         thePlayer = GetTriggerPlayer()
     local gamedifficulty theDiff   = GetGameDifficulty()
@@ -396,6 +422,7 @@ function InitDebugTriggers takes nothing returns boolean
 
             set bj_debugTeleportTrig = CreateTrigger()
             call TriggerRegisterPlayerChatEvent(bj_debugTeleportTrig, indexPlayer, bj_DEBUG_CHAT_TELEPORT, true)
+            call TriggerRegisterPlayerChatEvent(bj_debugTeleportTrig, indexPlayer, bj_DEBUG_CHAT_TELEPORT2, true)
             call TriggerAddAction(bj_debugTeleportTrig, function DebugTeleport)
 
             set bj_debugUnitInfoTrig = CreateTrigger()
@@ -436,9 +463,13 @@ function InitDebugTriggers takes nothing returns boolean
             call TriggerRegisterPlayerChatEvent(bj_debugCamResetTrig, indexPlayer, bj_DEBUG_CHAT_CAMRESET, true)
             call TriggerAddAction(bj_debugCamResetTrig, function DebugCamReset)
 
-            set bj_debugRuTrig = CreateTrigger()
-            call TriggerRegisterPlayerChatEvent(bj_debugRuTrig, indexPlayer, bj_DEBUG_CHAT_REMOVEUNIT, true)
-            call TriggerAddAction(bj_debugRuTrig, function DebugRemoveUnit)
+            set bj_debugCloneTrig = CreateTrigger()
+            call TriggerRegisterPlayerChatEvent(bj_debugCloneTrig, indexPlayer, bj_DEBUG_CHAT_CLONE, true)
+            call TriggerAddAction(bj_debugCloneTrig, function DebugCloneUnit)
+
+            set bj_debugDispelTrig = CreateTrigger()
+            call TriggerRegisterPlayerChatEvent(bj_debugDispelTrig, indexPlayer, bj_DEBUG_CHAT_DISPEL, true)
+            call TriggerAddAction(bj_debugDispelTrig, function DebugDispelUnit)
 
             set bj_debugGotoXTrig = CreateTrigger()
             call TriggerRegisterPlayerChatEvent(bj_debugGotoXTrig, indexPlayer, bj_DEBUG_CHAT_GOTOX, false)
@@ -455,6 +486,11 @@ function InitDebugTriggers takes nothing returns boolean
             set bj_debugGotoUnitTrig = CreateTrigger()
             call TriggerRegisterPlayerChatEvent(bj_debugGotoUnitTrig, indexPlayer, bj_DEBUG_CHAT_GOTOUNIT, true)
             call TriggerAddAction(bj_debugGotoUnitTrig, function DebugGotoUnit)
+
+            set bj_debug_BlackMaskTrig = CreateTrigger()
+            call TriggerRegisterPlayerChatEvent(bj_debug_BlackMaskTrig, indexPlayer, bj_DEBUG_CHAT_BLACKMASK, true)
+            call TriggerRegisterPlayerChatEvent(bj_debug_BlackMaskTrig, indexPlayer, bj_DEBUG_CHAT_BLACKMASK2, true)
+            call TriggerAddAction(bj_debug_BlackMaskTrig, function DebugBlackMask)
 
             set bj_debugDifficultyTrig = CreateTrigger()
             call TriggerRegisterPlayerChatEvent(bj_debugDifficultyTrig, indexPlayer, bj_DEBUG_CHAT_DIFFICULTY, true)

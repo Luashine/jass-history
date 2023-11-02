@@ -1,67 +1,58 @@
 //==================================================================================================
-//  $Id: n07x01.ai,v 1.1 2003/03/10 11:45:06 bfitch Exp $
+//  $Id: n07x01.ai,v 1.27 2003/05/05 11:28:09 bfitch Exp $
 //==================================================================================================
 globals
-    player enemy1 = Player(4)
-    player enemy2 = Player(5)
-    player enemy3 = Player(6)
-    player targ   = enemy1
+    player targ = PlayerEx(6)
 endglobals
 
-//--------------------------------------------------------------------------------------------------
-//  next_target
-//--------------------------------------------------------------------------------------------------
-function next_target takes nothing returns nothing
-    if targ == enemy1 then
-        set targ = enemy2
-    elseif targ == enemy2 then
-        set targ = enemy3
-    else
-        set targ = enemy1
-    endif
-endfunction
-
-
-//--------------------------------------------------------------------------------------------------
-//  main
-//--------------------------------------------------------------------------------------------------
 function main takes nothing returns nothing
-    call CampaignAI(NAGA_CORAL,null)
-    call SetAmphibious()
-    call SetReplacements(1,1,3)
 
-    call CampaignDefenderEx( 4,3,2, SPELL_BREAKER   )
-    call CampaignDefenderEx( 4,3,2, PRIEST          )
+    call CampaignAI(HOUSE,null)
 
-    call WaitForSignal()
+	call SetPeonsRepair(true)
+	call SetDefendPlayer(true)
 
-    //*** WAVE 1 ***
-    call CampaignAttackerEx( 3, 2, 1, SORCERESS         )
-    call CampaignAttackerEx( 3, 2, 1, PRIEST            )
-    call SuicideOnPlayer(M3,targ)
-    call next_target()
+    call SetReplacements(6,6,3)
 
-    //*** WAVE 2 ***
-    call CampaignAttackerEx( 3, 2, 1, SPELL_BREAKER     )
-    call CampaignAttackerEx( 3, 2, 1, PRIEST            )
-    call CampaignAttackerEx( 3, 2, 1, HUMAN_DRAGON_HAWK )
-    call SuicideOnPlayer(M3,targ)
-    call next_target()
+    call SetBuildUnitEx( 1,1,1, BLOOD_PEASANT   )
+    call SetBuildUnitEx( 1,1,1, TOWN_HALL       )
+	call SetBuildUnitEx( 1,1,1, HUMAN_ALTAR     )
+    call SetBuildUnitEx( 4,4,4, WATCH_TOWER     )
+    call SetBuildUnitEx( 1,1,1, LUMBER_MILL     )
+    call SetBuildUnitEx( 4,4,4, GUARD_TOWER     )
+    call SetBuildUnitEx( 1,1,0, ARCANE_VAULT    )
+    call SetBuildUnitEx( 1,1,0, BLACKSMITH      )
+    call SetBuildUnitEx( 1,1,0, KEEP            )
+    call SetBuildUnitEx( 1,1,0, ARCANE_SANCTUM  )
+	call SetBuildUnitEx( 1,1,0, CASTLE          )
+	call SetBuildUnitEx( 1,1,0, AVIARY          )
+	call SetBuildUnitEx( 8,8,8, BLOOD_PEASANT   )
 
-    //*** WAVE 3 ***
-    call CampaignAttackerEx( 3, 2, 1, SORCERESS         )
-    call CampaignAttackerEx( 3, 2, 1, SPELL_BREAKER     )
-    call CampaignAttackerEx( 3, 2, 1, HUMAN_DRAGON_HAWK )
-    call SuicideOnPlayer(M3,targ)
-    call next_target()
+	call CampaignDefenderEx( 1,1,1, KAEL            )
+	call CampaignDefenderEx( 1,1,1, SPELL_BREAKER   )
+	call CampaignDefenderEx( 2,2,2, HIGH_SWORDMAN   )
+    call CampaignDefenderEx( 1,1,1, SORCERESS       )
+    call CampaignDefenderEx( 1,1,1, PRIEST          )
+    call CampaignDefenderEx( 2,2,2, HIGH_ARCHER		)
 
-    //*** WAVE 4+ ***
-    loop
-        call CampaignAttackerEx( 3, 2, 1, PRIEST            )
-        call CampaignAttackerEx( 3, 2, 1, SORCERESS         )
-        call CampaignAttackerEx( 3, 2, 1, SPELL_BREAKER     )
-        call CampaignAttackerEx( 3, 2, 1, HUMAN_DRAGON_HAWK )
-        call SuicideOnPlayer(M5,targ)
-        call next_target()
-    endloop
+	call SetBuildUpgrEx( 1,1,1, UPG_SORCERY			)
+	call SetBuildUpgrEx( 1,1,1, UPG_PRAYING			)
+    call SetBuildUpgrEx( 1,1,1, UPG_MASONRY			)
+	call SetBuildUpgrEx( 1,1,1, UPG_ARMOR			)
+	call SetBuildUpgrEx( 1,1,1, UPG_LEATHER			)
+	call SetBuildUpgrEx( 1,1,1, UPG_RANGED			)
+	call SetBuildUpgrEx( 1,1,1, UPG_MELEE			)
+	call SetBuildUpgrEx( 2,2,1, UPG_PRAYING			)
+    call SetBuildUpgrEx( 2,2,1, UPG_MASONRY			)
+	call SetBuildUpgrEx( 2,2,2, UPG_ARMOR			)
+	call SetBuildUpgrEx( 2,2,2, UPG_LEATHER			)
+	call SetBuildUpgrEx( 2,2,2, UPG_RANGED			)
+	call SetBuildUpgrEx( 2,2,2, UPG_MELEE			)
+    call SetBuildUpgrEx( 3,3,2, UPG_MASONRY			)
+	call SetBuildUpgrEx( 3,3,2, UPG_ARMOR			)
+	call SetBuildUpgrEx( 3,3,2, UPG_LEATHER			)
+	call SetBuildUpgrEx( 3,3,2, UPG_RANGED			)
+	call SetBuildUpgrEx( 3,3,2, UPG_MELEE			)
+
+	call SleepForever()
 endfunction

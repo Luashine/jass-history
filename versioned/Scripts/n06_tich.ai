@@ -15,7 +15,7 @@ endglobals
 
 //============================================================================
 function main takes nothing returns nothing
-    call CampaignAI(0,null)
+    call CampaignAI(HOUSE,null)
     call SetReplacementCount(99)
 
 	call SetCaptainHome( DEFENSE_CAPTAIN, TICH_CAPT_X, TICH_CAPT_Y )
@@ -45,7 +45,7 @@ function main takes nothing returns nothing
 		call CampaignAttackerEx( 3,3,4, FELLHOUND   )
 		call CampaignAttackerEx( 1,1,2, INFERNAL    )
 		call CampaignAttackerEx( 0,0,1, WAVE_DOOMS  )
-		call SuicideOnPlayerEx(M6,M6,M5,user)
+    	call SuicideOnPlayerEx(M6,M6,M5,user)
 
 		//*** WAVE 4 ***
 		call InitAssaultGroup()

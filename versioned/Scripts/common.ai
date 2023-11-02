@@ -1,5 +1,5 @@
 //==================================================================================================
-//  $Id: common.ai,v 1.54 2003/04/15 12:28:21 bfitch Exp $
+//  $Id: common.ai,v 1.66.2.1 2003/05/09 09:17:04 abond Exp $
 //==================================================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
@@ -20,6 +20,7 @@ native GetUnitCountDone     takes integer unitid                        returns 
 native GetTownUnitCount     takes integer id, integer tn, boolean dn    returns integer
 native GetUnitGoldCost      takes integer unitid                        returns integer
 native GetUnitWoodCost      takes integer unitid                        returns integer
+native GetUnitBuildTime     takes integer unitid                        returns integer
 
 native GetMinesOwned        takes nothing                               returns integer
 native GetGoldOwned         takes nothing                               returns integer
@@ -53,7 +54,9 @@ native SetMeleeAI           takes nothing                               returns 
 native SetTargetHeroes      takes boolean state                         returns nothing
 native SetPeonsRepair       takes boolean state                         returns nothing
 native SetRandomPaths       takes boolean state                         returns nothing
+native SetDefendPlayer      takes boolean state                         returns nothing
 native SetHeroesFlee        takes boolean state                         returns nothing
+native SetHeroesBuyItems    takes boolean state                         returns nothing
 native SetWatchMegaTargets  takes boolean state                         returns nothing
 native SetIgnoreInjured     takes boolean state                         returns nothing
 native SetHeroesTakeItems   takes boolean state                         returns nothing
@@ -85,6 +88,7 @@ native AttackMoveKill       takes unit target                           returns 
 native AttackMoveXY         takes integer x, integer y                  returns nothing
 native LoadZepWave          takes integer x, integer y                  returns nothing
 native SuicidePlayer        takes player id, boolean check_full         returns boolean
+native SuicidePlayerUnits   takes player id, boolean check_full         returns boolean
 native CaptainInCombat      takes boolean attack_captain                returns boolean
 native IsTowered            takes unit target                           returns boolean
 
@@ -122,6 +126,7 @@ native SuicideUnitEx        takes integer ct, integer uid, integer pid  returns 
 native StartThread          takes code func                             returns nothing
 native Sleep                takes real seconds                          returns nothing
 native UnitAlive            takes unit id                               returns boolean
+native UnitInvis            takes unit id                               returns boolean
 native IgnoredUnits         takes integer unitid                        returns integer
 native TownThreatened       takes nothing                               returns boolean
 native DisablePathing       takes nothing                               returns nothing
@@ -191,6 +196,7 @@ globals
     constant integer SORCERESS          = 'hsor'
     constant integer TANK               = 'hmtt'
     constant integer STEAM_TANK         =  TANK
+    constant integer ROCKET_TANK        = 'hrtt'
     constant integer MILITIA            = 'hmil'
     constant integer SPELL_BREAKER      = 'hspt'
     constant integer HUMAN_DRAGON_HAWK  = 'hdhw'
@@ -351,6 +357,7 @@ globals
     constant integer CHAOS_KODO         = 'nckb'
     constant integer CHAOS_GROM         = 'Opgh'
     constant integer CHAOS_BLADEMASTER  = 'Nbbc'
+    constant integer CHAOS_BURROW       = 'ocbw'
 
     //--------------------------------------------------------------------
     //  UNDEAD
@@ -724,10 +731,14 @@ globals
 
     boolean do_debug_cheats         = false
     boolean trace_on                = true
-    boolean war3x                   = true
     boolean zep_next_wave           = false
     boolean form_group_timeouts     = true
 endglobals
+
+//============================================================================
+function PlayerEx takes integer slot returns player
+    return Player(slot-1)
+endfunction
 
 //============================================================================
 function Trace takes string message returns nothing
@@ -760,35 +771,35 @@ endfunction
 //============================================================================
 function InitAI takes nothing returns nothing
     set ai_player = Player(GetAiPlayer())
-    set war3x = VersionCompatible(VERSION_FROZEN_THRONE)
     set sleep_seconds = 0
     call StopGathering()
 endfunction
 
 //============================================================================
 function StandardAI takes code heroes, code peons, code attacks returns nothing
+
+    local boolean isNewbie = (MeleeDifficulty() == MELEE_NEWBIE)
+
     call InitAI()
 
-    if MeleeDifficulty() == MELEE_NEWBIE then
-        call SetTargetHeroes(false)
-        call SetUnitsFlee(false)
-        call SetGroupsFlee(false)
-        call SetSmartArtillery(false)
-    else
-        call SetTargetHeroes(true)
-        call SetUnitsFlee(true)
-        call SetGroupsFlee(true)
-        call SetSmartArtillery(true)
-    endif
-
     call SetMeleeAI()
+
+    call SetDefendPlayer(true)
+    call SetGroupsFlee(not isNewbie)
+    call SetHeroesBuyItems(not isNewbie)
     call SetHeroesFlee(true)
-    call SetWatchMegaTargets(true)
     call SetHeroesTakeItems(true)
     call SetIgnoreInjured(true)
     call SetPeonsRepair(true)
+    call SetSmartArtillery(not isNewbie)
+    call SetTargetHeroes(not isNewbie)
+    call SetUnitsFlee(not isNewbie)
+    call SetWatchMegaTargets(true)
+
     call CreateCaptains()
+
     call SetHeroLevels(heroes)
+
     call Sleep(0.1)
     call StartThread(peons)
     call StartThread(attacks)
@@ -868,6 +879,16 @@ function WaitForSignal takes nothing returns integer
 endfunction
 
 //============================================================================
+function SetWoodPeons takes integer count returns nothing
+    set campaign_wood_peons = count
+endfunction
+
+//============================================================================
+function SetGoldPeons takes integer count returns nothing
+    set campaign_gold_peons = count
+endfunction
+
+//============================================================================
 function SetHarvestLumber takes boolean harvest returns nothing
     if harvest then
         set campaign_wood_peons = 3
@@ -879,6 +900,11 @@ endfunction
 //============================================================================
 function SetFormGroupTimeouts takes boolean state returns nothing
     set form_group_timeouts = state
+endfunction
+
+//============================================================================
+function DoCampaignFarms takes boolean state returns nothing
+    set do_campaign_farms = state
 endfunction
 
 //============================================================================
@@ -1596,13 +1622,7 @@ endfunction
 
 //============================================================================
 function WavePrepare takes integer unitid returns integer
-    if unitid=='ebal' or unitid=='hgry' or unitid=='hkni' or unitid=='ocat' or unitid=='uabo' or unitid=='umtw' or unitid=='otau' or unitid=='nfel' then
-        return 50
-    endif
-    if unitid=='hmtt' or unitid=='echm' or unitid=='ufro' or unitid=='etrp' or unitid=='ninf' then
-        return 80
-    endif
-    return 40
+    return GetUnitBuildTime(unitid)
 endfunction
 
 //============================================================================
@@ -1699,36 +1719,6 @@ function AttackMoveXYA takes integer x, integer y returns nothing
 endfunction
 
 //============================================================================
-function SuicideOnPlayerLoop takes boolean standard, player p, integer x, integer y returns nothing
-    loop
-        //xxx
-        if allow_signal_abort and CommandsWaiting() != 0 then
-            call Trace("ABORT -- attack wave override\n")
-        endif
-        //xxx
-
-        exitwhen allow_signal_abort and CommandsWaiting() != 0
-
-        loop
-            exitwhen allow_signal_abort and CommandsWaiting() != 0
-
-            call FormGroup(5,true)
-            exitwhen sleep_seconds <= 0
-            call TraceI("waiting %d seconds before suicide\n",sleep_seconds) //xxx
-        endloop
-
-        if standard then
-            exitwhen SuicidePlayer(p,sleep_seconds >= -60)
-        else
-            call AttackMoveXYA(x,y)
-        endif
-
-        call TraceI("waiting %d seconds before timeout\n",60+sleep_seconds) //xxx
-        call SuicideSleep(5)
-    endloop
-endfunction
-
-//============================================================================
 function SuicideOnPlayerWave takes nothing returns nothing
     call Trace("waiting for attack wave to enter combat\n") //xxx
     loop
@@ -1782,8 +1772,8 @@ function SuicideOnPlayerWave takes nothing returns nothing
     endloop
 endfunction
 
-//============================================================================
-function SuicideOnPlayer takes integer seconds, player p returns nothing
+//--------------------------------------------------------------------------------------------------
+function CommonSuicideOnPlayer takes boolean standard, boolean bldgs, integer seconds, player p, integer x, integer y returns nothing
     local integer save_peons
 
     if not PrepSuicideOnPlayer(seconds) then
@@ -1793,7 +1783,36 @@ function SuicideOnPlayer takes integer seconds, player p returns nothing
     set save_peons = campaign_wood_peons
     set campaign_wood_peons = 0
 
-    call SuicideOnPlayerLoop(true,p,0,0)
+    loop
+        //xxx
+        if allow_signal_abort and CommandsWaiting() != 0 then
+            call Trace("ABORT -- attack wave override\n")
+        endif
+        //xxx
+
+        exitwhen allow_signal_abort and CommandsWaiting() != 0
+
+        loop
+            exitwhen allow_signal_abort and CommandsWaiting() != 0
+
+            call FormGroup(5,true)
+            exitwhen sleep_seconds <= 0
+            call TraceI("waiting %d seconds before suicide\n",sleep_seconds) //xxx
+        endloop
+
+        if standard then
+            if bldgs then
+                exitwhen SuicidePlayer(p,sleep_seconds >= -60)
+            else
+                exitwhen SuicidePlayerUnits(p,sleep_seconds >= -60)
+            endif
+        else
+            call AttackMoveXYA(x,y)
+        endif
+
+        call TraceI("waiting %d seconds before timeout\n",60+sleep_seconds) //xxx
+        call SuicideSleep(5)
+    endloop
 
     set campaign_wood_peons = save_peons
     set harass_length = 0
@@ -1801,24 +1820,19 @@ function SuicideOnPlayer takes integer seconds, player p returns nothing
     call SuicideOnPlayerWave()
 endfunction
 
-//============================================================================
+//--------------------------------------------------------------------------------------------------
+function SuicideOnPlayer takes integer seconds, player p returns nothing
+    call CommonSuicideOnPlayer(true,true,seconds,p,0,0)
+endfunction
+
+//--------------------------------------------------------------------------------------------------
+function SuicideOnUnits takes integer seconds, player p returns nothing
+    call CommonSuicideOnPlayer(true,false,seconds,p,0,0)
+endfunction
+
+//--------------------------------------------------------------------------------------------------
 function SuicideOnPoint takes integer seconds, player p, integer x, integer y returns nothing
-    local integer save_peons
-
-    if not PrepSuicideOnPlayer(seconds) then
-        return
-    endif
-
-    set save_peons = campaign_wood_peons
-    set campaign_wood_peons = 0
-
-    //call AttackMoveXY(x,y)
-    call SuicideOnPlayerLoop(false,p,x,y)
-
-    set campaign_wood_peons = save_peons
-    set harass_length = 0
-
-    call SuicideOnPlayerWave()
+    call CommonSuicideOnPlayer(false,false,seconds,p,x,y)
 endfunction
 
 //============================================================================
@@ -1920,7 +1934,7 @@ function SuicideUnitsEx takes integer playerid, integer u1, integer u2, integer 
     endloop
 endfunction
 
-//============================================================================
+//--------------------------------------------------------------------------------------------------
 function SuicideOnPlayerEx takes integer easy, integer med, integer hard, player p returns nothing
     if difficulty == EASY then
         call SuicideOnPlayer(easy,p)
@@ -1931,7 +1945,18 @@ function SuicideOnPlayerEx takes integer easy, integer med, integer hard, player
     endif
 endfunction
 
-//============================================================================
+//--------------------------------------------------------------------------------------------------
+function SuicideOnUnitsEx takes integer easy, integer med, integer hard, player p returns nothing
+    if difficulty == EASY then
+        call SuicideOnUnits(easy,p)
+    elseif difficulty == NORMAL then
+        call SuicideOnUnits(med,p)
+    else
+        call SuicideOnUnits(hard,p)
+    endif
+endfunction
+
+//--------------------------------------------------------------------------------------------------
 function SuicideOnPointEx takes integer easy, integer med, integer hard, player p, integer x, integer y returns nothing
     if difficulty == EASY then
         call SuicideOnPoint(easy,p,x,y)
@@ -1958,7 +1983,8 @@ function CommonSleepUntilTargetDead takes unit target, boolean reform returns no
         exitwhen CaptainRetreating()
         exitwhen CaptainReadinessHP() <= 40
 
-        exitwhen not UnitAlive(target)  // target killed
+        exitwhen not UnitAlive(target)
+        exitwhen UnitInvis(target) and not IsUnitDetected(target,ai_player)
 
         if not TownThreatened() then
             call AttackMoveKill(target)
@@ -2533,7 +2559,7 @@ function PickMeleeHero takes race raceid returns integer
         set hero_id = 0
     endif
 
-    if war3x then
+    if VersionCompatible(VERSION_FROZEN_THRONE) then
         set last = 4
     else
         set last = 3

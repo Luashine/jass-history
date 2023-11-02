@@ -64,12 +64,15 @@ globals
     //   - Distance from start loc to search for nearby mines
     //
     constant real      bj_MELEE_STARTING_TOD            = 8.00
-    constant integer   bj_MELEE_STARTING_GOLD           = 500
-    constant integer   bj_MELEE_STARTING_LUMBER         = 150
+    constant integer   bj_MELEE_STARTING_GOLD_V0        = 750
+    constant integer   bj_MELEE_STARTING_GOLD_V1        = 500
+    constant integer   bj_MELEE_STARTING_LUMBER_V0      = 200
+    constant integer   bj_MELEE_STARTING_LUMBER_V1      = 150
     constant integer   bj_MELEE_STARTING_HERO_TOKENS    = 1
     constant integer   bj_MELEE_HERO_LIMIT              = 3
     constant integer   bj_MELEE_HERO_TYPE_LIMIT         = 1
     constant real      bj_MELEE_MINE_SEARCH_RADIUS      = 2000
+    constant real      bj_MELEE_CLEAR_UNITS_RADIUS      = 1500
     constant real      bj_MELEE_CRIPPLE_TIMEOUT         = 120.00
     constant real      bj_MELEE_CRIPPLE_MSG_DURATION    = 20.00
     constant integer   bj_MELEE_MAX_TWINKED_HEROES_V0   = 3
@@ -148,6 +151,7 @@ globals
     constant integer   bj_CAMPAIGN_INDEX_XN       = 5
     constant integer   bj_CAMPAIGN_INDEX_XH       = 6
     constant integer   bj_CAMPAIGN_INDEX_XU       = 7
+    constant integer   bj_CAMPAIGN_INDEX_XO       = 8
 
     // Campaign offset constants (for mission indexing)
     constant integer   bj_CAMPAIGN_OFFSET_T       = 0
@@ -158,6 +162,7 @@ globals
     constant integer   bj_CAMPAIGN_OFFSET_XN      = 0
     constant integer   bj_CAMPAIGN_OFFSET_XH      = 1
     constant integer   bj_CAMPAIGN_OFFSET_XU      = 2
+    constant integer   bj_CAMPAIGN_OFFSET_XO      = 3
 
     // Mission indexing constants
     // Tutorial
@@ -249,17 +254,22 @@ globals
     constant integer   bj_MISSION_INDEX_XU12       = bj_CAMPAIGN_OFFSET_XU * 1000 + 12
     constant integer   bj_MISSION_INDEX_XU13       = bj_CAMPAIGN_OFFSET_XU * 1000 + 13
 
+    // Expansion Orc
+    constant integer   bj_MISSION_INDEX_XO00       = bj_CAMPAIGN_OFFSET_XO * 1000 + 0
+
     // Cinematic indexing constants
     constant integer   bj_CINEMATICINDEX_TOP      = 0
     constant integer   bj_CINEMATICINDEX_HOP      = 1
     constant integer   bj_CINEMATICINDEX_HED      = 2
     constant integer   bj_CINEMATICINDEX_OOP      = 3
-    constant integer   bj_CINEMATICINDEX_OED      = 4    
+    constant integer   bj_CINEMATICINDEX_OED      = 4
     constant integer   bj_CINEMATICINDEX_UOP      = 5
     constant integer   bj_CINEMATICINDEX_UED      = 6
-    constant integer   bj_CINEMATICINDEX_NOP      = 7    
-    constant integer   bj_CINEMATICINDEX_NED      = 8     
-    
+    constant integer   bj_CINEMATICINDEX_NOP      = 7
+    constant integer   bj_CINEMATICINDEX_NED      = 8
+    constant integer   bj_CINEMATICINDEX_XOP      = 9
+    constant integer   bj_CINEMATICINDEX_XED      = 10
+
     // Alliance settings
     constant integer   bj_ALLIANCE_UNALLIED        = 0
     constant integer   bj_ALLIANCE_UNALLIED_VISION = 1
@@ -534,6 +544,7 @@ globals
     group              bj_groupRemoveGroupDest     = null
     integer            bj_groupRandomConsidered    = 0
     unit               bj_groupRandomCurrentPick   = null
+    group              bj_groupLastCreatedDest     = null
     group              bj_randomSubGroupGroup      = null
     integer            bj_randomSubGroupWant       = 0
     integer            bj_randomSubGroupTotal      = 0
@@ -604,6 +615,9 @@ globals
     boolexpr           filterGetUnitsOfPlayerAndTypeId   = null
     boolexpr           filterMeleeTrainedUnitIsHeroBJ    = null
     boolexpr           filterLivingPlayerUnitsOfTypeId   = null
+
+    // Memory cleanup vars
+    boolean            bj_wantDestroyGroup         = false
 endglobals
 
 
@@ -1154,6 +1168,15 @@ endfunction
 // this function will serve as a stub.
 //
 function CommentString takes string commentString returns nothing
+endfunction
+
+//===========================================================================
+// This seemingly useless function is used to trick the trigger editor into
+// externalizing arbitrary strings.  Especially useful for storing externalized
+// string references in variables.
+//
+function StringIdentity takes string theString returns string
+    return theString
 endfunction
 
 //===========================================================================
@@ -2090,6 +2113,16 @@ function PlayThematicMusicBJ takes string musicName returns nothing
 endfunction
 
 //===========================================================================
+function PlayThematicMusicExBJ takes string musicName, real startingOffset returns nothing
+    call PlayThematicMusicEx(musicName, R2I(startingOffset * 1000))
+endfunction
+
+//===========================================================================
+function SetThematicMusicOffsetBJ takes real newOffset returns nothing
+    call SetThematicMusicPlayPosition(R2I(newOffset * 1000))
+endfunction
+
+//===========================================================================
 function EndThematicMusicBJ takes nothing returns nothing
     call EndThematicMusic()
 endfunction
@@ -2806,7 +2839,7 @@ endfunction
 
 //===========================================================================
 function CreateNUnitsAtLoc takes integer count, integer unitId, player whichPlayer, location loc, real face returns group
-    set bj_lastCreatedGroup = CreateGroup()
+    call GroupClear(bj_lastCreatedGroup)
     loop
         set count = count - 1
         exitwhen count < 0
@@ -2822,8 +2855,15 @@ function CreateNUnitsAtLocFacingLocBJ takes integer count, integer unitId, playe
 endfunction
 
 //===========================================================================
+function GetLastCreatedGroupEnum takes nothing returns nothing
+    call GroupAddUnit(bj_groupLastCreatedDest, GetEnumUnit())
+endfunction
+
+//===========================================================================
 function GetLastCreatedGroup takes nothing returns group
-    return bj_lastCreatedGroup
+    set bj_groupLastCreatedDest = CreateGroup()
+    call ForGroup(bj_lastCreatedGroup, function GetLastCreatedGroupEnum)
+    return bj_groupLastCreatedDest
 endfunction
 
 //===========================================================================
@@ -3067,8 +3107,18 @@ endfunction
 // Returns true if every unit of the group is dead.
 //
 function IsUnitGroupDeadBJ takes group g returns boolean
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_isUnitGroupDeadResult = true
     call ForGroup(g, function IsUnitGroupDeadBJEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(g)
+    endif
     return bj_isUnitGroupDeadResult
 endfunction
 
@@ -3081,8 +3131,18 @@ endfunction
 // Returns true if the group contains no units.
 //
 function IsUnitGroupEmptyBJ takes group g returns boolean
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_isUnitGroupEmptyResult = true
     call ForGroup(g, function IsUnitGroupEmptyBJEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(g)
+    endif
     return bj_isUnitGroupEmptyResult
 endfunction
 
@@ -3436,7 +3496,11 @@ function ReplaceUnitBJ takes unit whichUnit, integer newUnitId, integer unitStat
     call ShowUnit(oldUnit, false)
 
     // Create the replacement unit.
-    set newUnit = CreateUnitAtLoc(GetOwningPlayer(oldUnit), newUnitId, GetUnitLoc(oldUnit), GetUnitFacing(oldUnit))
+    if (newUnitId == 'ugol') then
+        set newUnit = CreateBlightedGoldmine(GetOwningPlayer(oldUnit), GetUnitX(oldUnit), GetUnitY(oldUnit), GetUnitFacing(oldUnit))
+    else
+        set newUnit = CreateUnit(GetOwningPlayer(oldUnit), newUnitId, GetUnitX(oldUnit), GetUnitY(oldUnit), GetUnitFacing(oldUnit))
+    endif
 
     // Set the unit's life and mana according to the requested method.
     if (unitStateMethod == bj_UNIT_STATE_METHOD_RELATIVE) then
@@ -3470,6 +3534,7 @@ function ReplaceUnitBJ takes unit whichUnit, integer newUnitId, integer unitStat
 
     // Mirror properties of the old unit onto the new unit.
     //call PauseUnit(newUnit, IsUnitPaused(oldUnit))
+    call SetResourceAmount(newUnit, GetResourceAmount(oldUnit))
 
     // If both the old and new units are heroes, handle their hero info.
     if (IsUnitType(oldUnit, UNIT_TYPE_HERO) and IsUnitType(newUnit, UNIT_TYPE_HERO)) then
@@ -3595,7 +3660,12 @@ endfunction
 
 //===========================================================================
 function EnumDestructablesInCircleBJFilter takes nothing returns boolean
-    return DistanceBetweenPoints(GetDestructableLoc(GetFilterDestructable()), bj_enumDestructableCenter) <= bj_enumDestructableRadius
+    local location destLoc = GetDestructableLoc(GetFilterDestructable())
+    local boolean result
+
+    set result = DistanceBetweenPoints(destLoc, bj_enumDestructableCenter) <= bj_enumDestructableRadius
+    call RemoveLocation(destLoc)
+    return result
 endfunction
 
 //===========================================================================
@@ -3641,10 +3711,14 @@ endfunction
 // objects within a circular area.
 //
 function EnumDestructablesInCircleBJ takes real radius, location loc, code actionFunc returns nothing
+    local rect r
+
     if (radius >= 0) then
         set bj_enumDestructableCenter = loc
         set bj_enumDestructableRadius = radius
-        call EnumDestructablesInRect(GetRectFromCircleBJ(loc, radius), filterEnumDestructablesInCircleBJ, actionFunc)
+        set r = GetRectFromCircleBJ(loc, radius)
+        call EnumDestructablesInRect(r, filterEnumDestructablesInCircleBJ, actionFunc)
+        call RemoveRect(r)
     endif
 endfunction
 
@@ -3681,6 +3755,19 @@ function ModifyGateBJ takes integer gateOperation, destructable d returns nothin
 endfunction
 
 //===========================================================================
+// Determine the elevator's height from its occlusion height.
+//
+function GetElevatorHeight takes destructable d returns integer
+    local integer height
+
+    set height = 1 + R2I(GetDestructableOccluderHeight(d) / bj_CLIFFHEIGHT)
+    if (height < 1) or (height > 3) then
+        set height = 1
+    endif
+    return height
+endfunction
+
+//===========================================================================
 // To properly animate an elevator, we must know not only what height we
 // want to change to, but also what height we are currently at.  This code
 // determines the elevator's current height from its occlusion height.
@@ -3694,10 +3781,7 @@ function ChangeElevatorHeight takes destructable d, integer newHeight returns no
     set newHeight = IMinBJ(3, newHeight)
 
     // Find out what height the elevator is already at.
-    set oldHeight = 1 + R2I(GetDestructableOccluderHeight(d) / bj_CLIFFHEIGHT)
-    if (oldHeight < 1) or (oldHeight > 3) then
-        set oldHeight = 1
-    endif
+    set oldHeight = GetElevatorHeight(d)
 
     // Set the elevator's occlusion height.
     call SetDestructableOccluderHeight(d, bj_CLIFFHEIGHT*(newHeight-1))
@@ -3707,8 +3791,7 @@ function ChangeElevatorHeight takes destructable d, integer newHeight returns no
             call SetDestructableAnimation(d, "birth")
             call QueueDestructableAnimation(d, "stand")
         elseif (oldHeight == 3) then
-            call SetDestructableAnimation(d, "birth second")
-            call QueueDestructableAnimation(d, "birth")
+            call SetDestructableAnimation(d, "birth third")
             call QueueDestructableAnimation(d, "stand")
         else
             // Unrecognized old height - snap to new height.
@@ -3727,8 +3810,7 @@ function ChangeElevatorHeight takes destructable d, integer newHeight returns no
         endif
     elseif (newHeight == 3) then
         if (oldHeight == 1) then
-            call SetDestructableAnimation(d, "death")
-            call QueueDestructableAnimation(d, "death second")
+            call SetDestructableAnimation(d, "death third")
             call QueueDestructableAnimation(d, "stand third")
         elseif (oldHeight == 2) then
             call SetDestructableAnimation(d, "death second")
@@ -3749,7 +3831,7 @@ endfunction
 function NudgeUnitsInRectEnum takes nothing returns nothing
     local unit nudgee = GetEnumUnit()
 
-    call SetUnitPositionLoc(nudgee, GetUnitLoc(nudgee))
+    call SetUnitPosition(nudgee, GetUnitX(nudgee), GetUnitY(nudgee))
 endfunction
 
 //===========================================================================
@@ -3794,6 +3876,7 @@ function NearbyElevatorExists takes real x, real y returns boolean
     set r = Rect(x - findThreshold, y - findThreshold, x + findThreshold, y + findThreshold)
     set bj_elevatorNeighbor = null
     call EnumDestructablesInRect(r, null, function NearbyElevatorExistsEnum)
+    call RemoveRect(r)
 
     return bj_elevatorNeighbor != null
 endfunction
@@ -3819,6 +3902,7 @@ function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean op
     set r = Rect(x - findThreshold, y - findThreshold, x + findThreshold, y + findThreshold)
     set bj_elevatorWallBlocker = null
     call EnumDestructablesInRect(r, null, function FindElevatorWallBlockerEnum)
+    call RemoveRect(r)
     set blocker = bj_elevatorWallBlocker
 
     // Ensure that the blocker exists.
@@ -3844,9 +3928,13 @@ function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean op
 
         // Nudge any objects standing in the blocker's way.
         if (facing == 0) then
-            call NudgeObjectsInRect(Rect(x - nudgeWidth/2, y - nudgeLength/2, x + nudgeWidth/2, y + nudgeLength/2))
+            set r = Rect(x - nudgeWidth/2, y - nudgeLength/2, x + nudgeWidth/2, y + nudgeLength/2)
+            call NudgeObjectsInRect(r)
+            call RemoveRect(r)
         elseif (facing == 90) then
-            call NudgeObjectsInRect(Rect(x - nudgeLength/2, y - nudgeWidth/2, x + nudgeLength/2, y + nudgeWidth/2))
+            set r = Rect(x - nudgeLength/2, y - nudgeWidth/2, x + nudgeLength/2, y + nudgeWidth/2)
+            call NudgeObjectsInRect(r)
+            call RemoveRect(r)
         else
             // Unrecognized blocker angle - don't nudge anything.
         endif
@@ -3951,6 +4039,21 @@ endfunction
 //***************************************************************************
 
 //===========================================================================
+function ForGroupBJ takes group whichGroup, code callback returns nothing
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
+    call ForGroup(whichGroup, callback)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(whichGroup)
+    endif
+endfunction
+
+//===========================================================================
 function GroupAddUnitSimple takes unit whichUnit, group whichGroup returns nothing
     call GroupAddUnit(whichGroup, whichUnit)
 endfunction
@@ -3967,8 +4070,18 @@ endfunction
 
 //===========================================================================
 function GroupAddGroup takes group sourceGroup, group destGroup returns nothing
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_groupAddGroupDest = destGroup
     call ForGroup(sourceGroup, function GroupAddGroupEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(sourceGroup)
+    endif
 endfunction
 
 //===========================================================================
@@ -3978,8 +4091,18 @@ endfunction
 
 //===========================================================================
 function GroupRemoveGroup takes group sourceGroup, group destGroup returns nothing
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_groupRemoveGroupDest = destGroup
     call ForGroup(sourceGroup, function GroupRemoveGroupEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(sourceGroup)
+    endif
 endfunction
 
 //===========================================================================
@@ -4010,9 +4133,19 @@ endfunction
 // Picks a random unit from a group.
 //
 function GroupPickRandomUnit takes group whichGroup returns unit
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_groupRandomConsidered = 0
     set bj_groupRandomCurrentPick = null
     call ForGroup(whichGroup, function GroupPickRandomUnitEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(whichGroup)
+    endif
     return bj_groupRandomCurrentPick
 endfunction
 
@@ -4106,8 +4239,6 @@ function GetUnitsOfTypeIdAll takes integer unitid returns group
         set index = index + 1
         exitwhen index == bj_MAX_PLAYER_SLOTS
     endloop
-
-    //%%% Destroying the group results in problems upon subsequent calls.
     call DestroyGroup(g)
 
     return result
@@ -4156,9 +4287,7 @@ endfunction
 
 //===========================================================================
 function GetPlayersAll takes nothing returns force
-    local force f = CreateForce()
-    call ForceEnumPlayers(f, null)
-    return f
+    return bj_FORCE_ALL_PLAYERS
 endfunction
 
 //===========================================================================
@@ -4210,8 +4339,18 @@ endfunction
 
 //===========================================================================
 function CountUnitsInGroup takes group g returns integer
+    // If the user wants the group destroyed, remember that fact and clear
+    // the flag, in case it is used again in the callback.
+    local boolean wantDestroy = bj_wantDestroyGroup
+    set bj_wantDestroyGroup = false
+
     set bj_groupCountUnits = 0
     call ForGroup(g, function CountUnitsInGroupEnum)
+
+    // If the user wants the group destroyed, do so now.
+    if (wantDestroy) then
+        call DestroyGroup(g)
+    endif
     return bj_groupCountUnits
 endfunction
 
@@ -4327,14 +4466,20 @@ endfunction
 // Sets a unit's facing to point directly at a location.
 //
 function SetUnitFacingToFaceLocTimed takes unit whichUnit, location target, real duration returns nothing
-    call SetUnitFacingTimed(whichUnit, AngleBetweenPoints(GetUnitLoc(whichUnit), target), duration)
+    local location unitLoc = GetUnitLoc(whichUnit)
+
+    call SetUnitFacingTimed(whichUnit, AngleBetweenPoints(unitLoc, target), duration)
+    call RemoveLocation(unitLoc)
 endfunction
 
 //===========================================================================
 // Sets a unit's facing to point directly at another unit.
 //
 function SetUnitFacingToFaceUnitTimed takes unit whichUnit, unit target, real duration returns nothing
-    call SetUnitFacingToFaceLocTimed(whichUnit, GetUnitLoc(target), duration)
+    local location unitLoc = GetUnitLoc(target)
+
+    call SetUnitFacingToFaceLocTimed(whichUnit, unitLoc, duration)
+    call RemoveLocation(unitLoc)
 endfunction
 
 //===========================================================================
@@ -5452,6 +5597,11 @@ function GetLastCreatedLeaderboard takes nothing returns leaderboard
     return bj_lastCreatedLeaderboard
 endfunction
 
+//===========================================================================
+function MultiboardAllowDisplayBJ takes boolean flag returns nothing
+    call MultiboardSuppressDisplay(not flag)
+endfunction
+
 
 
 //***************************************************************************
@@ -5752,11 +5902,11 @@ function WaitTransmissionDuration takes sound soundHandle, integer timeType, rea
 endfunction
 
 //===========================================================================
-function DoTransmissionBasicsBJ takes integer unitId, playercolor color, location loc, sound soundHandle, string unitName, string message, real duration returns nothing
+function DoTransmissionBasicsXYBJ takes integer unitId, playercolor color, real x, real y, sound soundHandle, string unitName, string message, real duration returns nothing
     call SetCinematicSceneBJ(soundHandle, unitId, color, unitName, message, duration + bj_TRANSMISSION_PORT_HANGTIME, duration)
 
     if (unitId != 0) then
-        call PingMinimap(GetLocationX(loc), GetLocationY(loc), bj_TRANSMISSION_PING_TIME)
+        call PingMinimap(x, y, bj_TRANSMISSION_PING_TIME)
         //call SetCameraQuickPosition(x, y)
     endif
 endfunction
@@ -5785,10 +5935,12 @@ function TransmissionFromUnitWithNameBJ takes force toForce, unit whichUnit, str
 
         if (whichUnit == null) then
             // If the unit reference is invalid, send the transmission from the center of the map with no portrait.
-            call DoTransmissionBasicsBJ(0, PLAYER_COLOR_RED, Location(0,0), soundHandle, unitName, message, bj_lastTransmissionDuration)
+            call DoTransmissionBasicsXYBJ(0, PLAYER_COLOR_RED, 0, 0, soundHandle, unitName, message, bj_lastTransmissionDuration)
         else
-            call DoTransmissionBasicsBJ(GetUnitTypeId(whichUnit), GetPlayerColor(GetOwningPlayer(whichUnit)), GetUnitLoc(whichUnit), soundHandle, unitName, message, bj_lastTransmissionDuration)
-            call UnitAddIndicator(whichUnit, bj_TRANSMISSION_IND_RED, bj_TRANSMISSION_IND_BLUE, bj_TRANSMISSION_IND_GREEN, bj_TRANSMISSION_IND_ALPHA)
+            call DoTransmissionBasicsXYBJ(GetUnitTypeId(whichUnit), GetPlayerColor(GetOwningPlayer(whichUnit)), GetUnitX(whichUnit), GetUnitY(whichUnit), soundHandle, unitName, message, bj_lastTransmissionDuration)
+            if (not IsUnitHidden(whichUnit)) then
+                call UnitAddIndicator(whichUnit, bj_TRANSMISSION_IND_RED, bj_TRANSMISSION_IND_BLUE, bj_TRANSMISSION_IND_GREEN, bj_TRANSMISSION_IND_ALPHA)
+            endif
         endif
     endif
 
@@ -5815,7 +5967,7 @@ function TransmissionFromUnitTypeWithNameBJ takes force toForce, player fromPlay
     if (IsPlayerInForce(GetLocalPlayer(), toForce)) then
         // Use only local code (no net traffic) within this block to avoid desyncs.
 
-        call DoTransmissionBasicsBJ(unitId, GetPlayerColor(fromPlayer), loc, soundHandle, unitName, message, bj_lastTransmissionDuration)
+        call DoTransmissionBasicsXYBJ(unitId, GetPlayerColor(fromPlayer), GetLocationX(loc), GetLocationY(loc), soundHandle, unitName, message, bj_lastTransmissionDuration)
     endif
 
     if wait and (bj_lastTransmissionDuration > 0) then
@@ -5830,6 +5982,10 @@ function GetLastTransmissionDurationBJ takes nothing returns real
     return bj_lastTransmissionDuration
 endfunction
 
+//===========================================================================
+function ForceCinematicSubtitlesBJ takes boolean flag returns nothing
+    call ForceCinematicSubtitles(flag)
+endfunction
 
 
 //***************************************************************************
@@ -6206,6 +6362,8 @@ function SetCampaignMenuRaceBJ takes integer campaignNumber returns nothing
         call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XH)
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XU) then
         call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XU)
+    elseif (campaignNumber == bj_CAMPAIGN_INDEX_XO) then
+        call SetCampaignMenuRaceEx(bj_CAMPAIGN_OFFSET_XO)
     else
         // Unrecognized campaign - ignore the request
     endif
@@ -6239,6 +6397,8 @@ function SetCampaignAvailableBJ takes boolean available, integer campaignNumber 
         set campaignOffset = bj_CAMPAIGN_OFFSET_XH
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XU) then
         set campaignOffset = bj_CAMPAIGN_OFFSET_XU
+    elseif (campaignNumber == bj_CAMPAIGN_INDEX_XO) then
+        set campaignOffset = bj_CAMPAIGN_OFFSET_XO
     else
         set campaignOffset = campaignNumber
     endif
@@ -6277,6 +6437,12 @@ function SetCinematicAvailableBJ takes boolean available, integer cinematicIndex
     elseif (cinematicIndex == bj_CINEMATICINDEX_NED) then
         call SetEdCinematicAvailable( bj_CAMPAIGN_INDEX_N, available )
         call PlayCinematic( "NightElfEd" )
+    elseif (cinematicIndex == bj_CINEMATICINDEX_XOP) then
+        call SetOpCinematicAvailable( bj_CAMPAIGN_OFFSET_XN, available )
+        call PlayCinematic( "IntroX" )
+    elseif (cinematicIndex == bj_CINEMATICINDEX_XED) then
+        call SetEdCinematicAvailable( bj_CAMPAIGN_OFFSET_XU, available )
+        call PlayCinematic( "OutroX" )
     else
         // Unrecognized cinematic - ignore the request.
     endif
@@ -6719,14 +6885,26 @@ endfunction
 function MeleeStartingResources takes nothing returns nothing
     local integer index
     local player  indexPlayer
+    local version v
+    local integer startingGold
+    local integer startingLumber
+
+    set v = VersionGet()
+    if (v == VERSION_REIGN_OF_CHAOS) then
+        set startingGold = bj_MELEE_STARTING_GOLD_V0
+        set startingLumber = bj_MELEE_STARTING_LUMBER_V0
+    else
+        set startingGold = bj_MELEE_STARTING_GOLD_V1
+        set startingLumber = bj_MELEE_STARTING_LUMBER_V1
+    endif
 
     // Set each player's starting resources.
     set index = 0
     loop
         set indexPlayer = Player(index)
         if (GetPlayerSlotState(indexPlayer) == PLAYER_SLOT_STATE_PLAYING) then
-            call SetPlayerState(indexPlayer, PLAYER_STATE_RESOURCE_GOLD, bj_MELEE_STARTING_GOLD)
-            call SetPlayerState(indexPlayer, PLAYER_STATE_RESOURCE_LUMBER, bj_MELEE_STARTING_LUMBER)
+            call SetPlayerState(indexPlayer, PLAYER_STATE_RESOURCE_GOLD, startingGold)
+            call SetPlayerState(indexPlayer, PLAYER_STATE_RESOURCE_LUMBER, startingLumber)
         endif
 
         set index = index + 1
@@ -6918,7 +7096,7 @@ function MeleeClearExcessUnits takes nothing returns nothing
             set locX = GetStartLocationX(GetPlayerStartLocation(indexPlayer))
             set locY = GetStartLocationY(GetPlayerStartLocation(indexPlayer))
 
-            call MeleeClearNearbyUnits(locX, locY, 1024)
+            call MeleeClearNearbyUnits(locX, locY, bj_MELEE_CLEAR_UNITS_RADIUS)
         endif
 
         set index = index + 1
@@ -6938,9 +7116,12 @@ endfunction
 function MeleeEnumFindNearestMine takes nothing returns nothing
     local unit enumUnit = GetEnumUnit()
     local real dist
+    local location unitLoc
 
     if (GetUnitTypeId(enumUnit) == 'ngol') then
-        set dist = DistanceBetweenPoints(GetUnitLoc(enumUnit), bj_meleeNearestMineToLoc)
+        set unitLoc = GetUnitLoc(enumUnit)
+        set dist = DistanceBetweenPoints(unitLoc, bj_meleeNearestMineToLoc)
+        call RemoveLocation(unitLoc)
 
         // If this is our first mine, or the closest thusfar, use it instead.
         if (bj_meleeNearestMineDist < 0) or (dist < bj_meleeNearestMineDist) then
@@ -6977,11 +7158,8 @@ function MeleeRandomHeroLoc takes player p, integer id1, integer id2, integer id
     set v = VersionGet()
     if (v == VERSION_REIGN_OF_CHAOS) then
         set roll = GetRandomInt(1,3)
-    elseif (v == VERSION_FROZEN_THRONE) then
-        set roll = GetRandomInt(1,4)
     else
-        // Unrecognized version - pick the first hero in the list.
-        set roll = 1
+        set roll = GetRandomInt(1,4)
     endif
 
     // Translate the roll into a unitid.
@@ -7374,18 +7552,7 @@ function MeleeStartingUnits takes nothing returns nothing
     local location indexStartLoc
     local race     indexRace
 
-    call Preload( "Doodads\\LordaeronSummer\\Water\\Shoreline\\Shoreline0.mdx"                              )
-    call Preload( "Doodads\\LordaeronSummer\\Water\\ShorelineInsideCorner\\ShorelineInsideCorner0.mdx"      )
-    call Preload( "Doodads\\LordaeronSummer\\Water\\ShorelineOutsideCorner\\ShorelineOutsideCorner0.mdx"    )
-    call Preload( "UI\\Feedback\\Confirmation\\Confirmation.mdx"                                            )
-    call Preload( "UI\\Minimap\\Minimap-Ping.mdx"                                                           )
-    call Preload( "UI\\Buttons\\HeroLevel\\HeroLevel.mdx"                                                   )
-    call Preload( "buildings\\other\\GoldMine\\GoldMine.mdx"                                                )
-    call Preload( "SharedModels\\Bones1.mdx"                                                                )
-    call Preload( "SharedModels\\Gutz1.mdx"                                                                 )  
-    call Preload( "Abilities\\Spells\\Other\\GeneralAuraTarget\\GeneralAuraTarget.mdx"                      )
-    call Preload( "Environment\\BlightDoodad\\BlightDoodad.mdx"                                             )
-    call PreloadEnd( 0.5 )
+    call Preloader( "scripts\\SharedMelee.pld" )
 
     set index = 0
     loop
@@ -7481,14 +7648,14 @@ function MeleeStartingAI takes nothing returns nothing
             if (GetPlayerController(indexPlayer) == MAP_CONTROL_COMPUTER) then
                 // Run a race-specific melee AI script.
                 if (indexRace == RACE_HUMAN) then
-                    call PickMeleeAI(indexPlayer, "human.ai", null, null) // "human_ex1.ai", "human_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "human.ai", null, null)
                 elseif (indexRace == RACE_ORC) then
-                    call PickMeleeAI(indexPlayer, "orc.ai", null, null) // "orc_ex1.ai", "orc_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "orc.ai", null, null)
                 elseif (indexRace == RACE_UNDEAD) then
-                    call PickMeleeAI(indexPlayer, "undead.ai", null, null) // "undead_ex1.ai", "undead_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "undead.ai", null, null)
                     call RecycleGuardPosition(bj_ghoul[index])
                 elseif (indexRace == RACE_NIGHTELF) then
-                    call PickMeleeAI(indexPlayer, "elf.ai", null, null) // "elf_ex1.ai", "elf_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "elf.ai", null, null)
                 else
                     // Unrecognized race.
                 endif
@@ -7501,6 +7668,9 @@ function MeleeStartingAI takes nothing returns nothing
     endloop
 endfunction
 
+function LockGuardPosition takes unit targ returns nothing
+    call SetUnitCreepGuard(targ,true)
+endfunction
 
 
 //***************************************************************************
@@ -7857,18 +8027,24 @@ endfunction
 function MeleeExposePlayer takes player whichPlayer, boolean expose returns nothing
     local integer playerIndex
     local player  indexPlayer
+    local force   toExposeTo = CreateForce()
+
+    call CripplePlayer( whichPlayer, toExposeTo, false )
 
     set bj_playerIsExposed[GetPlayerId(whichPlayer)] = expose
     set playerIndex = 0
     loop
         set indexPlayer = Player(playerIndex)
         if (not PlayersAreCoAllied(whichPlayer, indexPlayer)) then
-            call SetPlayerAlliance(whichPlayer, indexPlayer, ALLIANCE_SHARED_VISION_FORCED, expose)
+            call ForceAddPlayer( toExposeTo, indexPlayer )
         endif
 
         set playerIndex = playerIndex + 1
         exitwhen playerIndex == bj_MAX_PLAYERS
     endloop
+
+    call CripplePlayer( whichPlayer, toExposeTo, expose )
+    call DestroyForce(toExposeTo)
 endfunction
 
 //===========================================================================
@@ -7877,10 +8053,14 @@ function MeleeExposeAllPlayers takes nothing returns nothing
     local player  indexPlayer
     local integer playerIndex2
     local player  indexPlayer2
+    local force   toExposeTo = CreateForce()
 
     set playerIndex = 0
     loop
         set indexPlayer = Player(playerIndex)
+
+        call ForceClear( toExposeTo )
+        call CripplePlayer( indexPlayer, toExposeTo, false )
 
         set playerIndex2 = 0
         loop
@@ -7888,7 +8068,7 @@ function MeleeExposeAllPlayers takes nothing returns nothing
 
             if playerIndex != playerIndex2 then
                 if (not PlayersAreCoAllied(indexPlayer, indexPlayer2)) then
-                    call SetPlayerAlliance(indexPlayer, indexPlayer2, ALLIANCE_SHARED_VISION_FORCED, true)
+                    call ForceAddPlayer( toExposeTo, indexPlayer2 )
                 endif
             endif
 
@@ -7896,9 +8076,13 @@ function MeleeExposeAllPlayers takes nothing returns nothing
             exitwhen playerIndex2 == bj_MAX_PLAYERS
         endloop
 
+        call CripplePlayer( indexPlayer, toExposeTo, true )
+
         set playerIndex = playerIndex + 1
         exitwhen playerIndex == bj_MAX_PLAYERS
     endloop
+
+    call DestroyForce( toExposeTo )
 endfunction
 
 //===========================================================================
@@ -8657,7 +8841,7 @@ function InitBlizzardGlobals takes nothing returns nothing
     set bj_questHintSound = CreateSoundFromLabel("Hint", false, false, false, 10000, 10000)
     set bj_questSecretSound = CreateSoundFromLabel("SecretFound", false, false, false, 10000, 10000)
     set bj_questItemAcquiredSound = CreateSoundFromLabel("ItemReward", false, false, false, 10000, 10000)
-    set bj_questWarningSound = CreateSoundFromLabel("Hint", false, false, false, 10000, 10000)
+    set bj_questWarningSound = CreateSoundFromLabel("Warning", false, false, false, 10000, 10000)
     set bj_victoryDialogSound = CreateSoundFromLabel("QuestCompleted", false, false, false, 10000, 10000)
     set bj_defeatDialogSound = CreateSoundFromLabel("QuestFailed", false, false, false, 10000, 10000)
 
@@ -8668,10 +8852,7 @@ function InitBlizzardGlobals takes nothing returns nothing
     set v = VersionGet()
     if (v == VERSION_REIGN_OF_CHAOS) then
         set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V0
-    elseif (v == VERSION_FROZEN_THRONE) then
-        set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V1
     else
-        // Unrecognized version - use the most recent limit
         set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V1
     endif
 endfunction
