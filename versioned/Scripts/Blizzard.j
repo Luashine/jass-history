@@ -44,6 +44,7 @@ globals
     constant integer   bj_MAX_SKELETONS                 =  25
     constant integer   bj_MAX_STOCK_ITEM_SLOTS          =  11
     constant integer   bj_MAX_STOCK_UNIT_SLOTS          =  11
+    constant integer   bj_MAX_ITEM_LEVEL                =  10
 
     // Ideally these would be looked up from Units/MiscData.txt,
     // but there is currently no script functionality exposed to do that
@@ -60,17 +61,23 @@ globals
     //   - Distance from start loc to search for nearby mines
     //
     constant real      bj_MELEE_STARTING_TOD            = 8.00
-    constant integer   bj_MELEE_STARTING_GOLD           = 750
-    constant integer   bj_MELEE_STARTING_LUMBER         = 200
+    constant integer   bj_MELEE_STARTING_GOLD           = 500
+    constant integer   bj_MELEE_STARTING_LUMBER         = 150
     constant integer   bj_MELEE_STARTING_HERO_TOKENS    = 1
     constant integer   bj_MELEE_HERO_LIMIT              = 3
     constant integer   bj_MELEE_HERO_TYPE_LIMIT         = 1
     constant real      bj_MELEE_MINE_SEARCH_RADIUS      = 2000
     constant real      bj_MELEE_CRIPPLE_TIMEOUT         = 120.00
     constant real      bj_MELEE_CRIPPLE_MSG_DURATION    = 20.00
+    constant integer   bj_MELEE_MAX_TWINKED_HEROES      = 1
 
     // Delay between a creep's death and the time it may drop an item.
     constant real      bj_CREEP_ITEM_DELAY              = 0.50
+
+    // Timing settings for Marketplace inventories.
+    constant real      bj_STOCK_RESTOCK_INITIAL_DELAY   = 120
+    constant real      bj_STOCK_RESTOCK_INTERVAL        = 30
+    constant integer   bj_STOCK_MAX_ITERATIONS          = 20
 
     // Max events registered by a single "dest dies in region" event.
     constant integer   bj_MAX_DEST_IN_REGION_EVENTS     = 64
@@ -332,6 +339,27 @@ globals
     constant integer   bj_GAMECACHE_UNIT           = 3
     constant integer   bj_GAMECACHE_STRING         = 4
 
+    // Item status types
+    constant integer   bj_ITEM_STATUS_HIDDEN       = 0
+    constant integer   bj_ITEM_STATUS_OWNED        = 1
+    constant integer   bj_ITEM_STATUS_INVULNERABLE = 2
+    constant integer   bj_ITEM_STATUS_POWERUP      = 3
+    constant integer   bj_ITEM_STATUS_SELLABLE     = 4
+
+    // Itemcode status types
+    constant integer   bj_ITEMCODE_STATUS_POWERUP  = 0
+    constant integer   bj_ITEMCODE_STATUS_SELLABLE = 1
+
+    // Elevator pathing-blocker destructable code
+    constant integer   bj_ELEVATOR_BLOCKER_CODE    = 'DTep'
+
+    // Elevator wall codes
+    constant integer   bj_ELEVATOR_WALL_TYPE_ALL        = 0
+    constant integer   bj_ELEVATOR_WALL_TYPE_EAST       = 1
+    constant integer   bj_ELEVATOR_WALL_TYPE_NORTH      = 2
+    constant integer   bj_ELEVATOR_WALL_TYPE_SOUTH      = 3
+    constant integer   bj_ELEVATOR_WALL_TYPE_WEST       = 4
+
     //-----------------------------------------------------------------------
     // Variables
     //
@@ -387,6 +415,15 @@ globals
     sound              bj_victoryDialogSound       = null
     sound              bj_defeatDialogSound        = null
 
+    // Marketplace vars
+    trigger            bj_stockItemPurchased       = null
+    timer              bj_stockUpdateTimer         = null
+    boolean array      bj_stockAllowedPermanent
+    boolean array      bj_stockAllowedCharged
+    boolean array      bj_stockAllowedArtifact
+    integer            bj_stockPickedItemLevel     = 0
+    itemtype           bj_stockPickedItemType
+
     // Melee vars
     trigger            bj_meleeVisibilityTrained   = null
     boolean            bj_meleeVisibilityIsDay     = true
@@ -404,6 +441,7 @@ globals
     boolean array      bj_playerIsExposed
     boolean            bj_finishSoonAllExposed     = false
     timerdialog        bj_finishSoonTimerDialog    = null
+    integer array      bj_meleeTwinkedHeroes
 
     // Rescue behavior vars
     trigger            bj_rescueUnitBehavior       = null
@@ -456,6 +494,7 @@ globals
     real               bj_randomSubGroupChance     = 0
     integer            bj_destRandomConsidered     = 0
     destructable       bj_destRandomCurrentPick    = null
+    destructable       bj_elevatorWallBlocker      = null
     integer            bj_itemRandomConsidered     = 0
     item               bj_itemRandomCurrentPick    = null
     integer            bj_forceRandomConsidered    = 0
@@ -989,21 +1028,6 @@ endfunction
 //===========================================================================
 function SetForLoopIndexB takes integer newIndex returns nothing
     set bj_forLoopBIndex = newIndex
-endfunction
-
-//===========================================================================
-// %%% To do - replace this with custom generated script code.
-function WaitForCondition takes boolexpr condition, real interval returns nothing
-    local trigger trig
-
-    set trig = CreateTrigger()
-    call TriggerAddCondition(trig, condition)
-    loop
-        exitwhen TriggerEvaluate(trig)
-        call TriggerSleepAction(RMaxBJ(bj_WAIT_FOR_COND_MIN_INTERVAL, interval))
-    endloop
-    call DestroyBoolExpr(condition)
-    call DestroyTrigger(trig)
 endfunction
 
 //===========================================================================
@@ -1770,34 +1794,6 @@ function TerrainDeformationStopBJ takes terraindeformation deformation, real dur
 endfunction
 
 //===========================================================================
-// %%% Obsolete
-function TerrainDeformCraterBJ takes location where, real radius, real depth, integer duration, boolean permanent returns terraindeformation
-    set bj_lastCreatedTerrainDeformation = TerrainDeformCrater(GetLocationX(where), GetLocationY(where), radius, depth, duration, permanent)
-    return bj_lastCreatedTerrainDeformation
-endfunction
-
-//===========================================================================
-// %%% Obsolete
-function TerrainDeformRippleBJ takes location where, real radius, real depth, integer duration, integer count, real spaceWaves, real timeWaves, real radiusStartPct, boolean limitNeg returns terraindeformation
-    set bj_lastCreatedTerrainDeformation = TerrainDeformRipple(GetLocationX(where), GetLocationY(where), radius, depth, duration, count, spaceWaves, timeWaves, radiusStartPct, limitNeg)
-    return bj_lastCreatedTerrainDeformation
-endfunction
-
-//===========================================================================
-// %%% Obsolete
-function TerrainDeformWaveBJ takes location where, real dirX, real dirY, real distance, real speed, real radius, real depth, integer trailTime, integer count returns terraindeformation
-    set bj_lastCreatedTerrainDeformation = TerrainDeformWave(GetLocationX(where), GetLocationY(where), dirX, dirY, distance, speed, radius, depth, trailTime, count)
-    return bj_lastCreatedTerrainDeformation
-endfunction
-
-//===========================================================================
-// %%% Obsolete
-function TerrainDeformRandomBJ takes location where, real radius, real minDelta, real maxDelta, integer duration, integer updateInterval returns terraindeformation
-    set bj_lastCreatedTerrainDeformation = TerrainDeformRandom(GetLocationX(where), GetLocationY(where), radius, minDelta, maxDelta, duration, updateInterval)
-    return bj_lastCreatedTerrainDeformation
-endfunction
-
-//===========================================================================
 function GetLastCreatedTerrainDeformation takes nothing returns terraindeformation
     return bj_lastCreatedTerrainDeformation
 endfunction
@@ -2392,21 +2388,6 @@ function GetPlayerHandicapBJ takes player whichPlayer returns real
 endfunction
 
 //===========================================================================
-// %%% Obsolete
-function GetHeroStat takes integer whichStat, unit whichHero returns integer
-    if (whichStat == bj_HEROSTAT_STR) then
-        return GetHeroStr(whichHero, false)
-    elseif (whichStat == bj_HEROSTAT_AGI) then
-        return GetHeroAgi(whichHero, false)
-    elseif (whichStat == bj_HEROSTAT_INT) then
-        return GetHeroInt(whichHero, false)
-    else
-        // Unrecognized hero stat - return 0
-        return 0
-    endif
-endfunction
-
-//===========================================================================
 function GetHeroStatBJ takes integer whichStat, unit whichHero, boolean includeBonuses returns integer
     if (whichStat == bj_HEROSTAT_STR) then
         return GetHeroStr(whichHero, includeBonuses)
@@ -2602,6 +2583,36 @@ endfunction
 //
 function RandomItemInRectSimpleBJ takes rect r returns item
     return RandomItemInRectBJ(r, null)
+endfunction
+
+//===========================================================================
+function CheckItemStatus takes item whichItem, integer status returns boolean
+    if (status == bj_ITEM_STATUS_HIDDEN) then
+        return not IsItemVisible(whichItem)
+    elseif (status == bj_ITEM_STATUS_OWNED) then
+        return IsItemOwned(whichItem)
+    elseif (status == bj_ITEM_STATUS_INVULNERABLE) then
+        return IsItemInvulnerable(whichItem)
+    elseif (status == bj_ITEM_STATUS_POWERUP) then
+        return IsItemPowerup(whichItem)
+    elseif (status == bj_ITEM_STATUS_SELLABLE) then
+        return IsItemSellable(whichItem)
+    else
+        // Unrecognized status - return false
+        return false
+    endif
+endfunction
+
+//===========================================================================
+function CheckItemcodeStatus takes integer itemId, integer status returns boolean
+    if (status == bj_ITEMCODE_STATUS_POWERUP) then
+        return IsItemIdPowerup(itemId)
+    elseif (status == bj_ITEMCODE_STATUS_SELLABLE) then
+        return IsItemIdSellable(itemId)
+    else
+        // Unrecognized status - return false
+        return false
+    endif
 endfunction
 
 
@@ -2918,6 +2929,7 @@ function IssueHauntOrderAtLocBJ takes unit whichPeon, location loc returns boole
     set g = CreateGroup()
     call GroupEnumUnitsInRangeOfLoc(g, loc, 2*bj_CELLWIDTH, filterIssueHauntOrderAtLocBJ)
     set goldMine = FirstOfGroup(g)
+    call DestroyGroup(g)
 
     // If no mine was found, abort the request.
     if (goldMine == null) then
@@ -3021,8 +3033,26 @@ function UnitIsSleepingBJ takes unit whichUnit returns boolean
 endfunction
 
 //===========================================================================
+function WakePlayerUnitsEnum takes nothing returns nothing
+    call UnitWakeUp(GetEnumUnit())
+endfunction
+
+//===========================================================================
+function WakePlayerUnits takes player whichPlayer returns nothing
+    local group g = CreateGroup()
+    call GroupEnumUnitsOfPlayer(g, whichPlayer, null)
+    call ForGroup(g, function WakePlayerUnitsEnum)
+    call DestroyGroup(g)
+endfunction
+
+//===========================================================================
 function EnableCreepSleepBJ takes boolean enable returns nothing
     call SetPlayerState(Player(PLAYER_NEUTRAL_AGGRESSIVE), PLAYER_STATE_NO_CREEP_SLEEP, IntegerTertiaryOp(enable, 0, 1))
+
+    // If we're disabling, attempt to wake any already-sleeping creeps.
+    if (not enable) then
+        call WakePlayerUnits(Player(PLAYER_NEUTRAL_AGGRESSIVE))
+    endif
 endfunction
 
 //===========================================================================
@@ -3056,6 +3086,7 @@ function PauseAllUnitsBJ takes boolean pause returns nothing
         set index = index + 1
         exitwhen index == bj_MAX_PLAYER_SLOTS
     endloop
+    call DestroyGroup(g)
 endfunction
 
 //===========================================================================
@@ -3399,6 +3430,131 @@ function ModifyGateBJ takes integer gateOperation, destructable d returns nothin
     endif
 endfunction
 
+//===========================================================================
+// To properly animate an elevator, we must know not only what height we
+// want to change to, but also what height we are currently at.  Since
+// elevators are indestructable destructables (ugh), we store the current
+// height of the elevator as the elevator's life.
+//
+function ChangeElevatorHeight takes destructable d, integer newHeight returns nothing
+    local integer oldHeight
+
+    // Cap the new height within the supported range.
+    set newHeight = IMaxBJ(1, newHeight)
+    set newHeight = IMinBJ(3, newHeight)
+
+    // Find out what height the elevator is already at.
+    set oldHeight = R2I(GetDestructableLife(d))
+    if (oldHeight < 1) or (oldHeight > 3) then
+        set oldHeight = 1
+    endif
+
+    // Store the elevator height as the destructable's life.
+    call SetDestructableLife(d, I2R(newHeight))
+
+    if (newHeight == 1) then
+        if (oldHeight == 2) then
+            call SetDestructableAnimation(d, "birth")
+            call QueueDestructableAnimation(d, "stand")
+        elseif (oldHeight == 3) then
+            call SetDestructableAnimation(d, "birth second")
+            call QueueDestructableAnimation(d, "birth")
+            call QueueDestructableAnimation(d, "stand")
+        else
+            // Unrecognized old height - snap to new height.
+            call SetDestructableAnimation(d, "stand")
+        endif
+    elseif (newHeight == 2) then
+        if (oldHeight == 1) then
+            call SetDestructableAnimation(d, "death")
+            call QueueDestructableAnimation(d, "stand second")
+        elseif (oldHeight == 3) then
+            call SetDestructableAnimation(d, "birth second")
+            call QueueDestructableAnimation(d, "stand second")
+        else
+            // Unrecognized old height - snap to new height.
+            call SetDestructableAnimation(d, "stand second")
+        endif
+    elseif (newHeight == 3) then
+        if (oldHeight == 1) then
+            call SetDestructableAnimation(d, "death")
+            call QueueDestructableAnimation(d, "death second")
+            call QueueDestructableAnimation(d, "stand third")
+        elseif (oldHeight == 2) then
+            call SetDestructableAnimation(d, "death second")
+            call QueueDestructableAnimation(d, "stand third")
+        else
+            // Unrecognized old height - snap to new height.
+            call SetDestructableAnimation(d, "stand third")
+        endif
+    else
+        // Unrecognized new height - ignore the request.
+    endif
+endfunction
+
+//===========================================================================
+function FindElevatorWallBlockerEnum takes nothing returns nothing
+    local destructable d = GetEnumDestructable()
+
+    if (GetDestructableTypeId(d) == bj_ELEVATOR_BLOCKER_CODE) then
+        set bj_elevatorWallBlocker = d
+    endif
+endfunction
+
+//===========================================================================
+// This toggles pathing on or off for one wall of an elevator by killing
+// or reviving a pathing blocker at the appropriate location (and creating
+// the pathing blocker in the first place, if it does not yet exist).
+//
+function ChangeElevatorWallBlocker takes real x, real y, real facing, boolean open returns nothing
+    local destructable blocker = null
+    local real         findThreshold = 32
+    local rect         r
+
+    // Search for the pathing blocker within the general area.
+    set r = Rect(x - findThreshold, y - findThreshold, x + findThreshold, y + findThreshold)
+    set bj_elevatorWallBlocker = null
+    call EnumDestructablesInRect(r, null, function FindElevatorWallBlockerEnum)
+    set blocker = bj_elevatorWallBlocker
+
+    if (open) then
+        // If the blocker is alive, kill it.
+        if (blocker != null) and (GetDestructableLife(blocker) > 0) then
+            call KillDestructable(blocker)
+        endif
+    else
+        // Ensure that the blocker exists and is alive.
+        if (blocker == null) then
+            set blocker = CreateDestructable(bj_ELEVATOR_BLOCKER_CODE, x, y, facing, 1, 0)
+        elseif (GetDestructableLife(blocker) <= 0) then
+            call DestructableRestoreLife(blocker, GetDestructableMaxLife(blocker), false)
+        endif
+    endif
+endfunction
+
+//===========================================================================
+function ChangeElevatorWalls takes boolean open, integer walls, destructable d returns nothing
+    local real x = GetDestructableX(d)
+    local real y = GetDestructableY(d)
+    local real distToBlocker = 192
+
+    if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_EAST) then
+        call ChangeElevatorWallBlocker(x + distToBlocker, y, 0, open)
+    endif
+
+    if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_NORTH) then
+        call ChangeElevatorWallBlocker(x, y + distToBlocker, 90, open)
+    endif
+
+    if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_SOUTH) then
+        call ChangeElevatorWallBlocker(x, y - distToBlocker, 90, open)
+    endif
+
+    if (walls == bj_ELEVATOR_WALL_TYPE_ALL) or (walls == bj_ELEVATOR_WALL_TYPE_WEST) then
+        call ChangeElevatorWallBlocker(x - distToBlocker, y, 0, open)
+    endif
+endfunction
+
 
 
 //***************************************************************************
@@ -3552,6 +3708,7 @@ function EnumUnitsSelected takes player whichPlayer, boolexpr enumFilter, code e
     call GroupEnumUnitsSelected(g, whichPlayer, enumFilter)
     call DestroyBoolExpr(enumFilter)
     call ForGroup(g, enumAction)
+    call DestroyGroup(g)
 endfunction
 
 //===========================================================================
@@ -3614,6 +3771,7 @@ function GetUnitsOfTypeIdAll takes integer unitid returns group
         set index = index + 1
         exitwhen index == bj_MAX_PLAYER_SLOTS
     endloop
+    call DestroyGroup(g)
 
     return result
 endfunction
@@ -4115,6 +4273,7 @@ function MakeUnitsPassiveForPlayer takes player whichPlayer returns nothing
     call CachePlayerHeroData(whichPlayer)
     call GroupEnumUnitsOfPlayer(playerUnits, whichPlayer, null)
     call ForGroup(playerUnits, function MakeUnitsPassiveForPlayerEnum)
+    call DestroyGroup(playerUnits)
 endfunction
 
 //===========================================================================
@@ -5937,6 +6096,7 @@ function SetPlayerColorBJ takes player whichPlayer, playercolor color, boolean c
         set g = CreateGroup()
         call GroupEnumUnitsOfPlayer(g, whichPlayer, null)
         call ForGroup(g, function SetPlayerColorBJEnum)
+        call DestroyGroup(g)
     endif
 endfunction
 
@@ -6115,6 +6275,8 @@ function MeleeStartingHeroLimit takes nothing returns nothing
         call ReducePlayerTechMaxAllowed(Player(index), 'Npbm', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nbrn', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nngs', bj_MELEE_HERO_TYPE_LIMIT)
+        call ReducePlayerTechMaxAllowed(Player(index), 'Nplh', bj_MELEE_HERO_TYPE_LIMIT)
+        call ReducePlayerTechMaxAllowed(Player(index), 'Nbst', bj_MELEE_HERO_TYPE_LIMIT)
 
         set index = index + 1
         exitwhen index == bj_MAX_PLAYERS
@@ -6135,11 +6297,18 @@ function MeleeTrainedUnitIsHeroBJFilter takes nothing returns boolean
 endfunction
 
 //===========================================================================
-// Each melee hero starts with a standard set of items.  This is currently:
+// The first N heroes trained or hired for each player start off with a
+// standard set of items.  This is currently:
 //   - 1x Scroll of Town Portal
 //
 function MeleeGrantItemsToHero takes unit whichUnit returns nothing
-    call UnitAddItemById(whichUnit, 'stwp')
+    local integer owner   = GetPlayerId(GetOwningPlayer(whichUnit))
+
+    // If we haven't twinked N heroes for this player yet, twink away.
+    if (bj_meleeTwinkedHeroes[owner] < bj_MELEE_MAX_TWINKED_HEROES) then
+        call UnitAddItemById(whichUnit, 'stwp')
+        set bj_meleeTwinkedHeroes[owner] = bj_meleeTwinkedHeroes[owner] + 1
+    endif
 endfunction
 
 //===========================================================================
@@ -6156,6 +6325,15 @@ endfunction
 function MeleeGrantHeroItems takes nothing returns nothing
     local integer index
     local trigger trig
+
+    // Initialize the twinked hero counts.
+    set index = 0
+    loop
+        set bj_meleeTwinkedHeroes[index] = 0
+
+        set index = index + 1
+        exitwhen index == bj_MAX_PLAYER_SLOTS
+    endloop
 
     // Register for an event whenever a hero is trained, so that we can give
     // him/her their starting items.
@@ -6211,6 +6389,7 @@ function MeleeClearNearbyUnits takes real x, real y, real range returns nothing
     set nearbyUnits = CreateGroup()
     call GroupEnumUnitsInRange(nearbyUnits, x, y, range, null)
     call ForGroup(nearbyUnits, function MeleeClearExcessUnit)
+    call DestroyGroup(nearbyUnits)
 endfunction
 
 //===========================================================================
@@ -6219,7 +6398,6 @@ function MeleeClearExcessUnits takes nothing returns nothing
     local real    locX
     local real    locY
     local player  indexPlayer
-    //local group   g
 
     set index = 0
     loop
@@ -6265,7 +6443,7 @@ endfunction
 //===========================================================================
 function MeleeFindNearestMine takes location src, real range returns unit
     local group nearbyMines
-    
+
     set bj_meleeNearestMine = null
     set bj_meleeNearestMineDist = -1
     set bj_meleeNearestMineToLoc = src
@@ -6273,6 +6451,7 @@ function MeleeFindNearestMine takes location src, real range returns unit
     set nearbyMines = CreateGroup()
     call GroupEnumUnitsInRangeOfLoc(nearbyMines, src, range, null)
     call ForGroup(nearbyMines, function MeleeEnumFindNearestMine)
+    call DestroyGroup(nearbyMines)
 
     return bj_meleeNearestMine
 endfunction
@@ -6731,7 +6910,7 @@ function MeleeStartingAI takes nothing returns nothing
                     call PickMeleeAI(indexPlayer, "undead.ai", "undead_ex1.ai", "undead_ex2.ai")
                     call RecycleGuardPosition(bj_ghoul[index])
                 elseif (indexRace == RACE_NIGHTELF) then
-                    call PickMeleeAI(indexPlayer, "elf.ai", "elf_ex1.ai", "elf_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "elf.ai", null, null) // "elf_ex1.ai", "elf_ex2.ai")
                 else
                     // Unrecognized race.
                 endif
@@ -6865,6 +7044,16 @@ function MeleeGetAllyKeyStructureCount takes player whichPlayer returns integer
     endloop
 
     return keyStructs
+endfunction
+
+//===========================================================================
+// Enum: Draw out a specific player.
+//
+function MeleeDoDrawEnum takes nothing returns nothing
+    local player thePlayer = GetEnumPlayer()
+
+	call CachePlayerHeroData(thePlayer)
+    call RemovePlayerPreserveUnitsBJ(thePlayer, PLAYER_GAME_RESULT_NEUTRAL, false)
 endfunction
 
 //===========================================================================
@@ -7395,8 +7584,7 @@ function ComputePlayerScore takes player whichPlayer returns integer
     local playerslotstate slotState = GetPlayerSlotState(whichPlayer)
 
     if slotState == PLAYER_SLOT_STATE_PLAYING or slotState == PLAYER_SLOT_STATE_LEFT then
-        // FIXME: Compute the non-zero actual score here
-        return (GetPlayerId(whichPlayer) + 1) * 100
+        return GetTournamentScore(whichPlayer)
     endif
 
     return 0
@@ -7414,6 +7602,7 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
     local player        indexPlayer2
     local integer       bestTeam
     local integer       bestScore
+    local boolean       draw
 
     // If the game is already over, do nothing
     if bj_meleeGameOver then
@@ -7478,19 +7667,45 @@ function MeleeTriggerTournamentFinishNow takes nothing returns nothing
             exitwhen index == teamCount
         endloop
 
-        // Give defeat to all players on teams other than the best team
+        // Check whether the best team's score is 3 times better than
+        // every other team
+        set draw = false
         set index = 0
         loop
             if index != bestTeam then
-                call ForForce(teamForce[index], function MeleeDoDefeatEnum)
+                if bestScore < (3 * teamScore[index]) then
+                    set draw = true
+                endif
             endif
 
             set index = index + 1
             exitwhen index == teamCount
         endloop
 
-        // Give victory to all players on the best team
-        call ForForce(teamForce[bestTeam], function MeleeDoVictoryEnum)
+        if draw then
+            // Give draw to all players on all teams
+            set index = 0
+            loop
+                call ForForce(teamForce[index], function MeleeDoDrawEnum)
+
+                set index = index + 1
+                exitwhen index == teamCount
+            endloop
+        else
+            // Give defeat to all players on teams other than the best team
+            set index = 0
+            loop
+                if index != bestTeam then
+                    call ForForce(teamForce[index], function MeleeDoDefeatEnum)
+                endif
+
+                set index = index + 1
+                exitwhen index == teamCount
+            endloop
+
+            // Give victory to all players on the best team
+            call ForForce(teamForce[bestTeam], function MeleeDoVictoryEnum)
+        endif
     endif
 
     // Since the game is over we should remove all observers
@@ -7868,9 +8083,144 @@ function InitSummonableCaps takes nothing returns nothing
 endfunction
 
 //===========================================================================
-function InitNeutralCaps takes nothing returns nothing
+// Update the per-class stock limits.
+//
+function UpdateStockAvailability takes item whichItem returns nothing
+    local itemtype iType  = GetItemType(whichItem)
+    local integer  iLevel = GetItemLevel(whichItem)
+
+    // Update allowed type/level combinations.
+    if (iType == ITEM_TYPE_PERMANENT) then
+        set bj_stockAllowedPermanent[iLevel] = true
+    elseif (iType == ITEM_TYPE_CHARGED) then
+        set bj_stockAllowedCharged[iLevel] = true
+    elseif (iType == ITEM_TYPE_ARTIFACT) then
+        set bj_stockAllowedArtifact[iLevel] = true
+    else
+        // Not interested in this item type - ignore the item.
+    endif
+endfunction
+
+//===========================================================================
+// Find a sellable item of the given type and level, and then add it.
+//
+function UpdateEachStockBuildingEnum takes nothing returns nothing
+    local integer iteration = 0
+    local integer pickedItemId
+
+    loop
+        set pickedItemId = ChooseRandomItemEx(bj_stockPickedItemType, bj_stockPickedItemLevel)
+        exitwhen IsItemIdSellable(pickedItemId)
+
+        // If we get hung up on an entire class/level combo of unsellable
+        // items, or a very unlucky series of random numbers, give up.
+        set iteration = iteration + 1
+        if (iteration > bj_STOCK_MAX_ITERATIONS) then
+            return
+        endif
+    endloop
+    call AddItemToStock(GetEnumUnit(), pickedItemId, 1, 1)
+endfunction
+
+//===========================================================================
+function UpdateEachStockBuilding takes itemtype iType, integer iLevel returns nothing
+    local group g
+
+    set bj_stockPickedItemType = iType
+    set bj_stockPickedItemLevel = iLevel
+
+    set g = CreateGroup()
+    call GroupEnumUnitsOfType(g, "marketplace", null)
+    call ForGroup(g, function UpdateEachStockBuildingEnum)
+    call DestroyGroup(g)
+endfunction
+
+//===========================================================================
+// Update stock inventory.
+//
+function PerformStockUpdates takes nothing returns nothing
+    local integer  pickedItemId
+    local itemtype pickedItemType
+    local integer  pickedItemLevel = 0
+    local integer  allowedCombinations = 0
+    local integer  iLevel
+
+    // Give each type/level combination a chance of being picked.
+    set iLevel = 1
+    loop
+        if (bj_stockAllowedPermanent[iLevel]) then
+            set allowedCombinations = allowedCombinations + 1
+            if (GetRandomInt(1, allowedCombinations) == 1) then
+                set pickedItemType = ITEM_TYPE_PERMANENT
+                set pickedItemLevel = iLevel
+            endif
+        endif
+        if (bj_stockAllowedCharged[iLevel]) then
+            set allowedCombinations = allowedCombinations + 1
+            if (GetRandomInt(1, allowedCombinations) == 1) then
+                set pickedItemType = ITEM_TYPE_CHARGED
+                set pickedItemLevel = iLevel
+            endif
+        endif
+        if (bj_stockAllowedArtifact[iLevel]) then
+            set allowedCombinations = allowedCombinations + 1
+            if (GetRandomInt(1, allowedCombinations) == 1) then
+                set pickedItemType = ITEM_TYPE_ARTIFACT
+                set pickedItemLevel = iLevel
+            endif
+        endif
+
+        set iLevel = iLevel + 1
+        exitwhen iLevel > bj_MAX_ITEM_LEVEL
+    endloop
+
+    // Make sure we found a valid item type to add.
+    if (allowedCombinations == 0) then
+        return
+    endif
+
+    call UpdateEachStockBuilding(pickedItemType, pickedItemLevel)
+endfunction
+
+//===========================================================================
+// Perform the first update, and then arrange future updates.
+//
+function StartStockUpdates takes nothing returns nothing
+    call PerformStockUpdates()
+    call TimerStart(bj_stockUpdateTimer, bj_STOCK_RESTOCK_INTERVAL, true, function PerformStockUpdates)
+endfunction
+
+//===========================================================================
+function RemovePurchasedItem takes nothing returns nothing
+    call RemoveItemFromStock(GetSellingUnit(), GetItemTypeId(GetSoldItem()))
+endfunction
+
+//===========================================================================
+function InitNeutralBuildings takes nothing returns nothing
+    local integer iLevel
+
+    // Chart of allowed stock items.
+    set iLevel = 0
+    loop
+        set bj_stockAllowedPermanent[iLevel] = false
+        set bj_stockAllowedCharged[iLevel] = false
+        set bj_stockAllowedArtifact[iLevel] = false
+        set iLevel = iLevel + 1
+        exitwhen iLevel > bj_MAX_ITEM_LEVEL
+    endloop
+
+    // Limit stock inventory slots.
     call SetAllItemTypeSlots(bj_MAX_STOCK_ITEM_SLOTS)
     call SetAllUnitTypeSlots(bj_MAX_STOCK_UNIT_SLOTS)
+
+    // Arrange the first update.
+    set bj_stockUpdateTimer = CreateTimer()
+    call TimerStart(bj_stockUpdateTimer, bj_STOCK_RESTOCK_INITIAL_DELAY, false, function StartStockUpdates)
+
+    // Set up a trigger to fire whenever an item is sold.
+    set bj_stockItemPurchased = CreateTrigger()
+    call TriggerRegisterPlayerUnitEvent(bj_stockItemPurchased, Player(PLAYER_NEUTRAL_PASSIVE), EVENT_PLAYER_UNIT_SELL_ITEM, null)
+    call TriggerAddAction(bj_stockItemPurchased, function RemovePurchasedItem)
 endfunction
 
 //===========================================================================
@@ -7898,7 +8248,7 @@ function InitBlizzard takes nothing returns nothing
     call InitDNCSounds()
     call InitMapRects()
     call InitSummonableCaps()
-    call InitNeutralCaps()
+    call InitNeutralBuildings()
     call DetectGameStarted()
 endfunction
 
@@ -8003,7 +8353,6 @@ function UnitDropItem takes unit inUnit, integer inItemID returns item
 	local real radius = 32
 	local real unitX
 	local real unitY
-    local integer stockItemID
     local item droppedItem
 
 	if (inItemID == -1) then
@@ -8019,10 +8368,7 @@ function UnitDropItem takes unit inUnit, integer inItemID returns item
     set droppedItem = CreateItem(inItemID, x, y)
 
     call SetItemDropID(droppedItem, GetUnitTypeId(inUnit))
-
-    // Add to global item stock
-    set stockItemID = ChooseRandomItemEx(GetItemType(droppedItem), GetItemLevel(droppedItem))
-    call AddItemToAllStock(stockItemID, 0, 1)
+    call UpdateStockAvailability(droppedItem)
 
     return droppedItem
 endfunction
@@ -8034,8 +8380,6 @@ function WidgetDropItem takes widget inWidget, integer inItemID returns item
 	local real radius = 32
 	local real widgetX
 	local real widgetY
-    local integer stockItemID
-    local item droppedItem
 
 	if (inItemID == -1) then
         return null
@@ -8047,12 +8391,5 @@ function WidgetDropItem takes widget inWidget, integer inItemID returns item
 	set x = GetRandomReal(widgetX - radius, widgetX + radius)
 	set y = GetRandomReal(widgetY - radius, widgetY + radius)
 
-    set droppedItem = CreateItem(inItemID, x, y)
-
-    // Add to global item stock
-    set stockItemID = ChooseRandomItemEx(GetItemType(droppedItem), GetItemLevel(droppedItem))
-    call AddItemToAllStock(stockItemID, 0, 1)
-
-    return droppedItem
+    return CreateItem(inItemID, x, y)
 endfunction
-

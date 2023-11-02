@@ -1,6 +1,6 @@
-//============================================================================
-//  $Id
-//============================================================================
+//==================================================================================================
+//  $Id: common.ai,v 1.28 2003/03/21 13:36:50 bfitch Exp $
+//==================================================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
 native DebugUnitID          takes string str, integer val               returns nothing
@@ -168,9 +168,12 @@ globals
     // special human heroes
     constant integer JAINA              = 'Hjai'
     constant integer MURADIN            = 'Hmbr'
+    constant integer GARITHOS           = 'Hlgr'
+    constant integer KAEL               = 'Hkal'
 
     // human units
     constant integer COPTER             = 'hgyr'
+    constant integer GYRO               =  COPTER
     constant integer ELEMENTAL          = 'hwat'
     constant integer FOOTMAN            = 'hfoo'
     constant integer FOOTMEN            =  FOOTMAN
@@ -183,6 +186,7 @@ globals
     constant integer RIFLEMEN           =  RIFLEMAN
     constant integer SORCERESS          = 'hsor'
     constant integer TANK               = 'hmtt'
+    constant integer STEAM_TANK         = TANK
     constant integer MILITIA            = 'hmil'
     constant integer SPELL_BREAKER      = 'hspt'
     constant integer HUMAN_DRAGON_HAWK  = 'hdhw'
@@ -205,6 +209,7 @@ globals
     constant integer KEEP               = 'hkee'
     constant integer LUMBER_MILL        = 'hlum'
     constant integer SANCTUM            = 'hars'
+    constant integer ARCANE_SANCTUM     =  SANCTUM
     constant integer TOWN_HALL          = 'htow'
     constant integer WATCH_TOWER        = 'hwtw'
     constant integer WORKSHOP           = 'harm'
@@ -341,6 +346,7 @@ globals
     constant integer MALGANIS           = 'Umal'
     constant integer TICHONDRIUS        = 'Utic'
     constant integer PIT_LORD           = 'Npld'
+    constant integer DETHEROC           = 'Udth'
 
     // undead hero abilities
     constant integer SLEEP              = 'AUsl'
@@ -437,6 +443,7 @@ globals
     // special elf heroes
     constant integer SYLVANUS           = 'Hvwd'
     constant integer CENARIUS           = 'Ecen'
+    constant integer ILLIDAN            = 'Eevi'
 
     // elf hero abilities
     constant integer FORCE_NATURE       = 'AEfn'
@@ -564,19 +571,23 @@ globals
     constant integer NAGA_VASHJ         = 'Hvsh' 
 
     // naga units
-    constant integer NAGA_DRAGON        = 'nsnp'
+    constant integer NAGA_DRAGON        = 'nsnp'        // old names
     constant integer NAGA_WITCH         = 'nnsw'
-    constant integer NAGA_MYRMIDON      = 'nmyr'
     constant integer NAGA_SERPENT       = 'nwgs' 
-    constant integer NAGA_HYDRA         = 'nhyc' 
-    constant integer NAGA_SLAVE         = 'nmpe' 
+
+    constant integer NAGA_SLAVE         = 'nmpe'        // peon
+    constant integer NAGA_SNAP_DRAGON   =  NAGA_DRAGON  // weak ranged
+    constant integer NAGA_COUATL        =  NAGA_SERPENT // weak air
+    constant integer NAGA_SIREN         =  NAGA_WITCH   // caster
+    constant integer NAGA_MYRMIDON      = 'nmyr'        // knight
+    constant integer NAGA_HYDRA         = 'nhyc'        // siege
 
     // naga buildings
-    constant integer NAGA_CORAL         = 'nnfm' 
-    constant integer NAGA_SHRINE        = 'nnsa' 
-    constant integer NAGA_SPAWNING      = 'nnsg' 
-    constant integer NAGA_TEMPLE        = 'nntt' 
-    constant integer NAGA_GUARDIAN      = 'nntg' 
+    constant integer NAGA_TEMPLE        = 'nntt'        // town hall
+    constant integer NAGA_CORAL         = 'nnfm'        // farm
+    constant integer NAGA_SHRINE        = 'nnsa'        // sirens & couatls
+    constant integer NAGA_SPAWNING      = 'nnsg'        // myrm, snap dragon, hydra
+    constant integer NAGA_GUARDIAN      = 'nntg'        // tower
 
     //--------------------------------------------------------------------
     constant integer M1                 =    60
