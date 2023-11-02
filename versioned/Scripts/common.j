@@ -92,6 +92,7 @@ type weapontype         extends     handle
 type soundtype          extends     handle
 type lightning          extends     handle
 type pathingtype        extends     handle
+type mousebuttontype    extends     handle
 type image              extends     handle
 type ubersplat          extends     handle
 type hashtable          extends     agent
@@ -140,6 +141,7 @@ constant native ConvertDamageType           takes integer i returns damagetype
 constant native ConvertWeaponType           takes integer i returns weapontype
 constant native ConvertSoundType            takes integer i returns soundtype
 constant native ConvertPathingType          takes integer i returns pathingtype
+constant native ConvertMouseButtonType      takes integer i returns mousebuttontype
 
 constant native OrderId                     takes string  orderIdString     returns integer
 constant native OrderId2String              takes integer orderId           returns string
@@ -153,6 +155,13 @@ constant native AbilityId2String            takes integer abilityId         retu
 // Looks up the "name" field for any object (unit, item, ability)
 constant native GetObjectName               takes integer objectId          returns string
 
+constant native GetBJMaxPlayers             takes nothing returns integer
+constant native GetBJPlayerNeutralVictim    takes nothing returns integer
+constant native GetBJPlayerNeutralExtra     takes nothing returns integer
+constant native GetBJMaxPlayerSlots         takes nothing returns integer
+constant native GetPlayerNeutralPassive     takes nothing returns integer
+constant native GetPlayerNeutralAggressive  takes nothing returns integer
+
 globals
 
 //===================================================
@@ -164,8 +173,8 @@ globals
     constant boolean            TRUE                            = true
     constant integer            JASS_MAX_ARRAY_SIZE             = 8192
 
-    constant integer            PLAYER_NEUTRAL_PASSIVE          = 15
-    constant integer            PLAYER_NEUTRAL_AGGRESSIVE       = 12
+    constant integer            PLAYER_NEUTRAL_PASSIVE          = GetPlayerNeutralPassive()
+    constant integer            PLAYER_NEUTRAL_AGGRESSIVE       = GetPlayerNeutralAggressive()
 
     constant playercolor        PLAYER_COLOR_RED                = ConvertPlayerColor(0)
     constant playercolor        PLAYER_COLOR_BLUE               = ConvertPlayerColor(1)
@@ -270,6 +279,10 @@ globals
     constant pathingtype        PATHING_TYPE_BLIGHTPATHING      = ConvertPathingType(5)
     constant pathingtype        PATHING_TYPE_FLOATABILITY       = ConvertPathingType(6)
     constant pathingtype        PATHING_TYPE_AMPHIBIOUSPATHING  = ConvertPathingType(7)
+
+    constant mousebuttontype    MOUSE_BUTTON_TYPE_LEFT          = ConvertMouseButtonType(1)
+    constant mousebuttontype    MOUSE_BUTTON_TYPE_MIDDLE        = ConvertMouseButtonType(2)
+    constant mousebuttontype    MOUSE_BUTTON_TYPE_RIGHT         = ConvertMouseButtonType(3)
 
 //===================================================
 // Map Setup Constants    
@@ -633,34 +646,37 @@ globals
     constant playerevent        EVENT_PLAYER_ARROW_DOWN_UP              = ConvertPlayerEvent(266)
     constant playerevent        EVENT_PLAYER_ARROW_UP_DOWN              = ConvertPlayerEvent(267)
     constant playerevent        EVENT_PLAYER_ARROW_UP_UP                = ConvertPlayerEvent(268)
+    constant playerevent        EVENT_PLAYER_MOUSE_DOWN                 = ConvertPlayerEvent(269)
+    constant playerevent        EVENT_PLAYER_MOUSE_UP                   = ConvertPlayerEvent(270)
+    constant playerevent        EVENT_PLAYER_MOUSE_MOVE                 = ConvertPlayerEvent(271)
 
     //===================================================
     // For use with TriggerRegisterPlayerUnitEvent
     //===================================================
 
-    constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(269)
-    constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(270)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(271)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CHANNEL         = ConvertPlayerUnitEvent(272)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CAST            = ConvertPlayerUnitEvent(273)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(274)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(275)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(276)
-    constant playerunitevent    EVENT_PLAYER_UNIT_PAWN_ITEM             = ConvertPlayerUnitEvent(277)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(272)
+    constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(273)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(274)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CHANNEL         = ConvertPlayerUnitEvent(275)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CAST            = ConvertPlayerUnitEvent(276)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(277)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(278)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(279)
+    constant playerunitevent    EVENT_PLAYER_UNIT_PAWN_ITEM             = ConvertPlayerUnitEvent(280)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
     //===================================================
 
-    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(286)
-    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(287)
-    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(288)
-    constant unitevent          EVENT_UNIT_SPELL_CHANNEL                = ConvertUnitEvent(289)
-    constant unitevent          EVENT_UNIT_SPELL_CAST                   = ConvertUnitEvent(290)
-    constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(291)
-    constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(292)
-    constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(293)
-    constant unitevent          EVENT_UNIT_PAWN_ITEM                    = ConvertUnitEvent(294)
+    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(289)
+    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(290)
+    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(291)
+    constant unitevent          EVENT_UNIT_SPELL_CHANNEL                = ConvertUnitEvent(292)
+    constant unitevent          EVENT_UNIT_SPELL_CAST                   = ConvertUnitEvent(293)
+    constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(294)
+    constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(295)
+    constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(296)
+    constant unitevent          EVENT_UNIT_PAWN_ITEM                    = ConvertUnitEvent(297)
 
     //===================================================
     // Limit Event API constants    
@@ -2415,3 +2431,110 @@ native PreloadGenClear  takes nothing returns nothing
 native PreloadGenStart  takes nothing returns nothing
 native PreloadGenEnd    takes string filename returns nothing
 native Preloader        takes string filename returns nothing
+
+// JAPI Test Functions
+native GetTriggerPlayerMouseX                   takes nothing returns real
+native GetTriggerPlayerMouseY                   takes nothing returns real
+native GetTriggerPlayerMousePosition            takes nothing returns location
+native GetTriggerPlayerMouseButton              takes nothing returns mousebuttontype
+native SetAbilityTooltip                        takes integer abilCode, string tooltip, integer level returns nothing
+native SetAbilityOnTooltip                      takes integer abilCode, string tooltip, integer level returns nothing
+native SetAbilityExtendedTooltip                takes integer abilCode, string ExtendedTooltip, integer level returns nothing
+native SetAbilityOnExtendedTooltip              takes integer abilCode, string ExtendedTooltip, integer level returns nothing
+native SetAbilityResearchTooltip                takes integer abilCode, string researchTooltip, integer level returns nothing
+native SetAbilityResearchExtendedTooltip        takes integer abilCode, string researchExtendedTooltip, integer level returns nothing
+native GetAbilityTooltip                        takes integer abilCode, integer level returns string
+native GetAbilityOnTooltip                      takes integer abilCode, integer level returns string
+native GetAbilityExtendedTooltip                takes integer abilCode, integer level returns string
+native GetAbilityOnExtendedTooltip              takes integer abilCode, integer level returns string
+native GetAbilityResearchTooltip                takes integer abilCode, integer level returns string
+native GetAbilityResearchExtendedTooltip        takes integer abilCode, integer level returns string
+native SetAbilityIcon                           takes integer abilCode, string iconPath, integer level returns nothing
+native GetAbilityIcon                           takes integer abilCode, integer level returns string
+native SetAbilityOnIcon                         takes integer abilCode, string iconPath returns nothing
+native GetAbilityOnIcon                         takes integer abilCode returns string
+native GetAbilityPosX                           takes integer abilCode returns integer
+native GetAbilityPosY                           takes integer abilCode returns integer
+native SetAbilityPosX                           takes integer abilCode, integer x returns nothing
+native SetAbilityPosY                           takes integer abilCode, integer y returns nothing
+native GetAbilityOnPosX                         takes integer abilCode returns integer
+native GetAbilityOnPosY                         takes integer abilCode returns integer
+native SetAbilityOnPosX                         takes integer abilCode, integer x returns nothing
+native SetAbilityOnPosY                         takes integer abilCode, integer y returns nothing
+native GetUnitMaxHP                             takes unit whichUnit returns integer
+native SetUnitMaxHP                             takes unit whichUnit, integer hp returns nothing
+native GetUnitMaxMana                           takes unit whichUnit returns integer
+native SetUnitMaxMana                           takes unit whichUnit, integer mana returns nothing
+native DeleteHeroAbility                        takes unit whichUnit, integer abilCode returns nothing
+native SetItemName                              takes item whichItem, string name returns nothing
+native SetItemDescription                       takes item whichItem, string name returns nothing
+native GetItemDescription                       takes item whichItem returns string
+native SetItemTooltip                           takes item whichItem, string name returns nothing
+native GetItemTooltip                           takes item whichItem returns string
+native SetItemExtendedTooltip                   takes item whichItem, string name returns nothing
+native GetItemExtendedTooltip                   takes item whichItem returns string
+native SetItemIconPath                          takes item whichItem, string name returns nothing
+native GetItemIconPath                          takes item whichItem returns string
+native SetUnitName                              takes unit whichUnit, string name returns nothing
+native SetUnitNameAll                           takes unit whichUnit, string name returns nothing
+native SetHeroProperName                        takes unit whichUnit, string name returns nothing
+native GetUnitBaseDamage                        takes unit whichUnit, integer weaponIndex returns integer
+native SetUnitBaseDamage                        takes unit whichUnit, integer baseDamage, integer weaponIndex returns nothing
+native GetUnitDiceNumber                        takes unit whichUnit, integer weaponIndex returns integer
+native SetUnitDiceNumber                        takes unit whichUnit, integer diceNumber, integer weaponIndex returns nothing
+native GetUnitDiceSides                         takes unit whichUnit, integer weaponIndex returns integer
+native SetUnitDiceSides                         takes unit whichUnit, integer diceSides, integer weaponIndex returns nothing
+native GetUnitAttackCooldown                    takes unit whichUnit, integer weaponIndex returns real
+native SetUnitAttackCooldown                    takes unit whichUnit, real cooldown, integer weaponIndex returns nothing
+native SetSpecialEffectColorByPlayer            takes effect whichEffect, player whichPlayer returns nothing
+native SetSpecialEffectColor                    takes effect whichEffect, integer r, integer g, integer b returns nothing
+native SetSpecialEffectAlpha                    takes effect whichEffect, integer alpha returns nothing
+native SetSpecialEffectScale                    takes effect whichEffect, real scale returns nothing
+native SetSpecialEffectPosition                 takes effect whichEffect, real x, real y, real z returns nothing
+native SetSpecialEffectHeight                   takes effect whichEffect, real height returns nothing
+native SetSpecialEffectTimeScale                takes effect whichEffect, real timeScale returns nothing
+native SetSpecialEffectTime                     takes effect whichEffect, real time returns nothing
+native SetSpecialEffectOrientation              takes effect whichEffect, real yaw, real pitch, real roll returns nothing
+native SetSpecialEffectYaw                      takes effect whichEffect, real yaw returns nothing
+native SetSpecialEffectPitch                    takes effect whichEffect, real pitch returns nothing
+native SetSpecialEffectRoll                     takes effect whichEffect, real roll returns nothing
+native PlaySpecialEffect                        takes effect whichEffect, integer anim returns nothing
+native PlaySpecialEffectWithTimeScale           takes effect whichEffect, integer anim, real timeScale returns nothing
+constant native DecPlayerTechResearched         takes player whichPlayer, integer techid, integer levels returns nothing
+native SetEventDamage                           takes real damage returns nothing
+
+native AutomationTestStart takes string testName returns nothing
+native AutomationTestEnd takes string testName returns nothing
+
+native SetSpecialEffectX                        takes effect whichEffect, real x returns nothing
+native SetSpecialEffectY                        takes effect whichEffect, real y returns nothing
+native SetSpecialEffectZ                        takes effect whichEffect, real z returns nothing
+native SetSpecialEffectPositionLoc              takes effect whichEffect, location loc returns nothing
+native GetLocalSpecialEffectX                   takes effect whichEffect returns real
+native GetLocalSpecialEffectY                   takes effect whichEffect returns real
+native GetLocalSpecialEffectZ                   takes effect whichEffect returns real
+native GetUnitArmor                             takes unit whichUnit returns real
+native SetUnitArmor                             takes unit whichUnit, real armorAmount returns nothing
+native UnitHideAbility                          takes unit whichUnit, integer abilId, boolean flag returns nothing
+native UnitDisableAbility                       takes unit whichUnit, integer abilId, boolean flag, boolean hideUI returns nothing
+native UnitCancelTimedLife                      takes unit whichUnit returns nothing
+native IsUnitSelectable                         takes unit whichUnit returns boolean
+native IsUnitInvulnerable                       takes unit whichUnit returns boolean
+native UnitInterruptAttack                      takes unit whichUnit returns nothing
+native GetUnitCollisionSize                     takes unit whichUnit returns real
+native GetAbilityManaCost                       takes integer abilId, integer level returns integer
+native GetAbilityCooldown                       takes integer abilId, integer level returns real
+native SetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level, real cooldown returns nothing
+native GetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level returns real
+native GetUnitAbilityCooldownRemaining          takes unit whichUnit, integer abilId returns real
+native EndUnitAbilityCooldown                   takes unit whichUnit, integer abilCode returns nothing
+native GetUnitAbilityManaCost                   takes unit whichUnit, integer abilId, integer level returns integer
+native GetLocalUnitZ                            takes unit whichUnit returns real    
+
+// native GetUnitMovementType                      takes unit whichUnit returns integer
+// native SetUnitMovementType                      takes unit whichUnit, integer movementType returns nothing
+// native GetUnitArmorType                         takes unit whichUnit returns integer
+// native SetHeroStatEx                            takes unit whichHero, integer whichStat, integer statValue, boolean permanent returns nothing
+// native GetHeroPrimaryStat                       takes unit whichHero returns integer
+// native GetHeroPrimaryStatById                   takes unit whichHero returns integer
+// native GetHeroStat                              takes unit whichHero, integer whichStat, boolean includeBonuses returns integer
