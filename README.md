@@ -57,7 +57,68 @@ $ git log --oneline --invert-grep --grep EMPTY
 
 ## My notes
 
+### Missing patch 1.10 ROC/TFT
+
+https://wowpedia.fandom.com/wiki/Warcraft_III/Patch_1.10
+
+And then 1.11 seems to be a minor patch. So probably all of the script changes appeared in 1.10, but the common version and patch everyone had is 1.11.
+
+The Russian TFT CD installs straight to 1.11.
+
+Firstrun70 found this, labelled "TFT-en" and "TFT-ru" (MadSerg also had the ru file):
+
+- `War3TFT_110_English_Not official.exe` aka `WarCraft3_X_110.exe`, `5338206` bytes (5.1 MiB)
+   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_english-852342` it's here under the X name
+   -
+- md5 89e76fb2befcb95b2f269111b1111ef5
+- sha256 7a0c61cccc36cd90504b9629b6636d95d93b6b48be820c7aa066f2ad1cce4865
+
+- `War3TFT_110_Russian_Not official.exe` aka `WarCraft3_X_110_ru.exe`, `5584253` bytes (5.3 MiB)
+   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_russian-852343` it's there under the X name
+      - some people say it didn't work under Windows XP
+- md5 220e8ba301d450614c5f18869986b7a6
+- sha256 20ffe6508d8c3281289540d1ffe0cc89f91f3d9f41cc59681fcee359eb12ad81
+
+
 ### LF vs CRLF
 
 `Beta-TFT-v306/Scripts/u03x04.ai` and `Beta-TFT-v307/Scripts/u03x04.ai` had LF line endings.
+
+### Correct ordering of ROC and TFT Beta
+
+`Scripts/Cheats.j` Line 12:
+
+`  constant string   bj_DEBUG_CHAT_TELEPORT2     = "ttt"`
+
+- was readded in TFT 1.07
+- did not exist in TFT Beta v300 etc
+- was added in ROC 1.11 (or 1.10?)
+
+Therefore the better ordering of versions is:
+
+- ROC 1.06
+- TFT BETA, all
+- ROC 1.07 (???)
+- ROC 1.11
+- TFT 1.07
+- TFT 1.11
+
+See if this makes sense?
+
+**Another example:**
+
+- Added in TFT v1.07, ROC 1.11:
+- Did not exist in TFT Beta v300-308
+
+
+```
+//===========================================================================
+// This seemingly useless function is used to trick the trigger editor into
+// externalizing arbitrary strings.  Especially useful for storing externalized
+// string references in variables.
+//
+function StringIdentity takes string theString returns string
+    return theString
+endfunction
+```
 
