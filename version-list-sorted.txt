@@ -11,10 +11,11 @@ Beta-ROC-v1.31
 Beta-ROC-v1.32
 Beta-ROC-v1.33
 Beta-ROC-v1.34
-ROC-v1.01b-ru
+ROC-v1.00-ru
 ROC-v1.01-ru
-ROC-v1.02a-ru
+ROC-v1.01b-ru
 ROC-v1.02-ru
+ROC-v1.02a-ru
 ROC-v1.03-ru
 ROC-v1.04-ru
 ROC-v1.05-ru
@@ -42,10 +43,10 @@ Beta-TFT-v315
 TFT-v1.07-ru
 TFT-v1.11-ru
 TFT-v1.12-ru
-TFT-v1.13b-ru
 TFT-v1.13-ru
-TFT-v1.14b-ru
+TFT-v1.13b-ru
 TFT-v1.14-ru
+TFT-v1.14b-ru
 TFT-v1.15-ru
 TFT-v1.16a-ru
 TFT-v1.17a-ru
