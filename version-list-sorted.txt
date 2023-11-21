@@ -20,7 +20,6 @@ ROC-v1.03-ru
 ROC-v1.04-ru
 ROC-v1.05-ru
 ROC-v1.06-ru
-ROC-v1.11-ru
 Beta-TFT-v300
 Beta-TFT-v301
 Beta-TFT-v302
