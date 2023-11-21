@@ -79,11 +79,11 @@ TFT-v1.30.4.11274
 TFT-v1.31.1.12173
 Reforged-v1.32.0.13369
 Reforged-v1.32.0.14411
-Reforged-v1.32.10.18820
-Reforged-v1.32.10.19202
 Reforged-v1.32.7.15572
 Reforged-v1.32.8.15801
 Reforged-v1.32.9.16589
+Reforged-v1.32.10.18820
+Reforged-v1.32.10.19202
 Reforged-v1.33.0.19203
 Reforged-v1.36.0.20257
 Reforged-v1.36.1.20613
