@@ -40,6 +40,7 @@ Beta-TFT-v314
 Beta-TFT-v314a
 Beta-TFT-v315
 TFT-v1.07-ru
+TFT-v1.10-ru
 TFT-v1.11-ru
 TFT-v1.12-ru
 TFT-v1.13-ru
