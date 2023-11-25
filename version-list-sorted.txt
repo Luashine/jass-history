@@ -71,6 +71,7 @@ TFT-v1.25b-ru
 TFT-v1.26a-ru
 TFT-v1.27a-ru
 TFT-v1.27b-ru
+TFT-v1.28.0.7205-zhtw
 TFT-v1.28.2.7395
 TFT-v1.29.0.8803
 TFT-v1.29.2.9231
