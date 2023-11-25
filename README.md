@@ -86,39 +86,22 @@ Firstrun70 found this, labelled "TFT-en" and "TFT-ru" (MadSerg also had the ru f
 
 ### Correct ordering of ROC and TFT Beta
 
-`Scripts/Cheats.j` Line 12:
+I scrapped this entire section, lets start again. I will be repeating myself, I have written in detail in my test-maps repo and [on Hive about this](https://www.hiveworkshop.com/threads/list-of-official-patches-for-warcraft-3.322919/#js-XFUniqueId77).
 
-`  constant string   bj_DEBUG_CHAT_TELEPORT2     = "ttt"`
+The last real ROC version is 1.06. The gold TFT release did not add update patches for ROC, but the game code was 1.07, so that's what ROC shows. Also TFT/ROC 1.07 use both original and expansion MPQs for game data.
 
-- was readded in TFT 1.07
-- did not exist in TFT Beta v300 etc
-- was added in ROC 1.11 (or 1.10?)
+-> ROC 1.07 does not exist
 
-Therefore the better ordering of versions is:
+1.10 was an online-only patch for TFT 1.07 players. It did add ROC patch MPQs, but without Expansion MPQs the game was not able to load, 1.10 ROC standalone does not exist. However I will add its files (from war3patch.mpq)
+to the repo for completeness.
+
+This means realistically we are jumping like this:
 
 - ROC 1.06
-- TFT BETA, all
-- ROC 1.07 (???)
-- ROC 1.11
+- TFT Betas
 - TFT 1.07
-- TFT 1.11
+- TFT 1.10 (and a ripped patch file from here for "ROC 1.10" for TFT owners)
+- TFT 1.11 (and standalone ROC 1.11 diverges from here)
 
-See if this makes sense?
-
-**Another example:**
-
-- Added in TFT v1.07, ROC 1.11:
-- Did not exist in TFT Beta v300-308
-
-
-```
-//===========================================================================
-// This seemingly useless function is used to trick the trigger editor into
-// externalizing arbitrary strings.  Especially useful for storing externalized
-// string references in variables.
-//
-function StringIdentity takes string theString returns string
-    return theString
-endfunction
-```
+Apparently the ROC versions still shared updates to common.j, but I'm not going to go down this path and assume TFT-only from this point onwards.
 
