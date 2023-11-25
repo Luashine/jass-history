@@ -55,6 +55,35 @@ $ git log --oneline --invert-grep --grep EMPTY
 (tag: baseline) // this is my tag for an "empty" repo before versioning
 ```
 
+## CascView and CDN IDs
+
+CascView 3.0 can access arbitrary online storages from the CDN if you know the ID. Use Task Manager to see if it's downloading, because the progress bar doesn't work or tell you it's slowly downloading something.
+
+`wine CascView.exe /online 'C:\home/MYUSERNAME/temp/cachePath-for-CASC/*w3*eu*2aa787736e88e43f6ace0a4ac897fc8f'`
+
+CDN IDs:
+
+- 1.30.0
+   - `w3t.cfg:1.30.0.9655|6a3d539e4cc9d474c07a3fefde4a36ca|version-w3t-24451.bmime`
+   - `w3.cfg:1.30.0.9900|2aa787736e88e43f6ace0a4ac897fc8f|version-w3-34563.bmime`
+- 1.30.1
+   - `w3t.cfg:1.30.1.10085|3694964441a01beb8b475576e9c39da0|version-w3t-41859.bmime`
+   - `w3.cfg:1.30.1.10211|38f31eb67143d03da05854bfb559ed42|version-w3-45187.bmime`
+- 1.30.2
+   - `w3t.cfg:1.30.2.10369|5ab4cace6abb8453fb3422e7123ee474|version-w3t-50435.bmime`
+   - `w3.cfg:1.30.2.11113|cb849e73984c98f37ee8f1760356709c|version-w3-71491.bmime`
+- 1.30.3
+   - `w3t.cfg:1.30.3.11145|c1d20a79d9f890d7c7674e1c3bda313a|version-w3t-74115.bmime`
+   - `w3.cfg:1.30.3.11235|aab047a72e72fb9016192edbf0662b5e|version-w3-74435.bmime`
+- 1.30.4
+   - `w3.cfg:1.30.4.11274|7c45731c22f6bf4ff30035ab9d905745|version-w3-77187.bmime`
+- 1.31.0
+   - `w3t.cfg:1.31.0.11889|189880a364a0594dba2164c7c7074ec0|version-w3t-101762.bmime`
+   - `w3.cfg:1.31.0.12071|cc2dbb838eb5156585bc71cf9951ee65|version-w3-101763.bmime`
+
+
+
+
 ## My notes
 
 ### Missing patch 1.10 ROC/TFT
