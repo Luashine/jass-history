@@ -704,10 +704,6 @@ globals
     //===================================================
     // Frozen Throne Expansion Events
     // Need to be added here to preserve compat
-    //===================================================
-
-    //===================================================
-    // For use with TriggerRegisterGameEvent    
     //===================================================    
 
     constant gameevent          EVENT_GAME_LOADED                       = ConvertGameEvent(256)
@@ -727,37 +723,37 @@ globals
     constant playerevent        EVENT_PLAYER_ARROW_DOWN_UP              = ConvertPlayerEvent(266)
     constant playerevent        EVENT_PLAYER_ARROW_UP_DOWN              = ConvertPlayerEvent(267)
     constant playerevent        EVENT_PLAYER_ARROW_UP_UP                = ConvertPlayerEvent(268)
-    constant playerevent        EVENT_PLAYER_MOUSE_DOWN                 = ConvertPlayerEvent(269)
-    constant playerevent        EVENT_PLAYER_MOUSE_UP                   = ConvertPlayerEvent(270)
-    constant playerevent        EVENT_PLAYER_MOUSE_MOVE                 = ConvertPlayerEvent(271)
+    constant playerevent        EVENT_PLAYER_MOUSE_DOWN                 = ConvertPlayerEvent(305)
+    constant playerevent        EVENT_PLAYER_MOUSE_UP                   = ConvertPlayerEvent(306)
+    constant playerevent        EVENT_PLAYER_MOUSE_MOVE                 = ConvertPlayerEvent(307)
 
     //===================================================
     // For use with TriggerRegisterPlayerUnitEvent
     //===================================================
 
-    constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(272)
-    constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(273)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(274)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CHANNEL         = ConvertPlayerUnitEvent(275)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CAST            = ConvertPlayerUnitEvent(276)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(277)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(278)
-    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(279)
-    constant playerunitevent    EVENT_PLAYER_UNIT_PAWN_ITEM             = ConvertPlayerUnitEvent(280)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(269)
+    constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(270)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(271)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CHANNEL         = ConvertPlayerUnitEvent(272)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CAST            = ConvertPlayerUnitEvent(273)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(274)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(275)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(276)
+    constant playerunitevent    EVENT_PLAYER_UNIT_PAWN_ITEM             = ConvertPlayerUnitEvent(277)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
     //===================================================
 
-    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(289)
-    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(290)
-    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(291)
-    constant unitevent          EVENT_UNIT_SPELL_CHANNEL                = ConvertUnitEvent(292)
-    constant unitevent          EVENT_UNIT_SPELL_CAST                   = ConvertUnitEvent(293)
-    constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(294)
-    constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(295)
-    constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(296)
-    constant unitevent          EVENT_UNIT_PAWN_ITEM                    = ConvertUnitEvent(297)
+    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(286)
+    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(287)
+    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(288)
+    constant unitevent          EVENT_UNIT_SPELL_CHANNEL                = ConvertUnitEvent(289)
+    constant unitevent          EVENT_UNIT_SPELL_CAST                   = ConvertUnitEvent(290)
+    constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(291)
+    constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(292)
+    constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(293)
+    constant unitevent          EVENT_UNIT_PAWN_ITEM                    = ConvertUnitEvent(294)
 
     //===================================================
     // Limit Event API constants    
