@@ -2211,6 +2211,8 @@ native SquareRoot takes real x returns real
 //
 native Pow      takes real x, real power returns real
 
+constant native MathRound takes real r returns integer
+
 //============================================================================
 // String Utility API
 native I2R  takes integer i returns real
@@ -3642,6 +3644,7 @@ native IsCineFilterDisplayed            takes nothing returns boolean
 native SetCinematicScene                takes integer portraitUnitId, playercolor color, string speakerTitle, string text, real sceneDuration, real voiceoverDuration returns nothing
 native EndCinematicScene                takes nothing returns nothing
 native ForceCinematicSubtitles          takes boolean flag returns nothing
+native SetCinematicAudio                takes boolean cinematicAudio returns nothing
 
 native GetCameraMargin                  takes integer whichMargin returns real
 

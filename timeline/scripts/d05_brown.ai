@@ -8,7 +8,7 @@ globals
     constant integer FLESHEATER   = 'nmfs' // Level 6 Unit - Cannabalize, Venom Spears
     constant integer SEACULTIST   = 'nmsc' // Spell Caster Unit - Heal, Cripple
     constant integer SIEGEGOLEM   = 'nC06' // Siege Unit - Hurle Bolder, Slam
-    constant integer SEAWITCH     = 'Nswt' // Hero - Water Elemental, Earthquake
+    constant integer SEAWITCH     = 'Nngs' // Hero - Water Elemental, Earthquake
 endglobals
 
 //============================================================================
