@@ -2527,8 +2527,8 @@ native BlzGetTriggerPlayerMousePosition            takes nothing returns locatio
 native BlzGetTriggerPlayerMouseButton              takes nothing returns mousebuttontype
 native BlzSetAbilityTooltip                        takes integer abilCode, string tooltip, integer level returns nothing
 native BlzSetAbilityActivatedTooltip               takes integer abilCode, string tooltip, integer level returns nothing
-native BlzSetAbilityExtendedTooltip                takes integer abilCode, string ExtendedTooltip, integer level returns nothing
-native BlzSetAbilityActivatedExtendedTooltip       takes integer abilCode, string ExtendedTooltip, integer level returns nothing
+native BlzSetAbilityExtendedTooltip                takes integer abilCode, string extendedTooltip, integer level returns nothing
+native BlzSetAbilityActivatedExtendedTooltip       takes integer abilCode, string extendedTooltip, integer level returns nothing
 native BlzSetAbilityResearchTooltip                takes integer abilCode, string researchTooltip, integer level returns nothing
 native BlzSetAbilityResearchExtendedTooltip        takes integer abilCode, string researchExtendedTooltip, integer level returns nothing
 native BlzGetAbilityTooltip                        takes integer abilCode, integer level returns string
@@ -2554,16 +2554,16 @@ native BlzSetUnitMaxHP                             takes unit whichUnit, integer
 native BlzGetUnitMaxMana                           takes unit whichUnit returns integer
 native BlzSetUnitMaxMana                           takes unit whichUnit, integer mana returns nothing
 native BlzSetItemName                              takes item whichItem, string name returns nothing
-native BlzSetItemDescription                       takes item whichItem, string name returns nothing
+native BlzSetItemDescription                       takes item whichItem, string description returns nothing
 native BlzGetItemDescription                       takes item whichItem returns string
-native BlzSetItemTooltip                           takes item whichItem, string name returns nothing
+native BlzSetItemTooltip                           takes item whichItem, string tooltip returns nothing
 native BlzGetItemTooltip                           takes item whichItem returns string
-native BlzSetItemExtendedTooltip                   takes item whichItem, string name returns nothing
+native BlzSetItemExtendedTooltip                   takes item whichItem, string extendedTooltip returns nothing
 native BlzGetItemExtendedTooltip                   takes item whichItem returns string
-native BlzSetItemIconPath                          takes item whichItem, string name returns nothing
+native BlzSetItemIconPath                          takes item whichItem, string iconPath returns nothing
 native BlzGetItemIconPath                          takes item whichItem returns string
 native BlzSetUnitName                              takes unit whichUnit, string name returns nothing
-native BlzSetHeroProperName                        takes unit whichUnit, string name returns nothing
+native BlzSetHeroProperName                        takes unit whichUnit, string heroProperName returns nothing
 native BlzGetUnitBaseDamage                        takes unit whichUnit, integer weaponIndex returns integer
 native BlzSetUnitBaseDamage                        takes unit whichUnit, integer baseDamage, integer weaponIndex returns nothing
 native BlzGetUnitDiceNumber                        takes unit whichUnit, integer weaponIndex returns integer
