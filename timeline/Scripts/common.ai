@@ -1,5 +1,5 @@
 //============================================================================
-//  common.ai
+//  $Id
 //============================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
@@ -44,6 +44,7 @@ native SetNewHeroes         takes boolean state                         returns 
 native PurchaseZeppelin     takes nothing                               returns nothing
 
 native MergeUnits           takes integer qty, integer a, integer b, integer make returns boolean
+native ConvertUnits         takes integer qty, integer id               returns boolean
 
 native SetCampaignAI        takes nothing                               returns nothing
 native SetMeleeAI           takes nothing                               returns nothing
@@ -79,6 +80,7 @@ native GetExpansionY        takes nothing                               returns 
 native SetStagePoint        takes real x, real y                        returns nothing
 native AttackMoveKill       takes unit target                           returns nothing
 native AttackMoveXY         takes integer x, integer y                  returns nothing
+native LoadZepWave          takes integer x, integer y                  returns nothing
 native SuicidePlayer        takes player id, boolean check_full         returns boolean
 native CaptainInCombat      takes boolean attack_captain                returns boolean
 native IsTowered            takes unit target                           returns boolean
@@ -117,12 +119,15 @@ native StartThread          takes code func                             returns 
 native Sleep                takes real seconds                          returns nothing
 native UnitAlive            takes unit id                               returns boolean
 native IgnoredUnits         takes integer unitid                        returns integer
-native TownThreated         takes nothing                               returns boolean
+native TownThreatened       takes nothing                               returns boolean
+native DisablePathing       takes nothing                               returns nothing
+native SetAmphibious        takes nothing                               returns nothing
 
 native CommandsWaiting      takes nothing                               returns integer
 native GetLastCommand       takes nothing                               returns integer
 native GetLastData          takes nothing                               returns integer
 native PopLastCommand       takes nothing                               returns nothing
+native MeleeDifficulty      takes nothing                               returns integer
 
 //============================================================================
 //  Globals for all AI scripts
@@ -137,6 +142,7 @@ globals
     constant integer ARCHMAGE           = 'Hamg'
     constant integer PALADIN            = 'Hpal'
     constant integer MTN_KING           = 'Hmkg'
+    constant integer BLOOD_MAGE         = 'Hblm'
 
     // human hero abilities
     constant integer AVATAR             = 'AHav'
@@ -154,11 +160,16 @@ globals
     constant integer MASS_TELEPORT      = 'AHmt'
     constant integer WATER_ELEMENTAL    = 'AHwe'
 
+    constant integer BANISH             = 'AHbn'
+    constant integer FLAME_STRIKE       = 'AHfs'
+    constant integer MANA_FLARE         = 'AHmf'
+    constant integer MARK_CHAOS         = 'AHmc'
+
     // special human heroes
     constant integer JAINA              = 'Hjai'
-	constant integer MURADIN            = 'Hmbr'
+    constant integer MURADIN            = 'Hmbr'
 
-    // human units                      
+    // human units
     constant integer COPTER             = 'hgyr'
     constant integer ELEMENTAL          = 'hwat'
     constant integer FOOTMAN            = 'hfoo'
@@ -173,6 +184,12 @@ globals
     constant integer SORCERESS          = 'hsor'
     constant integer TANK               = 'hmtt'
     constant integer MILITIA            = 'hmil'
+    constant integer SPELL_BREAKER      = 'hspt'
+    constant integer HUMAN_DRAGON_HAWK  = 'hdhw'
+
+    // special human units
+    constant integer BLOOD_PRIEST       = 'hbep'
+    constant integer BLOOD_SORCERESS    = 'hbes'
 
     // human buildings
     constant integer AVIARY             = 'hgra'
@@ -191,6 +208,7 @@ globals
     constant integer TOWN_HALL          = 'htow'
     constant integer WATCH_TOWER        = 'hwtw'
     constant integer WORKSHOP           = 'harm'
+    constant integer ARCANE_VAULT       = 'hvlt'
 
     // human upgrades
     constant integer UPG_MELEE          = 'Rhme'
@@ -207,10 +225,10 @@ globals
     constant integer UPG_LEATHER        = 'Rhla'
     constant integer UPG_GUN_RANGE      = 'Rhri'
     constant integer UPG_WOOD           = 'Rhlh'
-    constant integer UPG_SENTINEL	    = 'Rhse'
-    constant integer UPG_SCATTER		= 'Rhsr'
-	constant integer UPG_BOMBS			= 'Rhgb'
-	constant integer UPG_HAMMERS		= 'Rhhb'
+    constant integer UPG_SENTINEL       = 'Rhse'
+    constant integer UPG_SCATTER        = 'Rhsr'
+    constant integer UPG_BOMBS          = 'Rhgb'
+    constant integer UPG_HAMMERS        = 'Rhhb'
 
     //--------------------------------------------------------------------
     //  ORCS
@@ -220,6 +238,7 @@ globals
     constant integer BLADE_MASTER       = 'Obla'
     constant integer FAR_SEER           = 'Ofar'
     constant integer TAUREN_CHIEF       = 'Otch'
+    constant integer SHADOW_HUNTER      = 'Oshd'
 
     // special orc heroes
     constant integer GROM               = 'Ogrh'
@@ -241,6 +260,11 @@ globals
     constant integer SHOCKWAVE          = 'AOsh'
     constant integer WAR_STOMP          = 'AOws'
 
+    constant integer HEALING_WAVE       = 'AOhw'
+    constant integer HEX                = 'AOhx'
+    constant integer SERPENT_WARD       = 'AOsw'
+    constant integer VOODOO             = 'AOvd'
+
     // orc units
     constant integer GUARDIAN           = 'oang'
     constant integer CATAPULT           = 'ocat'
@@ -253,6 +277,8 @@ globals
     constant integer SHAMAN             = 'oshm'
     constant integer TAUREN             = 'otau'
     constant integer WYVERN             = 'owyv'
+    constant integer BATRIDER           = 'otbr'
+    constant integer SPIRIT_WALKER      = 'ospw'
 
     // orc buildings
     constant integer ORC_ALTAR          = 'oalt'
@@ -266,6 +292,7 @@ globals
     constant integer BURROW             = 'otrb'
     constant integer TOTEM              = 'otto'
     constant integer ORC_WATCH_TOWER    = 'owtw'
+    constant integer VOODOO_LOUNGE      = 'ovln'
 
     // orc upgrades
     constant integer UPG_ORC_MELEE      = 'Rome'
@@ -297,8 +324,8 @@ globals
     constant integer CHAOS_GRUNT        = 'nchg'
     constant integer CHAOS_WARLOCK      = 'nchw'
     constant integer CHAOS_RAIDER       = 'nchr'
-	constant integer CHAOS_PEON			= 'ncpn'
-	constant integer CHAOS_KODO			= 'nckb'
+    constant integer CHAOS_PEON         = 'ncpn'
+    constant integer CHAOS_KODO         = 'nckb'
 
     //--------------------------------------------------------------------
     //  UNDEAD
@@ -308,6 +335,7 @@ globals
     constant integer DEATH_KNIGHT       = 'Udea'
     constant integer DREAD_LORD         = 'Udre'
     constant integer LICH               = 'Ulic'
+    constant integer CRYPT_LORD         = 'Ucrl'
 
     // special undead heroes
     constant integer MALGANIS           = 'Umal'
@@ -322,13 +350,18 @@ globals
 
     constant integer DARK_RITUAL        = 'AUdr'
     constant integer DEATH_DECAY        = 'AUdd'
-    constant integer FROST_ARMOR        = 'AUfa'
+    constant integer FROST_ARMOR        = 'AUfu'
     constant integer FROST_NOVA         = 'AUfn'
 
     constant integer ANIM_DEAD          = 'AUan'
     constant integer DEATH_COIL         = 'AUdc'
     constant integer DEATH_PACT         = 'AUdp'
     constant integer UNHOLY_AURA        = 'AUau'
+
+    constant integer CARRION_SCARAB     = 'AUcb'
+    constant integer IMPALE             = 'AUim'
+    constant integer LOCUST_SWARM       = 'AUls'
+    constant integer THORNY_SHIELD      = 'AUts'
 
     // undead units
     constant integer ABOMINATION        = 'uabo'
@@ -344,6 +377,10 @@ globals
     constant integer NECRO              = 'unec'
     constant integer SKEL_WARRIOR       = 'uske'
     constant integer SHADE              = 'ushd'
+    constant integer UNDEAD_BARGE       = 'uarb'
+    constant integer OBSIDIAN_STATUE    = 'uobs'
+    constant integer OBS_STATUE         = OBSIDIAN_STATUE
+    constant integer BLK_SPHINX         = 'ubsp'
 
     // undead buildings
     constant integer UNDEAD_MINE        = 'ugol'
@@ -360,6 +397,7 @@ globals
     constant integer ZIGGURAT_1         = 'uzig'    // normal
     constant integer ZIGGURAT_2         = 'uzg1'    // upgraded
     constant integer GRAVEYARD          = 'ugrv'
+    constant integer TOMB_OF_RELICS     = 'utom'
 
     // undead upgrades
     constant integer UPG_UNHOLY_STR     = 'Rume'
@@ -375,10 +413,13 @@ globals
     constant integer UPG_MEAT_WAGON     = 'Rump'
     constant integer UPG_WYRM_BREATH    = 'Rufb'
     constant integer UPG_SKEL_LIFE      = 'Rusl'
+    constant integer UPG_SKEL_MASTERY   = 'Rusm'
     constant integer UPG_SACRIFICE      = 'Rurs'
     constant integer UPG_ABOM_EXPL      = 'Ruax'
     constant integer UPG_CR_ARMOR       = 'Rucr'
     constant integer UPG_PLAGUE         = 'Rupc'
+    constant integer UPG_BLK_SPHINX     = 'Rusp'
+
 
     //--------------------------------------------------------------------
     //  ELVES
@@ -391,6 +432,7 @@ globals
     constant integer MOON_CHICK         = 'Emoo'
     constant integer MOON_BABE          =  MOON_CHICK
     constant integer MOON_HONEY         =  MOON_CHICK
+    constant integer WARDEN             = 'Ewar'
 
     // special elf heroes
     constant integer SYLVANUS           = 'Hvwd'
@@ -412,6 +454,11 @@ globals
     constant integer STARFALL           = 'AEsf'
     constant integer TRUESHOT           = 'AEar'
 
+    constant integer BLINK              = 'AEbl'
+    constant integer FAN_KNIVES         = 'AEfk'
+    constant integer SHADOW_TOUCH       = 'AEsh'
+    constant integer VENGEANCE          = 'AEsv'
+
     // elf units
     constant integer WISP               = 'ewsp'
     constant integer ARCHER             = 'earc'
@@ -426,6 +473,8 @@ globals
     constant integer HUNTRESS           = 'esen'
     constant integer CHIMAERA           = 'echm'
     constant integer ENT                = 'efon'
+    constant integer MOUNTAIN_GIANT     = 'emtg'
+    constant integer FAERIE_DRAGON      = 'efdr'
 
     // special elf units
     constant integer HIGH_ARCHER        = 'nhea'
@@ -433,9 +482,9 @@ globals
     constant integer HIGH_FOOTMEN       =  HIGH_FOOTMAN
     constant integer HIGH_SWORDMAN      = 'hhes'
     constant integer DRAGON_HAWK        = 'nws1'
-	constant integer CORRUPT_TREANT     = 'nenc'
-	constant integer POISON_TREANT      = 'nenp'
-	constant integer PLAGUE_TREANT      = 'nepl'
+    constant integer CORRUPT_TREANT     = 'nenc'
+    constant integer POISON_TREANT      = 'nenp'
+    constant integer PLAGUE_TREANT      = 'nepl'
     constant integer SHANDRIS           = 'eshd'
 
     // elf buildings
@@ -452,18 +501,19 @@ globals
     constant integer HUNTERS_HALL       = 'edob'
     constant integer MOON_WELL          = 'emow'
     constant integer ELF_MINE           = 'egol'
+    constant integer DEN_OF_WONDERS     = 'eden'
 
     // special elf buildings
     constant integer ELF_FARM           = 'nefm'
     constant integer ELF_GUARD_TOWER    = 'negt'
-	constant integer HIGH_SKY           = 'negm'
+    constant integer HIGH_SKY           = 'negm'
     constant integer HIGH_EARTH         = 'negf'
     constant integer HIGH_TOWER         = 'negt'
     constant integer ELF_HIGH_BARRACKS  = 'nheb'
-	constant integer CORRUPT_LIFE		= 'nctl'
-	constant integer CORRUPT_WELL		= 'ncmw'
-	constant integer CORRUPT_PROTECTOR	= 'ncap'
-	constant integer CORRUPT_WAR		= 'ncaw'
+    constant integer CORRUPT_LIFE       = 'nctl'
+    constant integer CORRUPT_WELL       = 'ncmw'
+    constant integer CORRUPT_PROTECTOR  = 'ncap'
+    constant integer CORRUPT_WAR        = 'ncaw'
 
     // elf upgrades
     constant integer UPG_STR_MOON       = 'Resm'
@@ -478,10 +528,10 @@ globals
     constant integer UPG_MARKSMAN       = 'Remk'
     constant integer UPG_DRUID_TALON    = 'Redt'
     constant integer UPG_DRUID_CLAW     = 'Redc'
-    constant integer UPG_ABOLISH		= 'Resi'
+    constant integer UPG_ABOLISH        = 'Resi'
     constant integer UPG_CHIM_ACID      = 'Recb'
     constant integer UPG_HIPPO_TAME     = 'Reht'
-	constant integer UPG_BOLT			= 'Repd'
+    constant integer UPG_BOLT           = 'Repd'
 
     //--------------------------------------------------------------------
     // Neutral
@@ -490,20 +540,43 @@ globals
     constant integer FELLHOUND          = 'nfel'
     constant integer INFERNAL           = 'ninf'
     constant integer DOOMGUARD          = 'nbal'
-	constant integer SATYR		        = 'nsty'
-	constant integer TRICKSTER          = 'nsat'
-	constant integer SHADOWDANCER       = 'nsts'
-	constant integer SOULSTEALER		= 'nstl'
-	constant integer HELLCALLER         = 'nsth'
-	constant integer SKEL_ARCHER        = 'nska'
-	constant integer SKEL_MARKSMAN      = 'nskm'
-	constant integer SKEL_BURNING       = 'nskf'
-	constant integer SKEL_GIANT			= 'nskg'
-	constant integer FURBOLG			= 'nfrl'
-	constant integer FURBOLG_TRACKER	= 'nfrb'
-	constant integer FURBOLG_SHAMAN		= 'nfrs'
-	constant integer FURBOLG_CHAMP		= 'nfrg'
-	constant integer FURBOLG_ELDER		= 'nfre'
+    constant integer SATYR              = 'nsty'
+    constant integer TRICKSTER          = 'nsat'
+    constant integer SHADOWDANCER       = 'nsts'
+    constant integer SOULSTEALER        = 'nstl'
+    constant integer HELLCALLER         = 'nsth'
+    constant integer SKEL_ARCHER        = 'nska'
+    constant integer SKEL_MARKSMAN      = 'nskm'
+    constant integer SKEL_BURNING       = 'nskf'
+    constant integer SKEL_GIANT         = 'nskg'
+    constant integer FURBOLG            = 'nfrl'
+    constant integer FURBOLG_TRACKER    = 'nfrb'
+    constant integer FURBOLG_SHAMAN     = 'nfrs'
+    constant integer FURBOLG_CHAMP      = 'nfrg'
+    constant integer FURBOLG_ELDER      = 'nfre'
+
+    //--------------------------------------------------------------------
+    // NAGA
+    //--------------------------------------------------------------------
+
+    // naga heroes
+    constant integer NAGA_SORCERESS     = 'Nngs' 
+    constant integer NAGA_VASHJ         = 'Hvsh' 
+
+    // naga units
+    constant integer NAGA_DRAGON        = 'nsnp'
+    constant integer NAGA_WITCH         = 'nnsw'
+    constant integer NAGA_MYRMIDON      = 'nmyr'
+    constant integer NAGA_SERPENT       = 'nwgs' 
+    constant integer NAGA_HYDRA         = 'nhyc' 
+    constant integer NAGA_SLAVE         = 'nmpe' 
+
+    // naga buildings
+    constant integer NAGA_CORAL         = 'nnfm' 
+    constant integer NAGA_SHRINE        = 'nnsa' 
+    constant integer NAGA_SPAWNING      = 'nnsg' 
+    constant integer NAGA_TEMPLE        = 'nntt' 
+    constant integer NAGA_GUARDIAN      = 'nntg' 
 
     //--------------------------------------------------------------------
     constant integer M1                 =    60
@@ -525,7 +598,11 @@ globals
     constant integer EASY               = 1
     constant integer NORMAL             = 2
     constant integer HARD               = 3
-    constant integer INSANE             = 4
+    constant integer INSANE             = 4 // not used
+
+    constant integer MELEE_NEWBIE       = 1
+    constant integer MELEE_NORMAL       = 2
+    constant integer MELEE_INSANE       = 3
 
     constant integer ATTACK_CAPTAIN     = 1
     constant integer DEFENSE_CAPTAIN    = 2
@@ -544,11 +621,14 @@ globals
     integer total_wood              = 0
     integer gold_buffer             = 0 // usually for potion money
     integer difficulty              = NORMAL
+    integer exp_seen                = 0
     integer racial_farm             = 'hhou'
     integer hero_id                 = 'Hamg'
     integer hero_id2                = 'Hmkg'
+    integer hero_id3                = 'Hpal'
     integer array skills1
     integer array skills2
+    integer array skills3
     integer max_hero_level          = 0
 
     integer array harass_qty
@@ -585,6 +665,8 @@ globals
 
     boolean do_debug_cheats         = false
     boolean trace_on                = true
+    boolean war3x                   = true
+    boolean zep_next_wave           = false
 endglobals
 
 //============================================================================
@@ -600,10 +682,11 @@ function TraceI takes string message, integer val returns nothing
         call DisplayTextI(GetAiPlayer(),message,val)
     endif
 endfunction
- 
+
 //============================================================================
 function InitAI takes nothing returns nothing
     set ai_player = Player(GetAiPlayer())
+    set war3x = VersionCompatible(VERSION_FROZEN_THRONE)
     set sleep_seconds = 0
     call StopGathering()
 endfunction
@@ -611,17 +694,26 @@ endfunction
 //============================================================================
 function StandardAI takes code heroes, code peons, code attacks returns nothing
     call InitAI()
-    call SetTargetHeroes(true)
+
+    if MeleeDifficulty() == MELEE_NEWBIE then
+        call SetTargetHeroes(false)
+        call SetUnitsFlee(false)
+        call SetGroupsFlee(false)
+        call SetSmartArtillery(false)
+    else
+        call SetTargetHeroes(true)
+        call SetUnitsFlee(true)
+        call SetGroupsFlee(true)
+        call SetSmartArtillery(true)
+    endif
+
     call SetMeleeAI()
     call SetHeroesFlee(true)
     call SetWatchMegaTargets(true)
     call SetHeroesTakeItems(true)
     call SetIgnoreInjured(true)
-    call SetUnitsFlee(true)
-    call SetGroupsFlee(true)
     call SetPeonsRepair(true)
     call CreateCaptains()
-    call SetSmartArtillery(true)
     call SetHeroLevels(heroes)
     call Sleep(0.1)
     call StartThread(peons)
@@ -631,6 +723,10 @@ endfunction
 //============================================================================
 //  Utility Functions
 //============================================================================
+function SetZepNextWave takes nothing returns nothing
+    set zep_next_wave = true
+endfunction
+
 function SuicideSleep takes integer seconds returns nothing
     set sleep_seconds = sleep_seconds - seconds
     loop
@@ -650,10 +746,31 @@ endfunction
 //============================================================================
 function WaitForSignal takes nothing returns integer
     local integer cmd
+    local boolean display = false //xxx
     loop
         exitwhen CommandsWaiting() != 0
+
+        //xxx
+        call Trace("waiting for a signal to begin AI script...\n")
+        set display = true
         call Sleep(2)
+        exitwhen CommandsWaiting() != 0
+        call Sleep(2)
+        exitwhen CommandsWaiting() != 0
+        call Sleep(2)
+        exitwhen CommandsWaiting() != 0
+        call Sleep(2)
+        exitwhen CommandsWaiting() != 0
+        call Sleep(2)
+        //xxx
+
     endloop
+
+    //xxx
+    if display then
+        call Trace("signal received, beginning AI script\n")
+    endif
+    //xxx
 
     set cmd = GetLastCommand()
     call PopLastCommand()
@@ -765,7 +882,9 @@ endfunction
 
 //============================================================================
 function SetBuildUpgr takes integer qty, integer unitid returns nothing
-    call SetBuildAll(BUILD_UPGRADE,qty,unitid,-1)
+    if MeleeDifficulty() != MELEE_NEWBIE or qty == 1 then
+        call SetBuildAll(BUILD_UPGRADE,qty,unitid,-1)
+    endif
 endfunction
 
 //============================================================================
@@ -903,7 +1022,7 @@ endfunction
 
 //============================================================================
 function BasicExpansion takes boolean build_it, integer unitid returns nothing
-    if build_it and GetGold() < 2000 and HallsCompleted(unitid) then
+    if build_it and HallsCompleted(unitid) then
         call SetBuildExpa( TownCount(unitid)+1, unitid )
     endif
 endfunction
@@ -1141,6 +1260,7 @@ endfunction
 
 //============================================================================
 function SleepForever takes nothing returns nothing
+    call Trace("going to sleep forever\n") //xxx
     loop
         call Sleep(100)
     endloop
@@ -1154,8 +1274,12 @@ endfunction
 
 //============================================================================
 function Conversions takes integer desire, integer unitid returns nothing
+
     if unitid == HIPPO_RIDER then
         call MergeUnits(desire,ARCHER,HIPPO,HIPPO_RIDER)
+
+    elseif unitid == BLK_SPHINX then
+        call ConvertUnits(desire,OBS_STATUE)
     endif
 endfunction
 
@@ -1223,7 +1347,7 @@ function SetMeleeGroup takes integer unitid returns nothing
     if unitid == hero_id then
         call SetAssaultGroup(1,9,unitid)
     else
-        call SetAssaultGroup((TownCountDone(unitid)*3)/4,12,unitid)
+        call SetAssaultGroup((TownCountDone(unitid)*3)/4,20,unitid)
     endif
 endfunction
 
@@ -1278,9 +1402,13 @@ function FormGroup takes integer seconds, boolean testReady returns nothing
     // normally test for CaptainReadiness() of 50%
     if testReady == true then
         set readyPercent = 50
+        call Trace("forming group, requiring healthy guys\n") //xxx
     else
         set readyPercent = 0
+        call Trace("forming group, unit health not important\n") //xxx
     endif
+
+    call Trace("trying to gather forces\n") //xxx
 
     loop
         call SuicideSleep(seconds)
@@ -1310,6 +1438,16 @@ function FormGroup takes integer seconds, boolean testReady returns nothing
 
             set index = index + 1
         endloop
+
+        //xxx
+        if sleep_seconds < -60 then
+            call Trace("exit form group -- timeout\n")
+        elseif CaptainInCombat(true) then
+            call Trace("exit form group -- can't form while already in combat\n")
+        elseif CaptainIsFull() and CaptainReadiness() >= readyPercent then
+            call Trace("exit form group -- ready\n")
+        endif
+        //xxx
 
         // time out and send group anyway if time has already expired
         exitwhen sleep_seconds < -60
@@ -1351,14 +1489,14 @@ function PrepTime takes nothing returns integer
 
         set index = index + 1
     endloop
+    call TraceI("next wave will require around %d seconds to build and gather\n",largest) //xxx
 
     return largest
 endfunction
 
 //============================================================================
-function SuicideOnPlayer takes integer seconds, player p returns nothing
-    local integer wave_prep = PrepTime()
-    local integer save_peons
+function PrepSuicideOnPlayer takes integer seconds returns boolean
+    local integer wave_prep   = PrepTime()
     local integer save_length
 
     set save_length = harass_length
@@ -1366,35 +1504,111 @@ function SuicideOnPlayer takes integer seconds, player p returns nothing
 
     call AddSleepSeconds(seconds)
     if sleep_seconds-wave_prep > 0 then
+        call TraceI("going to sleep for %d seconds before gathering next attack wave\n",sleep_seconds-wave_prep) //xxx
         call SuicideSleep(sleep_seconds-wave_prep)
     endif
 
-    set harass_length = save_length
+    call Trace("preparing suicide attack wave\n") //xxx
 
+    set harass_length = save_length
     if harass_length < 1 then
-        return
+        call Trace("ERROR - no units specificed, exiting early\n") //xxx
+        return false
     endif
 
-    set save_peons = campaign_wood_peons
-    set campaign_wood_peons = 0
+    return true
+endfunction
+
+//============================================================================
+function SleepUntilAtGoal takes nothing returns nothing
     loop
+        exitwhen CaptainRetreating()
+        exitwhen CaptainAtGoal()        // reached goal
+        exitwhen CaptainIsHome()        // failed to path and returned home
+        exitwhen CaptainIsEmpty()       // all units died
+        call SuicideSleep(3)
+    endloop
+endfunction
+
+//============================================================================
+function SleepInCombat takes nothing returns nothing
+    local integer count = 0
+    loop
+        loop
+            exitwhen not CaptainInCombat(true)  // goal is cleared
+            call SuicideSleep(1)
+        endloop
+
+        set count = count + 1
+        exitwhen count >= 8
+    endloop
+endfunction
+
+//============================================================================
+function AttackMoveXYA takes integer x, integer y returns nothing
+
+    if zep_next_wave then
+        call LoadZepWave(x,y)
+        set zep_next_wave = false
+    endif
+
+    call AttackMoveXY(x,y)
+    call SleepUntilAtGoal()
+    call SleepInCombat()
+endfunction
+
+//============================================================================
+function SuicideOnPlayerLoop takes boolean standard, player p, integer x, integer y returns nothing
+    loop
+        //xxx
+        if allow_signal_abort and CommandsWaiting() != 0 then
+            call Trace("ABORT -- attack wave override\n")
+        endif
+        //xxx
+
         exitwhen allow_signal_abort and CommandsWaiting() != 0
 
         loop
             exitwhen allow_signal_abort and CommandsWaiting() != 0
 
-            call FormGroup(5, true)
+            call FormGroup(5,true)
             exitwhen sleep_seconds <= 0
+            call TraceI("waiting %d seconds before suicide\n",sleep_seconds) //xxx
         endloop
 
-        exitwhen SuicidePlayer(p,sleep_seconds >= -60)
+        if standard then
+            exitwhen SuicidePlayer(p,sleep_seconds >= -60)
+        else
+            call AttackMoveXYA(x,y)
+        endif
+
+        call TraceI("waiting %d seconds before timeout\n",60+sleep_seconds) //xxx
         call SuicideSleep(5)
     endloop
+endfunction
 
-    set campaign_wood_peons = save_peons
-    set harass_length = 0
-
+//============================================================================
+function SuicideOnPlayerWave takes nothing returns nothing
+    call Trace("waiting for attack wave to enter combat\n") //xxx
     loop
+        //xxx
+        if allow_signal_abort and CommandsWaiting() != 0 then
+            call Trace("ABORT -- attack wave override\n")
+        endif
+
+        if CaptainInCombat(true) then
+            call Trace("done - captain has entered combat\n")
+        endif
+
+        if CaptainIsEmpty() then
+            call Trace("done - all units are dead\n")
+        endif
+
+        if sleep_seconds < -300 then
+            call Trace("done - timeout, took too long to reach engage the enemy\n")
+        endif
+        //xxx
+
         exitwhen allow_signal_abort and CommandsWaiting() != 0
 
         exitwhen CaptainInCombat(true)
@@ -1403,13 +1617,67 @@ function SuicideOnPlayer takes integer seconds, player p returns nothing
         exitwhen sleep_seconds < -300
     endloop
 
+    call Trace("waiting for attack wave to die\n") //xxx
     loop
+        //xxx
+        if allow_signal_abort and CommandsWaiting() != 0 then
+            call Trace("ABORT - attack wave override\n")
+        endif
+
+        if CaptainIsEmpty() then
+            call Trace("done - all units are dead\n")
+        endif
+
+        if sleep_seconds < -300 then
+            call Trace("done - timeout, took too long to reach engage the enemy\n")
+        endif
+        //xxx
+
         exitwhen allow_signal_abort and CommandsWaiting() != 0
 
         exitwhen CaptainIsEmpty()
         call SuicideSleep(10)
         exitwhen sleep_seconds < -300
     endloop
+endfunction
+
+//============================================================================
+function SuicideOnPlayer takes integer seconds, player p returns nothing
+    local integer save_peons
+
+    if not PrepSuicideOnPlayer(seconds) then
+        return
+    endif
+
+    set save_peons = campaign_wood_peons
+    set campaign_wood_peons = 0
+
+    call SuicideOnPlayerLoop(true,p,0,0)
+
+    set campaign_wood_peons = save_peons
+    set harass_length = 0
+
+    call SuicideOnPlayerWave()
+endfunction
+
+//============================================================================
+function SuicideOnPoint takes integer seconds, player p, integer x, integer y returns nothing
+    local integer save_peons
+
+    if not PrepSuicideOnPlayer(seconds) then
+        return
+    endif
+
+    set save_peons = campaign_wood_peons
+    set campaign_wood_peons = 0
+
+    //call AttackMoveXY(x,y)
+    call SuicideOnPlayerLoop(false,p,x,y)
+
+    set campaign_wood_peons = save_peons
+    set harass_length = 0
+
+    call SuicideOnPlayerWave()
 endfunction
 
 //============================================================================
@@ -1456,6 +1724,8 @@ endfunction
 
 //============================================================================
 function SuicideUnits takes integer u1, integer u2, integer u3, integer u4, integer u5, integer u6, integer u7, integer u8, integer u9, integer uA returns nothing
+    call Trace("MASS SUICIDE - this script is now technically done\n") //xxx
+
     call PrepFullSuicide()
     loop
         call SuicideUnitA(u1)
@@ -1483,6 +1753,17 @@ function SuicideOnPlayerEx takes integer easy, integer med, integer hard, player
 endfunction
 
 //============================================================================
+function SuicideOnPointEx takes integer easy, integer med, integer hard, player p, integer x, integer y returns nothing
+    if difficulty == EASY then
+        call SuicideOnPoint(easy,p,x,y)
+    elseif difficulty == NORMAL then
+        call SuicideOnPoint(med,p,x,y)
+    else
+        call SuicideOnPoint(hard,p,x,y)
+    endif
+endfunction
+
+//============================================================================
 function ForeverSuicideOnPlayer takes integer seconds, player p returns nothing
     local integer length = harass_length
     loop
@@ -1493,27 +1774,16 @@ function ForeverSuicideOnPlayer takes integer seconds, player p returns nothing
 endfunction
 
 //============================================================================
-function SleepInCombat takes nothing returns nothing
-    local integer count = 0
-    loop
-        loop
-            exitwhen not CaptainInCombat(true)  // goal is cleared
-            call SuicideSleep(1)
-        endloop
-
-        set count = count + 1
-        exitwhen count >= 8
-    endloop
-endfunction
-
-//============================================================================
 function CommonSleepUntilTargetDead takes unit target, boolean reform returns nothing
     loop
         exitwhen CaptainRetreating()
         exitwhen CaptainReadinessHP() <= 40
 
         exitwhen not UnitAlive(target)  // target killed
-        call AttackMoveKill(target)
+
+        if not TownThreatened() then
+            call AttackMoveKill(target)
+        endif
 
         call SuicideSleep(3)
 
@@ -1539,17 +1809,6 @@ function ReformUntilTargetDead takes unit target returns nothing
 endfunction
 
 //============================================================================
-function SleepUntilAtGoal takes nothing returns nothing
-    loop
-        exitwhen CaptainRetreating()
-        exitwhen CaptainAtGoal()        // reached goal
-        exitwhen CaptainIsHome()        // failed to path and returned home
-        exitwhen CaptainIsEmpty()       // all units died
-        call SuicideSleep(3)
-    endloop
-endfunction
-
-//============================================================================
 function AttackMoveKillA takes unit target returns nothing
     if target == null then
         call SuicideSleep(3)
@@ -1558,13 +1817,6 @@ function AttackMoveKillA takes unit target returns nothing
 
     call AttackMoveKill(target)
     call ReformUntilTargetDead(target)
-    call SleepInCombat()
-endfunction
-
-//============================================================================
-function AttackMoveXYA takes integer x, integer y returns nothing
-    call AttackMoveXY(x,y)
-    call SleepUntilAtGoal()
     call SleepInCombat()
 endfunction
 
@@ -1631,18 +1883,47 @@ function AddSiege takes nothing returns nothing
     call SetAssaultGroup( 0, 9, CATAPULT    )
 endfunction
 
+//===========================================================================
+//  GetAllyCount
+//============================================================================
+function GetAllyCount takes player whichPlayer returns integer
+    local integer    playerIndex = 0
+    local integer    count = 0
+    local player     indexPlayer
+
+    loop
+        set indexPlayer = Player(playerIndex)
+
+        if whichPlayer != indexPlayer then
+            if GetPlayerAlliance(whichPlayer,indexPlayer,ALLIANCE_PASSIVE) then
+                if GetPlayerAlliance(indexPlayer,whichPlayer,ALLIANCE_PASSIVE) then
+                    if GetPlayerStructureCount(indexPlayer,true) > 0 then
+                        set count = count + 1
+                    endif
+                endif
+            endif
+        endif
+         
+        set playerIndex = playerIndex + 1
+        exitwhen playerIndex == 12
+    endloop
+
+    return count
+endfunction
+
 //============================================================================
 //  SingleMeleeAttack
 //============================================================================
 function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean major_ok, boolean air_units returns nothing
-    local boolean can_siege
-    local real daytime 
-    local unit hall
-    local unit mega
-    local unit creep
-    local unit common
+    local boolean   can_siege
+    local real      daytime 
+    local unit      hall
+    local unit      mega
+    local unit      creep
+    local unit      common
+    local integer   minimum
 
-    if TownThreated() then
+    if TownThreatened() then
         call Sleep(2)
         return
     endif
@@ -1659,15 +1940,17 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
 
     // coordinate with allies
     //
-    set common = GetAllianceTarget()
-    if common != null then
-        if GetMegaTarget() != null then
-            call AddSiege()
+    if MeleeDifficulty() != MELEE_NEWBIE then
+        set common = GetAllianceTarget()
+        if common != null then
+            if GetMegaTarget() != null then
+                call AddSiege()
+            endif
+            call FormGroup(3,true)
+            call AttackMoveKillA(common)
+            call SetAllianceTarget(null)
+            return
         endif
-        call FormGroup(3,true)
-        call AttackMoveKillA(common)
-        call SetAllianceTarget(null)
-        return
     endif
 
     // take expansions as needed
@@ -1684,14 +1967,16 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
         endif
     endif
 
-    // all-out attack if the player is down
+    // all-out attack if the player is weak
     //
-    set mega = GetMegaTarget()
-    if mega != null then
-        call AddSiege()
-        call FormGroup(3,true)
-        call AttackMoveKillA(mega)
-        return
+    if MeleeDifficulty() != MELEE_NEWBIE then
+        set mega = GetMegaTarget()
+        if mega != null then
+            call AddSiege()
+            call FormGroup(3,true)
+            call AttackMoveKillA(mega)
+            return
+        endif
     endif
 
     // deny player an expansion
@@ -1701,11 +1986,25 @@ function SingleMeleeAttack takes boolean needs_exp, boolean has_siege, boolean m
     set can_siege = has_siege and (air_units or (daytime>=4 and daytime<=12))
 
     if hall!=null and (can_siege or not IsTowered(hall)) then
-        call AddSiege()
-        call SetAllianceTarget(hall)
-        call FormGroup(3,true)
-        call AttackMoveKillA(hall)
-        return
+
+        if MeleeDifficulty() == MELEE_NEWBIE then
+            set minimum = 3
+        elseif MeleeDifficulty() == MELEE_NORMAL and GetAllyCount(ai_player) > 0 then
+            set minimum = 1
+        else
+            set minimum = 0 // HARD & INSANE
+        endif
+
+        if exp_seen >= minimum then
+            set exp_seen = 0
+            call AddSiege()
+            call SetAllianceTarget(hall)
+            call FormGroup(3,true)
+            call AttackMoveKillA(hall)
+            return
+        endif
+
+        set exp_seen = exp_seen + 1
     endif
 
     // attack player's main base when siege is available
@@ -1880,7 +2179,7 @@ function CampaignAI takes integer farms, code heroes returns nothing
     call SetSlowChopping(true)
     call GroupTimedLife(false)
     call SetCampaignAI()
-	call Sleep(0.1)
+    call Sleep(0.1)
 
     set racial_farm = farms
     call StartThread(function CampaignBasics)
@@ -1910,8 +2209,10 @@ function SkillArrays takes nothing returns integer
 
     if GetHeroId() == hero_id then
         return skills1[level]
-    else
+    elseif GetHeroId() == hero_id2 then
         return skills2[level]
+    else
+        return skills3[level]
     endif
 endfunction
 
@@ -1932,86 +2233,62 @@ endfunction
 //  PickMeleeHero 
 //============================================================================
 function PickMeleeHero takes race raceid returns integer
-    local integer hero_roll = GetRandomInt(1,10)
+    local integer first
+    local integer second
+    local integer third
+    local integer last
+    local integer array heroes
 
     //------------------------------------------------------------------------
     if raceid == RACE_HUMAN then
     //------------------------------------------------------------------------
-        if hero_roll == 1 then
-            set hero_id  = MTN_KING
-            set hero_id2 = ARCHMAGE
-
-        elseif hero_roll <= 4 then
-            set hero_id  = MTN_KING
-            set hero_id2 = PALADIN
-
-        elseif hero_roll <= 7 then
-            set hero_id  = ARCHMAGE
-            set hero_id2 = PALADIN
-        else
-            set hero_id  = PALADIN
-            set hero_id2 = ARCHMAGE
-        endif
+        set heroes[1] = ARCHMAGE
+        set heroes[2] = MTN_KING
+        set heroes[3] = PALADIN
+        set heroes[4] = BLOOD_MAGE
 
     //------------------------------------------------------------------------
     elseif raceid == RACE_ORC then
     //------------------------------------------------------------------------
-        if hero_roll == 1 then
-            set hero_id  = BLADE_MASTER
-            set hero_id2 = TAUREN_CHIEF
-
-        elseif hero_roll <= 4 then
-            set hero_id  = BLADE_MASTER
-            set hero_id2 = FAR_SEER
-
-        elseif hero_roll <= 7 then
-            set hero_id  = FAR_SEER
-            set hero_id2 = TAUREN_CHIEF
-        else
-            set hero_id  = TAUREN_CHIEF
-            set hero_id2 = FAR_SEER
-        endif
+        set heroes[1] = BLADE_MASTER
+        set heroes[2] = FAR_SEER
+        set heroes[3] = TAUREN_CHIEF
+        set heroes[4] = SHADOW_HUNTER
 
     //------------------------------------------------------------------------
     elseif raceid == RACE_NIGHTELF then
     //------------------------------------------------------------------------
-        if hero_roll == 1 then
-            set hero_id  = DEMON_HUNTER
-            set hero_id2 = MOON_BABE
-
-        elseif hero_roll <= 4 then
-            set hero_id  = MOON_CHICK
-            set hero_id2 = KEEPER
-
-        elseif hero_roll <= 7 then
-            set hero_id  = KEEPER
-            set hero_id2 = DEMON_HUNTER
-        else
-            set hero_id  = DEMON_HUNTER
-            set hero_id2 = KEEPER
-        endif
+        set heroes[1] = DEMON_HUNTER
+        set heroes[2] = KEEPER
+        set heroes[3] = MOON_BABE
+        set heroes[4] = WARDEN
 
     //------------------------------------------------------------------------
     elseif raceid == RACE_UNDEAD then
     //------------------------------------------------------------------------
-        if hero_roll == 1 then
-            set hero_id  = DREAD_LORD
-            set hero_id2 = LICH
-
-        elseif hero_roll <= 4 then
-            set hero_id  = LICH
-            set hero_id2 = DEATH_KNIGHT
-
-        elseif hero_roll <= 7 then
-            set hero_id  = DEATH_KNIGHT
-            set hero_id2 = DREAD_LORD
-        else
-            set hero_id  = DREAD_LORD
-            set hero_id2 = DEATH_KNIGHT
-        endif
+        set heroes[1] = DEATH_KNIGHT
+        set heroes[2] = DREAD_LORD
+        set heroes[3] = LICH
+        set heroes[4] = CRYPT_LORD
     else
         set hero_id = 0
     endif
+
+    if war3x then
+        set last = 4
+    else
+        set last = 3
+    endif
+
+    set first  = GetRandomInt(1,last)
+    set second = GetRandomInt(1,last-1)
+    set third  = GetRandomInt(1,last-2)
+
+    set hero_id        = heroes[first]
+    set heroes[first]  = heroes[last]
+    set hero_id2       = heroes[second]
+    set heroes[second] = heroes[last-1]
+    set hero_id3       = heroes[third]
 
     return hero_id
 endfunction
