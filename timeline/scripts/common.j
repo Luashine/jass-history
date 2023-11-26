@@ -3957,6 +3957,7 @@ native BlzFrameGetName                             takes framehandle frame retur
 native BlzFrameClick                               takes framehandle frame returns nothing
 native BlzFrameSetText                             takes framehandle frame, string text returns nothing
 native BlzFrameGetText                             takes framehandle frame returns string
+native BlzFrameAddText                             takes framehandle frame, string text returns nothing
 native BlzFrameSetTextSizeLimit                    takes framehandle frame, integer size returns nothing
 native BlzFrameGetTextSizeLimit                    takes framehandle frame returns integer
 native BlzFrameSetTextColor                        takes framehandle frame, integer color returns nothing
@@ -3987,6 +3988,8 @@ native BlzFrameSetTextAlignment                    takes framehandle frame, text
 native BlzTriggerRegisterFrameEvent                takes trigger whichTrigger, framehandle frame, frameeventtype eventId returns event
 native BlzGetTriggerFrame                          takes nothing returns framehandle
 native BlzGetTriggerFrameEvent                     takes nothing returns frameeventtype
+native BlzGetTriggerFrameValue                     takes nothing returns real
+native BlzGetTriggerFrameText                      takes nothing returns string
 native BlzTriggerRegisterPlayerSyncEvent           takes trigger whichTrigger, player whichPlayer, string prefix, boolean fromServer returns event
 native BlzSendSyncData                             takes string prefix, string data returns boolean
 native BlzGetTriggerSyncPrefix                     takes nothing returns string
@@ -4010,6 +4013,8 @@ native BlzGetUnitAbility                           takes unit whichUnit, integer
 native BlzGetUnitAbilityByIndex                    takes unit whichUnit, integer index returns ability
 native BlzDisplayChatMessage                       takes player whichPlayer, integer recipient, string message returns nothing
 native BlzPauseUnitEx                              takes unit whichUnit, boolean flag returns nothing
+// native BlzFourCC2S                                 takes integer value returns string
+// native BlzS2FourCC                                 takes string value returns integer
 
 // Bit Operations
 native BlzBitOr                                    takes integer x, integer y returns integer
