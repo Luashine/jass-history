@@ -16,43 +16,52 @@ Find me the missing Warcraft 3 versions, pretty please with sugar on top and an 
 
 For Github, append `?w=1` or `&w=1` to the end of URL to skip whitespace changes.
 
+Simple log: ``
+
+Advanced log: `LC_ALL=C; git log --oneline --invert-grep --grep EMPTY --pretty='format:tag: %<(35)%(describe:tags=true) -- %s'`
+
 ```
-$ git log --oneline --invert-grep --grep EMPTY
-(tag: Reforged-v1.33.0.19203)
-(tag: Reforged-v1.32.7.15572)
-(tag: Reforged-v1.32.10.19202)
-(tag: Reforged-v1.32.10.18820)
-(tag: Reforged-v1.32.0.14411)
-(tag: TFT-v1.31.1.12173)
-(tag: TFT-v1.30.4.11274)
-(tag: TFT-v1.30.1.10211)
-(tag: TFT-v1.29.2.9231)
-(tag: TFT-v1.29.0.8803)
-(tag: TFT-v1.28.2.7395)
-(tag: TFT-v1.24a-ru)
-(tag: TFT-v1.18a-ru)
-(tag: TFT-v1.17a-ru)
-(tag: TFT-v1.15-ru)
-(tag: TFT-v1.13b-ru)
-(tag: TFT-v1.11-ru)
-(tag: TFT-v1.07-ru)
-(tag: Beta-TFT-v308)
-(tag: Beta-TFT-v306)
-(tag: Beta-TFT-v305)
-(tag: Beta-TFT-v304)
-(tag: Beta-TFT-v302)
-(tag: Beta-TFT-v300)
-(tag: ROC-v1.11-ru)
-(tag: ROC-v1.05-ru)
-(tag: ROC-v1.04-ru)
-(tag: ROC-v1.03-ru)
-(tag: ROC-v1.01b-ru)
-(tag: Beta-ROC-v1.30)
-(tag: Beta-ROC-v1.20)
-(tag: Beta-ROC-v1.10)
-(tag: Beta-ROC-v1.03)
-(tag: Beta-ROC-v1.00)
-(tag: baseline) // this is my tag for an "empty" repo before versioning
+tag: Reforged-v1.32.10.19202             -- version: Reforged-v1.32.10.19202
+tag: Reforged-v1.32.7.15539-w3t-b5789e1  -- version: Reforged-v1.32.7.15539-w3t-b5789e1
+tag: Reforged-v1.32.3.14857-w3-f98d8b1   -- version: Reforged-v1.32.3.14857-w3-f98d8b1
+tag: Reforged-v1.32.2.14722-w3-fd283a3   -- version: Reforged-v1.32.2.14722-w3-fd283a3
+tag: Reforged-v1.32.1.14604-w3-82335ba   -- version: Reforged-v1.32.1.14604-w3-82335ba
+tag: Reforged-v1.32.0.14481-w3-11be6c1   -- version: Reforged-v1.32.0.14481-w3-11be6c1
+tag: Reforged-v1.32.0.14411              -- version: Reforged-v1.32.0.14411
+tag: Reforged-v1.32.0.13369-w3b-ab0c8ee  -- version: Reforged-v1.32.0.13369-w3b-ab0c8ee
+tag: TFT-v1.31.1.12173                   -- version: TFT-v1.31.1.12173
+tag: TFT-v1.31.0.11889-w3t               -- version: TFT-v1.31.0.11889-w3t
+tag: TFT-v1.30.2.11113                   -- version: TFT-v1.30.2.11113
+tag: TFT-v1.30.0.9900                    -- version: TFT-v1.30.0.9900
+tag: TFT-v1.30.0.9655-w3t                -- version: TFT-v1.30.0.9655-w3t
+tag: TFT-v1.29.2.9231                    -- version: TFT-v1.29.2.9231
+tag: TFT-v1.29.0.8803                    -- version: TFT-v1.29.0.8803
+tag: TFT-v1.28.2.7395                    -- version: TFT-v1.28.2.7395
+tag: TFT-v1.28.0.7205-zhtw               -- version: TFT-v1.28.0.7205-zhtw
+tag: TFT-v1.24a-ru                       -- version: TFT-v1.24a-ru
+tag: TFT-v1.18a-ru                       -- version: TFT-v1.18a-ru
+tag: TFT-v1.17a-ru                       -- version: TFT-v1.17a-ru
+tag: TFT-v1.15-ru                        -- version: TFT-v1.15-ru
+tag: TFT-v1.13-ru                        -- version: TFT-v1.13-ru
+tag: TFT-v1.10-ru                        -- version: TFT-v1.10-ru
+tag: TFT-v1.07-ru                        -- version: TFT-v1.07-ru
+tag: Beta-TFT-v308                       -- version: Beta-TFT-v308
+tag: Beta-TFT-v306                       -- version: Beta-TFT-v306
+tag: Beta-TFT-v305                       -- version: Beta-TFT-v305
+tag: Beta-TFT-v304                       -- version: Beta-TFT-v304
+tag: Beta-TFT-v302                       -- version: Beta-TFT-v302
+tag: Beta-TFT-v300                       -- version: Beta-TFT-v300
+tag: ROC-v1.05-ru                        -- version: ROC-v1.05-ru
+tag: ROC-v1.04-ru                        -- version: ROC-v1.04-ru
+tag: ROC-v1.03-ru                        -- version: ROC-v1.03-ru
+tag: ROC-v1.01-ru                        -- version: ROC-v1.01-ru
+tag: ROC-v1.00-ru                        -- version: ROC-v1.00-ru
+tag: Beta-ROC-v1.30                      -- version: Beta-ROC-v1.30
+tag: Beta-ROC-v1.20                      -- version: Beta-ROC-v1.20
+tag: Beta-ROC-v1.10                      -- version: Beta-ROC-v1.10
+tag: Beta-ROC-v1.03                      -- version: Beta-ROC-v1.03
+tag: Beta-ROC-v1.00                      -- version: Beta-ROC-v1.00
+tag: baseline // this is my tag for an "empty" repo before versioning
 ```
 
 ## CascView and CDN IDs
