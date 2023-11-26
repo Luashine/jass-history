@@ -28,6 +28,7 @@ globals
     constant real      bj_TEXT_DELAY_UNITACQUIRED       = 15.00
     constant real      bj_TEXT_DELAY_UNITAVAILABLE      = 10.00
     constant real      bj_TEXT_DELAY_ITEMACQUIRED       = 10.00
+    constant real      bj_TEXT_DELAY_WARNING            = 12.00
     constant real      bj_QUEUE_DELAY_QUEST             =  5.00
     constant real      bj_QUEUE_DELAY_HINT              =  5.00
     constant real      bj_QUEUE_DELAY_SECRET            =  3.00
@@ -70,7 +71,8 @@ globals
     constant real      bj_MELEE_MINE_SEARCH_RADIUS      = 2000
     constant real      bj_MELEE_CRIPPLE_TIMEOUT         = 120.00
     constant real      bj_MELEE_CRIPPLE_MSG_DURATION    = 20.00
-    constant integer   bj_MELEE_MAX_TWINKED_HEROES      = 1
+    constant integer   bj_MELEE_MAX_TWINKED_HEROES_V0   = 3
+    constant integer   bj_MELEE_MAX_TWINKED_HEROES_V1   = 1
 
     // Delay between a creep's death and the time it may drop an item.
     constant real      bj_CREEP_ITEM_DELAY              = 0.50
@@ -306,6 +308,7 @@ globals
     constant integer   bj_QUESTMESSAGE_UNITACQUIRED  = 9
     constant integer   bj_QUESTMESSAGE_UNITAVAILABLE = 10
     constant integer   bj_QUESTMESSAGE_ITEMACQUIRED  = 11
+    constant integer   bj_QUESTMESSAGE_WARNING       = 12
 
     // Leaderboard sorting methods
     constant integer   bj_SORTTYPE_SORTBYVALUE     = 0
@@ -321,6 +324,18 @@ globals
     constant integer   bj_REMOVEBUFFS_POSITIVE     = 0
     constant integer   bj_REMOVEBUFFS_NEGATIVE     = 1
     constant integer   bj_REMOVEBUFFS_ALL          = 2
+    constant integer   bj_REMOVEBUFFS_NONTLIFE     = 3
+
+    // Buff properties - polarity
+    constant integer   bj_BUFF_POLARITY_POSITIVE   = 0
+    constant integer   bj_BUFF_POLARITY_NEGATIVE   = 1
+    constant integer   bj_BUFF_POLARITY_EITHER     = 2
+
+    // Buff properties - resist type
+    constant integer   bj_BUFF_RESIST_MAGIC        = 0
+    constant integer   bj_BUFF_RESIST_PHYSICAL     = 1
+    constant integer   bj_BUFF_RESIST_EITHER       = 2
+    constant integer   bj_BUFF_RESIST_BOTH         = 3
 
     // Hero stats
     constant integer   bj_HEROSTAT_STR             = 0
@@ -366,6 +381,13 @@ globals
     constant integer   bj_MINIMAPPINGSTYLE_FLASHY  = 1
     constant integer   bj_MINIMAPPINGSTYLE_ATTACK  = 2
 
+    // Corpse creation settings
+    constant real      bj_CORPSE_MAX_DEATH_TIME    = 8.00
+
+    // Corpse creation styles
+    constant integer   bj_CORPSETYPE_FLESH         = 0
+    constant integer   bj_CORPSETYPE_BONE          = 1
+
     // Elevator pathing-blocker destructable code
     constant integer   bj_ELEVATOR_BLOCKER_CODE    = 'DTep'
 
@@ -383,6 +405,8 @@ globals
     // Force predefs
     force              bj_FORCE_ALL_PLAYERS        = null
     force array        bj_FORCE_PLAYER
+
+    integer            bj_MELEE_MAX_TWINKED_HEROES = 0
 
     // Map area rects
     rect               bj_mapInitialPlayableArea   = null
@@ -428,6 +452,7 @@ globals
     sound              bj_questHintSound           = null
     sound              bj_questSecretSound         = null
     sound              bj_questItemAcquiredSound   = null
+    sound              bj_questWarningSound        = null
     sound              bj_victoryDialogSound       = null
     sound              bj_defeatDialogSound        = null
 
@@ -475,6 +500,7 @@ globals
     boolean            bj_cineModePriorMaskSetting = false
     boolean            bj_cineModeAlreadyIn        = false
     boolean            bj_cineModePriorDawnDusk    = false
+    integer            bj_cineModeSavedSeed        = 0
 
     // Cinematic fade vars
     timer              bj_cineFadeFinishTimer      = null
@@ -527,6 +553,11 @@ globals
     rect               bj_isUnitGroupInRectRect    = null
     boolean            bj_changeLevelShowScores    = false
     string             bj_changeLevelMapName       = null
+    group              bj_suspendDecayFleshGroup   = CreateGroup()
+    group              bj_suspendDecayBoneGroup    = CreateGroup()
+    timer              bj_delayedSuspendDecayTimer = CreateTimer()
+    trigger            bj_delayedSuspendDecayTrig  = null
+    integer            bj_livingPlayerUnitsTypeId  = 0
 
     // Random distribution vars
 	integer            bj_randDistCount            = 0
@@ -557,6 +588,7 @@ globals
     unit               bj_lastLoadedUnit           = null
     button             bj_lastCreatedButton        = null
     unit               bj_lastReplacedUnit         = null
+    texttag            bj_lastCreatedTextTag       = null
 
     // Filter function vars
     boolexpr           filterIssueHauntOrderAtLocBJ      = null
@@ -565,6 +597,7 @@ globals
     boolexpr           filterGetUnitsOfTypeIdAll         = null
     boolexpr           filterGetUnitsOfPlayerAndTypeId   = null
     boolexpr           filterMeleeTrainedUnitIsHeroBJ    = null
+    boolexpr           filterLivingPlayerUnitsOfTypeId   = null
 endglobals
 
 
@@ -2766,6 +2799,98 @@ function UnitSuspendDecayBJ takes boolean suspend, unit whichUnit returns nothin
 endfunction
 
 //===========================================================================
+function DelayedSuspendDecayStopAnimEnum takes nothing returns nothing
+    local unit enumUnit = GetEnumUnit()
+
+    if (GetUnitState(enumUnit, UNIT_STATE_LIFE) <= 0) then
+        call SetUnitTimeScale(enumUnit, 0.0001)
+    endif
+endfunction
+
+//===========================================================================
+function DelayedSuspendDecayBoneEnum takes nothing returns nothing
+    local unit enumUnit = GetEnumUnit()
+
+    if (GetUnitState(enumUnit, UNIT_STATE_LIFE) <= 0) then
+        call UnitSuspendDecay(enumUnit, true)
+        call SetUnitTimeScale(enumUnit, 0.0001)
+    endif
+endfunction
+
+//===========================================================================
+// Game code explicitly sets the animation back to "decay bone" after the
+// initial corpse fades away, so we reset it now.  It's best not to show
+// off corpses thus created until after this grace period has passed.
+//
+function DelayedSuspendDecayFleshEnum takes nothing returns nothing
+    local unit enumUnit = GetEnumUnit()
+
+    if (GetUnitState(enumUnit, UNIT_STATE_LIFE) <= 0) then
+        call UnitSuspendDecay(enumUnit, true)
+        call SetUnitTimeScale(enumUnit, 10.0)
+        call SetUnitAnimation(enumUnit, "decay flesh")
+    endif
+endfunction
+
+//===========================================================================
+// Waits a short period of time to ensure that the corpse is decaying, and
+// then suspend the animation and corpse decay.
+//
+function DelayedSuspendDecay takes nothing returns nothing
+    local group boneGroup
+    local group fleshGroup
+
+    // Switch the global unit groups over to local variables and recreate
+    // the global versions, so that this function can handle overlapping
+    // calls.
+    set boneGroup = bj_suspendDecayBoneGroup
+    set fleshGroup = bj_suspendDecayFleshGroup
+    set bj_suspendDecayBoneGroup = CreateGroup()
+    set bj_suspendDecayFleshGroup = CreateGroup()
+
+    call ForGroup(fleshGroup, function DelayedSuspendDecayStopAnimEnum)
+    call ForGroup(boneGroup, function DelayedSuspendDecayStopAnimEnum)
+
+    call TriggerSleepAction(bj_CORPSE_MAX_DEATH_TIME)
+    call ForGroup(fleshGroup, function DelayedSuspendDecayFleshEnum)
+    call ForGroup(boneGroup, function DelayedSuspendDecayBoneEnum)
+
+    call TriggerSleepAction(0.05)
+    call ForGroup(fleshGroup, function DelayedSuspendDecayStopAnimEnum)
+
+    call DestroyGroup(boneGroup)
+    call DestroyGroup(fleshGroup)
+endfunction
+
+//===========================================================================
+function DelayedSuspendDecayCreate takes nothing returns nothing
+    set bj_delayedSuspendDecayTrig = CreateTrigger()
+    call TriggerRegisterTimerExpireEvent(bj_delayedSuspendDecayTrig, bj_delayedSuspendDecayTimer)
+    call TriggerAddAction(bj_delayedSuspendDecayTrig, function DelayedSuspendDecay)
+endfunction
+
+//===========================================================================
+function CreatePermanentCorpseLocBJ takes integer style, integer unitid, player whichPlayer, location loc, real facing returns unit
+    set bj_lastCreatedUnit = CreateCorpse(whichPlayer, unitid, GetLocationX(loc), GetLocationY(loc), facing)
+    call SetUnitBlendTime(bj_lastCreatedUnit, 0)
+
+    if (style == bj_CORPSETYPE_FLESH) then
+        call SetUnitAnimation(bj_lastCreatedUnit, "decay flesh")
+        call GroupAddUnit(bj_suspendDecayFleshGroup, bj_lastCreatedUnit)
+    elseif (style == bj_CORPSETYPE_BONE) then
+        call SetUnitAnimation(bj_lastCreatedUnit, "decay bone")
+        call GroupAddUnit(bj_suspendDecayBoneGroup, bj_lastCreatedUnit)
+    else
+        // Unknown decay style - treat as skeletal.
+        call SetUnitAnimation(bj_lastCreatedUnit, "decay bone")
+        call GroupAddUnit(bj_suspendDecayBoneGroup, bj_lastCreatedUnit)
+    endif
+
+    call TimerStart(bj_delayedSuspendDecayTimer, 0.05, false, null)
+    return bj_lastCreatedUnit
+endfunction
+
+//===========================================================================
 function GetUnitStateSwap takes unitstate whichState, unit whichUnit returns real
     return GetUnitState(whichUnit, whichState)
 endfunction
@@ -3143,14 +3268,41 @@ function UnitRemoveBuffsBJ takes integer buffType, unit whichUnit returns nothin
         call UnitRemoveBuffs(whichUnit, false, true)
     elseif (buffType == bj_REMOVEBUFFS_ALL) then
         call UnitRemoveBuffs(whichUnit, true, true)
+    elseif (buffType == bj_REMOVEBUFFS_NONTLIFE) then
+        call UnitRemoveBuffsEx(whichUnit, true, true, false, false, false, true, false)
     else
         // Unrecognized dispel type - ignore the request.
     endif
 endfunction
 
 //===========================================================================
+function UnitRemoveBuffsExBJ takes integer polarity, integer resist, unit whichUnit, boolean bTLife, boolean bAura returns nothing
+    local boolean bPos   = (polarity == bj_BUFF_POLARITY_EITHER) or (polarity == bj_BUFF_POLARITY_POSITIVE)
+    local boolean bNeg   = (polarity == bj_BUFF_POLARITY_EITHER) or (polarity == bj_BUFF_POLARITY_NEGATIVE)
+    local boolean bMagic = (resist == bj_BUFF_RESIST_BOTH) or (resist == bj_BUFF_RESIST_MAGIC)
+    local boolean bPhys  = (resist == bj_BUFF_RESIST_BOTH) or (resist == bj_BUFF_RESIST_PHYSICAL)
+
+    call UnitRemoveBuffsEx(whichUnit, bPos, bNeg, bMagic, bPhys, bTLife, bAura, false)
+endfunction
+
+//===========================================================================
+function UnitCountBuffsExBJ takes integer polarity, integer resist, unit whichUnit, boolean bTLife, boolean bAura returns integer
+    local boolean bPos   = (polarity == bj_BUFF_POLARITY_EITHER) or (polarity == bj_BUFF_POLARITY_POSITIVE)
+    local boolean bNeg   = (polarity == bj_BUFF_POLARITY_EITHER) or (polarity == bj_BUFF_POLARITY_NEGATIVE)
+    local boolean bMagic = (resist == bj_BUFF_RESIST_BOTH) or (resist == bj_BUFF_RESIST_MAGIC)
+    local boolean bPhys  = (resist == bj_BUFF_RESIST_BOTH) or (resist == bj_BUFF_RESIST_PHYSICAL)
+
+    return UnitCountBuffsEx(whichUnit, bPos, bNeg, bMagic, bPhys, bTLife, bAura, false)
+endfunction
+
+//===========================================================================
 function UnitRemoveAbilityBJ takes integer abilityId, unit whichUnit returns boolean
     return UnitRemoveAbility(whichUnit, abilityId)
+endfunction
+
+//===========================================================================
+function UnitAddAbilityBJ takes integer abilityId, unit whichUnit returns boolean
+    return UnitAddAbility(whichUnit, abilityId)
 endfunction
 
 //===========================================================================
@@ -3312,6 +3464,11 @@ endfunction
 //===========================================================================
 function RemoveUnitFromStockBJ takes integer unitId, unit whichUnit returns nothing
     call RemoveUnitFromStock(whichUnit, unitId)
+endfunction
+
+//===========================================================================
+function SetUnitUseFoodBJ takes boolean enable, unit whichUnit returns nothing
+    call SetUnitUseFood(whichUnit, enable)
 endfunction
 
 
@@ -3615,7 +3772,7 @@ endfunction
 
 //***************************************************************************
 //*
-//*  Waygate Utility Functions
+//*  Neutral Building Utility Functions
 //*
 //***************************************************************************
 
@@ -3637,6 +3794,11 @@ endfunction
 //===========================================================================
 function WaygateGetDestinationLocBJ takes unit waygate returns location
     return Location(WaygateGetDestinationX(waygate), WaygateGetDestinationY(waygate))
+endfunction
+
+//===========================================================================
+function UnitSetUsesAltIconBJ takes boolean flag, unit whichUnit returns nothing
+    call UnitSetUsesAltIcon(whichUnit, flag)
 endfunction
 
 
@@ -3975,6 +4137,26 @@ function GetRandomSubGroup takes integer count, group sourceGroup returns group
     set bj_randomSubGroupChance = I2R(bj_randomSubGroupWant) / I2R(bj_randomSubGroupTotal)
     call ForGroup(sourceGroup, function GetRandomSubGroupEnum)
     return g
+endfunction
+
+//===========================================================================
+function LivingPlayerUnitsOfTypeIdFilter takes nothing returns boolean
+    local unit filterUnit = GetFilterUnit()
+    return IsUnitAliveBJ(filterUnit) and GetUnitTypeId(filterUnit) == bj_livingPlayerUnitsTypeId
+endfunction
+
+//===========================================================================
+function CountLivingPlayerUnitsOfTypeId takes integer unitId, player whichPlayer returns integer
+    local group g
+    local integer matchedCount
+
+    set g = CreateGroup()
+    set bj_livingPlayerUnitsTypeId = unitId
+    call GroupEnumUnitsOfPlayer(g, whichPlayer, filterLivingPlayerUnitsOfTypeId)
+    set matchedCount = CountUnitsInGroup(g)
+    call DestroyGroup(g)
+
+    return matchedCount
 endfunction
 
 
@@ -4794,8 +4976,6 @@ endfunction
 
 //===========================================================================
 function QuestMessageBJ takes force f, integer messageType, string message returns nothing
-    local gamedifficulty diff = GetGameDifficulty()
-
     if (IsPlayerInForce(GetLocalPlayer(), f)) then
         // Use only local code (no net traffic) within this block to avoid desyncs.
 
@@ -4860,6 +5040,11 @@ function QuestMessageBJ takes force f, integer messageType, string message retur
             call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, bj_TEXT_DELAY_ITEMACQUIRED, " ")
             call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, bj_TEXT_DELAY_ITEMACQUIRED, message)
             call StartSound(bj_questItemAcquiredSound)
+
+        elseif (messageType == bj_QUESTMESSAGE_WARNING) then
+            call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, bj_TEXT_DELAY_WARNING, " ")
+            call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, bj_TEXT_DELAY_WARNING, message)
+            call StartSound(bj_questWarningSound)
 
         else
             // Unrecognized message type - ignore the request.
@@ -5142,6 +5327,86 @@ endfunction
 //===========================================================================
 function GetLastCreatedLeaderboard takes nothing returns leaderboard
     return bj_lastCreatedLeaderboard
+endfunction
+
+
+
+//***************************************************************************
+//*
+//*  Text Tag Utility Functions
+//*
+//***************************************************************************
+
+//===========================================================================
+// Scale the font size linearly such that size 10 equates to height 0.023.
+// Screen-relative font heights are harder to grasp and than font sizes.
+//
+function TextTagSize2Height takes real size returns real
+    return size * 0.023 / 10
+endfunction
+
+//===========================================================================
+// Scale the speed linearly such that speed 128 equates to 0.071.
+// Screen-relative speeds are hard to grasp.
+//
+function TextTagSpeed2Velocity takes real speed returns real
+    return speed * 0.071 / 128
+endfunction
+
+//===========================================================================
+function SetTextTagColorBJ takes texttag tt, real red, real green, real blue, real transparency returns nothing
+    call SetTextTagColor(tt, PercentTo255(red), PercentTo255(green), PercentTo255(blue), PercentTo255(100.0-transparency))
+endfunction
+
+//===========================================================================
+function CreateTextTagLocBJ takes string s, location loc, real zOffset, real size, real red, real green, real blue, real transparency returns texttag
+    local real textHeight = TextTagSize2Height(size)
+
+    set bj_lastCreatedTextTag = CreateTextTag()
+    call SetTextTagText(bj_lastCreatedTextTag, s, textHeight)
+    call SetTextTagPos(bj_lastCreatedTextTag, GetLocationX(loc), GetLocationY(loc), zOffset)
+    call SetTextTagColorBJ(bj_lastCreatedTextTag, red, green, blue, transparency)
+
+    return bj_lastCreatedTextTag
+endfunction
+
+//===========================================================================
+function CreateTextTagUnitBJ takes string s, unit whichUnit, real zOffset, real size, real red, real green, real blue, real transparency returns texttag
+    local real textHeight = TextTagSize2Height(size)
+
+    set bj_lastCreatedTextTag = CreateTextTag()
+    call SetTextTagText(bj_lastCreatedTextTag, s, textHeight)
+    call SetTextTagPosUnit(bj_lastCreatedTextTag, whichUnit, zOffset)
+    call SetTextTagColorBJ(bj_lastCreatedTextTag, red, green, blue, transparency)
+
+    return bj_lastCreatedTextTag
+endfunction
+
+//===========================================================================
+function DestroyTextTagBJ takes texttag tt returns nothing
+    call DestroyTextTag(tt)
+endfunction
+
+//===========================================================================
+function SetTextTagVelocityBJ takes texttag tt, real speed, real angle returns nothing
+    local real vel = TextTagSpeed2Velocity(speed)
+    local real xvel = vel * Cos(angle * bj_DEGTORAD)
+    local real yvel = vel * Sin(angle * bj_DEGTORAD)
+
+    call SetTextTagVelocity(tt, xvel, yvel)
+endfunction
+
+//===========================================================================
+function ShowTextTagForceBJ takes boolean show, texttag tt, force whichForce returns nothing
+    if (IsPlayerInForce(GetLocalPlayer(), whichForce)) then
+        // Use only local code (no net traffic) within this block to avoid desyncs.
+        call SetTextTagVisibility(tt, show)
+    endif
+endfunction
+
+//===========================================================================
+function GetLastCreatedTextTag takes nothing returns texttag
+    return bj_lastCreatedTextTag
 endfunction
 
 
@@ -5469,9 +5734,7 @@ endfunction
 //   - Fix the random seed to a set value
 //   - Reset the camera smoothing factor
 //
-function CinematicModeBJ takes boolean cineMode, force forForce returns nothing
-    local real interfaceFadeTime = bj_CINEMODE_INTERFACEFADE
-
+function CinematicModeExBJ takes boolean cineMode, force forForce, real interfaceFadeTime returns nothing
     // If the game hasn't started yet, perform interface fades immediately
     if (not bj_gameStarted) then
         set interfaceFadeTime = 0
@@ -5485,6 +5748,7 @@ function CinematicModeBJ takes boolean cineMode, force forForce returns nothing
             set bj_cineModePriorFogSetting = IsFogEnabled()
             set bj_cineModePriorMaskSetting = IsFogMaskEnabled()
             set bj_cineModePriorDawnDusk = IsDawnDuskEnabled()
+            set bj_cineModeSavedSeed = GetRandomInt(0, 1000000)
         endif
 
         // Perform local changes
@@ -5528,7 +5792,13 @@ function CinematicModeBJ takes boolean cineMode, force forForce returns nothing
         call FogEnable(bj_cineModePriorFogSetting)
         call EnableWorldFogBoundary(true)
         call EnableDawnDusk(bj_cineModePriorDawnDusk)
+        call SetRandomSeed(bj_cineModeSavedSeed)
     endif
+endfunction
+
+//===========================================================================
+function CinematicModeBJ takes boolean cineMode, force forForce returns nothing
+    call CinematicModeExBJ(cineMode, forForce, bj_CINEMODE_INTERFACEFADE)
 endfunction
 
 
@@ -5832,19 +6102,23 @@ endfunction
 
 //===========================================================================
 function SetCampaignAvailableBJ takes boolean available, integer campaignNumber returns nothing
+    local integer campaignOffset
+
     if (campaignNumber == bj_CAMPAIGN_INDEX_H) then
         call SetTutorialCleared(true)
     endif
 
     if (campaignNumber == bj_CAMPAIGN_INDEX_XN) then
-        set campaignNumber = bj_CAMPAIGN_OFFSET_XN
+        set campaignOffset = bj_CAMPAIGN_OFFSET_XN
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XH) then
-        set campaignNumber = bj_CAMPAIGN_OFFSET_XH
+        set campaignOffset = bj_CAMPAIGN_OFFSET_XH
     elseif (campaignNumber == bj_CAMPAIGN_INDEX_XU) then
-        set campaignNumber = bj_CAMPAIGN_OFFSET_XU
+        set campaignOffset = bj_CAMPAIGN_OFFSET_XU
+    else
+        set campaignOffset = campaignNumber
     endif
 
-    call SetCampaignAvailable(campaignNumber, available)
+    call SetCampaignAvailable(campaignOffset, available)
     call SetCampaignMenuRaceBJ(campaignNumber)
     call ForceCampaignSelectScreen()
 endfunction
@@ -6559,19 +6833,38 @@ function MeleeFindNearestMine takes location src, real range returns unit
 endfunction
 
 //===========================================================================
-function MeleeRandomHeroLoc takes player p, integer id1, integer id2, integer id3, location loc returns unit
+function MeleeRandomHeroLoc takes player p, integer id1, integer id2, integer id3, integer id4, location loc returns unit
     local unit    hero = null
-	local integer roll = GetRandomInt(1,3)
+	local integer roll
     local integer pick
+    local version v
 
+    // The selection of heroes is dependant on the game version.
+    set v = VersionGet()
+    if (v == VERSION_REIGN_OF_CHAOS) then
+        set roll = GetRandomInt(1,3)
+    elseif (v == VERSION_FROZEN_THRONE) then
+        set roll = GetRandomInt(1,4)
+    else
+        // Unrecognized version - pick the first hero in the list.
+        set roll = 1
+    endif
+
+    // Translate the roll into a unitid.
     if roll == 1 then
         set pick = id1
     elseif roll == 2 then
         set pick = id2
-    else
+    elseif roll == 3 then
         set pick = id3
+    elseif roll == 4 then
+        set pick = id4
+    else
+        // Unrecognized id index - pick the first hero in the list.
+        set pick = id1
     endif
 
+    // Create the hero.
     set hero = CreateUnitAtLoc(p, pick, loc, bj_UNIT_FACING)
     if bj_meleeGrantHeroItems then
         call MeleeGrantItemsToHero(hero)
@@ -6612,7 +6905,7 @@ endfunction
 //   - 1 Town Hall, placed at start location
 //   - 5 Peasants, placed between start location and nearest gold mine
 //
-function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc returns nothing
+function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
     local boolean  useRandomHero = IsMapFlagSet(MAP_RANDOM_HERO)
     local real     unitSpacing   = 64.00
     local unit     nearestMine
@@ -6621,7 +6914,9 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc ret
     local real     peonX
     local real     peonY
 
-    call Preloader( "scripts\\HumanMelee.pld" )
+    if (doPreload) then
+        call Preloader( "scripts\\HumanMelee.pld" )
+    endif
 
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
@@ -6657,17 +6952,21 @@ function MeleeStartingUnitsHuman takes player whichPlayer, location startLoc ret
         set heroLoc = Location(peonX, peonY - 2.00 * unitSpacing)
     endif
 
-    // If the "Random Hero" option is set, start the player with a random hero.
-    // Otherwise, give them a "free hero" token.
-    if useRandomHero then
-        call MeleeRandomHeroLoc(whichPlayer, 'Hamg', 'Hmkg', 'Hpal', heroLoc)
-    else
-        call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    if (doHeroes) then
+        // If the "Random Hero" option is set, start the player with a random hero.
+        // Otherwise, give them a "free hero" token.
+        if useRandomHero then
+            call MeleeRandomHeroLoc(whichPlayer, 'Hamg', 'Hmkg', 'Hpal', 'Hblm', heroLoc)
+        else
+            call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+        endif
     endif
 
-    // Center the camera on the initial Peasants.
-    call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
-    call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    if (doCamera) then
+        // Center the camera on the initial Peasants.
+        call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
+        call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    endif
 endfunction
 
 //===========================================================================
@@ -6675,7 +6974,7 @@ endfunction
 //   - 1 Great Hall, placed at start location
 //   - 5 Peons, placed between start location and nearest gold mine
 //
-function MeleeStartingUnitsOrc takes player whichPlayer, location startLoc returns nothing
+function MeleeStartingUnitsOrc takes player whichPlayer, location startLoc, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
     local boolean  useRandomHero = IsMapFlagSet(MAP_RANDOM_HERO)
     local real     unitSpacing   = 64.00
     local unit     nearestMine
@@ -6684,7 +6983,9 @@ function MeleeStartingUnitsOrc takes player whichPlayer, location startLoc retur
     local real     peonX
     local real     peonY
 
-    call Preloader( "scripts\\OrcMelee.pld" )
+    if (doPreload) then
+        call Preloader( "scripts\\OrcMelee.pld" )
+    endif
 
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
@@ -6720,17 +7021,21 @@ function MeleeStartingUnitsOrc takes player whichPlayer, location startLoc retur
         set heroLoc = Location(peonX, peonY - 2.00 * unitSpacing)
     endif
 
-    // If the "Random Hero" option is set, start the player with a random hero.
-    // Otherwise, give them a "free hero" token.
-    if useRandomHero then
-        call MeleeRandomHeroLoc(whichPlayer, 'Obla', 'Ofar', 'Otch', heroLoc)
-    else
-        call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    if (doHeroes) then
+        // If the "Random Hero" option is set, start the player with a random hero.
+        // Otherwise, give them a "free hero" token.
+        if useRandomHero then
+            call MeleeRandomHeroLoc(whichPlayer, 'Obla', 'Ofar', 'Otch', 'Oshd', heroLoc)
+        else
+            call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+        endif
     endif
 
-    // Center the camera on the initial Peons.
-    call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
-    call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    if (doCamera) then
+        // Center the camera on the initial Peons.
+        call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
+        call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    endif
 endfunction
 
 //===========================================================================
@@ -6741,7 +7046,7 @@ endfunction
 //   - 1 Ghoul, placed between start location and nearest gold mine
 //   - Blight, centered on nearest gold mine, spread across a "large area"
 //
-function MeleeStartingUnitsUndead takes player whichPlayer, location startLoc returns nothing
+function MeleeStartingUnitsUndead takes player whichPlayer, location startLoc, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
     local boolean  useRandomHero = IsMapFlagSet(MAP_RANDOM_HERO)
     local real     unitSpacing   = 64.00
     local unit     nearestMine
@@ -6753,7 +7058,9 @@ function MeleeStartingUnitsUndead takes player whichPlayer, location startLoc re
     local real     ghoulX
     local real     ghoulY
 
-    call Preloader( "scripts\\UndeadMelee.pld" )
+    if (doPreload) then
+        call Preloader( "scripts\\UndeadMelee.pld" )
+    endif
 
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
@@ -6801,17 +7108,21 @@ function MeleeStartingUnitsUndead takes player whichPlayer, location startLoc re
         set heroLoc = Location(peonX, peonY - 2.00 * unitSpacing)
     endif
 
-    // If the "Random Hero" option is set, start the player with a random hero.
-    // Otherwise, give them a "free hero" token.
-    if useRandomHero then
-        call MeleeRandomHeroLoc(whichPlayer, 'Udea', 'Udre', 'Ulic', heroLoc)
-    else
-        call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    if (doHeroes) then
+        // If the "Random Hero" option is set, start the player with a random hero.
+        // Otherwise, give them a "free hero" token.
+        if useRandomHero then
+            call MeleeRandomHeroLoc(whichPlayer, 'Udea', 'Udre', 'Ulic', 'Ucrl', heroLoc)
+        else
+            call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+        endif
     endif
 
-    // Center the camera on the initial Acolytes.
-    call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
-    call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    if (doCamera) then
+        // Center the camera on the initial Acolytes.
+        call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
+        call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    endif
 endfunction
 
 //===========================================================================
@@ -6819,7 +7130,7 @@ endfunction
 //   - 1 Tree of Life, placed by nearest gold mine, already entangled
 //   - 5 Wisps, placed between Tree of Life and nearest gold mine
 //
-function MeleeStartingUnitsNightElf takes player whichPlayer, location startLoc returns nothing
+function MeleeStartingUnitsNightElf takes player whichPlayer, location startLoc, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
     local boolean  useRandomHero = IsMapFlagSet(MAP_RANDOM_HERO)
     local real     unitSpacing   = 64.00
     local real     minTreeDist   = 3.50 * bj_CELLWIDTH
@@ -6832,7 +7143,9 @@ function MeleeStartingUnitsNightElf takes player whichPlayer, location startLoc 
     local real     peonY
     local unit     tree
 
-    call Preloader( "scripts\\NightElfMelee.pld" )
+    if (doPreload) then
+        call Preloader( "scripts\\NightElfMelee.pld" )
+    endif
 
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
@@ -6874,37 +7187,50 @@ function MeleeStartingUnitsNightElf takes player whichPlayer, location startLoc 
         set heroLoc = Location(peonX, peonY - 2.00 * unitSpacing)
     endif
 
-    // If the "Random Hero" option is set, start the player with a random hero.
-    // Otherwise, give them a "free hero" token.
-    if useRandomHero then
-        call MeleeRandomHeroLoc(whichPlayer, 'Edem', 'Ekee', 'Emoo', heroLoc)
-    else
-        call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    if (doHeroes) then
+        // If the "Random Hero" option is set, start the player with a random hero.
+        // Otherwise, give them a "free hero" token.
+        if useRandomHero then
+            call MeleeRandomHeroLoc(whichPlayer, 'Edem', 'Ekee', 'Emoo', 'Ewar', heroLoc)
+        else
+            call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+        endif
     endif
 
-    // Center the camera on the initial Wisps.
-    call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
-    call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    if (doCamera) then
+        // Center the camera on the initial Wisps.
+        call SetCameraPositionForPlayer(whichPlayer, peonX, peonY)
+        call SetCameraQuickPositionForPlayer(whichPlayer, peonX, peonY)
+    endif
 endfunction
 
 //===========================================================================
 // Starting Units for Players Whose Race is Unknown
 //   - 12 Sheep, placed randomly around the start location
 //
-function MeleeStartingUnitsUnknownRace takes player whichPlayer, location startLoc returns nothing
-    local integer index = 0
+function MeleeStartingUnitsUnknownRace takes player whichPlayer, location startLoc, boolean doHeroes, boolean doCamera, boolean doPreload returns nothing
+    local integer index
+
+    if (doPreload) then
+    endif
+
+    set index = 0
     loop
         call CreateUnit(whichPlayer, 'nshe', GetLocationX(startLoc) + GetRandomReal(-256, 256), GetLocationY(startLoc) + GetRandomReal(-256, 256), GetRandomReal(0, 360))
         set index = index + 1
         exitwhen index == 12
     endloop
 
-    // Give them a "free hero" token, out of pity.
-    call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    if (doHeroes) then
+        // Give them a "free hero" token, out of pity.
+        call SetPlayerState(whichPlayer, PLAYER_STATE_RESOURCE_HERO_TOKENS, bj_MELEE_STARTING_HERO_TOKENS)
+    endif
 
-    // Center the camera on the initial sheep.
-    call SetCameraPositionLocForPlayer(whichPlayer, startLoc)
-    call SetCameraQuickPositionLocForPlayer(whichPlayer, startLoc)
+    if (doCamera) then
+        // Center the camera on the initial sheep.
+        call SetCameraPositionLocForPlayer(whichPlayer, startLoc)
+        call SetCameraQuickPositionLocForPlayer(whichPlayer, startLoc)
+    endif
 endfunction
 
 //===========================================================================
@@ -6936,15 +7262,15 @@ function MeleeStartingUnits takes nothing returns nothing
 
             // Create initial race-specific starting units
             if (indexRace == RACE_HUMAN) then
-                call MeleeStartingUnitsHuman(indexPlayer, indexStartLoc)
+                call MeleeStartingUnitsHuman(indexPlayer, indexStartLoc, true, true, true)
             elseif (indexRace == RACE_ORC) then
-                call MeleeStartingUnitsOrc(indexPlayer, indexStartLoc)
+                call MeleeStartingUnitsOrc(indexPlayer, indexStartLoc, true, true, true)
             elseif (indexRace == RACE_UNDEAD) then
-                call MeleeStartingUnitsUndead(indexPlayer, indexStartLoc)
+                call MeleeStartingUnitsUndead(indexPlayer, indexStartLoc, true, true, true)
             elseif (indexRace == RACE_NIGHTELF) then
-                call MeleeStartingUnitsNightElf(indexPlayer, indexStartLoc)
+                call MeleeStartingUnitsNightElf(indexPlayer, indexStartLoc, true, true, true)
             else
-                call MeleeStartingUnitsUnknownRace(indexPlayer, indexStartLoc)
+                call MeleeStartingUnitsUnknownRace(indexPlayer, indexStartLoc, true, true, true)
             endif
         endif
 
@@ -6952,6 +7278,22 @@ function MeleeStartingUnits takes nothing returns nothing
         exitwhen index == bj_MAX_PLAYERS
     endloop
     
+endfunction
+
+//===========================================================================
+function MeleeStartingUnitsForPlayer takes race whichRace, player whichPlayer, location loc, boolean doHeroes returns nothing
+    // Create initial race-specific starting units
+    if (whichRace == RACE_HUMAN) then
+        call MeleeStartingUnitsHuman(whichPlayer, loc, doHeroes, false, false)
+    elseif (whichRace == RACE_ORC) then
+        call MeleeStartingUnitsOrc(whichPlayer, loc, doHeroes, false, false)
+    elseif (whichRace == RACE_UNDEAD) then
+        call MeleeStartingUnitsUndead(whichPlayer, loc, doHeroes, false, false)
+    elseif (whichRace == RACE_NIGHTELF) then
+        call MeleeStartingUnitsNightElf(whichPlayer, loc, doHeroes, false, false)
+    else
+        // Unrecognized race - ignore the request.
+    endif
 endfunction
 
 
@@ -7005,11 +7347,11 @@ function MeleeStartingAI takes nothing returns nothing
             if (GetPlayerController(indexPlayer) == MAP_CONTROL_COMPUTER) then
                 // Run a race-specific melee AI script.
                 if (indexRace == RACE_HUMAN) then
-                    call PickMeleeAI(indexPlayer, "human.ai", "human_ex1.ai", "human_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "human.ai", null, null) // "human_ex1.ai", "human_ex2.ai")
                 elseif (indexRace == RACE_ORC) then
-                    call PickMeleeAI(indexPlayer, "orc.ai", "orc_ex1.ai", "orc_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "orc.ai", null, null) // "orc_ex1.ai", "orc_ex2.ai")
                 elseif (indexRace == RACE_UNDEAD) then
-                    call PickMeleeAI(indexPlayer, "undead.ai", "undead_ex1.ai", "undead_ex2.ai")
+                    call PickMeleeAI(indexPlayer, "undead.ai", null, null) // "undead_ex1.ai", "undead_ex2.ai")
                     call RecycleGuardPosition(bj_ghoul[index])
                 elseif (indexRace == RACE_NIGHTELF) then
                     call PickMeleeAI(indexPlayer, "elf.ai", null, null) // "elf_ex1.ai", "elf_ex2.ai")
@@ -7155,7 +7497,7 @@ function MeleeDoDrawEnum takes nothing returns nothing
     local player thePlayer = GetEnumPlayer()
 
 	call CachePlayerHeroData(thePlayer)
-    call RemovePlayerPreserveUnitsBJ(thePlayer, PLAYER_GAME_RESULT_NEUTRAL, false)
+    call RemovePlayerPreserveUnitsBJ(thePlayer, PLAYER_GAME_RESULT_TIE, false)
 endfunction
 
 //===========================================================================
@@ -7655,6 +7997,7 @@ function MeleeTriggerTournamentFinishSoon takes nothing returns nothing
         // Reset all crippled players and their timers, and hide the local crippled timer dialog
         set playerIndex = 0
         loop
+            set indexPlayer = Player(playerIndex)
             if bj_playerIsCrippled[playerIndex] then
                 // Uncripple the player
                 set bj_playerIsCrippled[playerIndex] = false
@@ -8091,6 +8434,7 @@ endfunction
 function InitBlizzardGlobals takes nothing returns nothing
     local integer index
     local integer userControlledPlayers
+    local version v
 
     // Init filter function vars
     set filterIssueHauntOrderAtLocBJ = Filter(function IssueHauntOrderAtLocBJFilter)
@@ -8099,6 +8443,7 @@ function InitBlizzardGlobals takes nothing returns nothing
     set filterGetUnitsOfTypeIdAll = Filter(function GetUnitsOfTypeIdAllFilter)
     set filterGetUnitsOfPlayerAndTypeId = Filter(function GetUnitsOfPlayerAndTypeIdFilter)
     set filterMeleeTrainedUnitIsHeroBJ = Filter(function MeleeTrainedUnitIsHeroBJFilter)
+    set filterLivingPlayerUnitsOfTypeId = Filter(function LivingPlayerUnitsOfTypeIdFilter)
 
     // Init force presets
     set index = 0
@@ -8149,8 +8494,23 @@ function InitBlizzardGlobals takes nothing returns nothing
     set bj_questHintSound = CreateSoundFromLabel("Hint", false, false, false, 10000, 10000)
     set bj_questSecretSound = CreateSoundFromLabel("SecretFound", false, false, false, 10000, 10000)
     set bj_questItemAcquiredSound = CreateSoundFromLabel("ItemReward", false, false, false, 10000, 10000)
+    set bj_questWarningSound = CreateSoundFromLabel("Hint", false, false, false, 10000, 10000)
     set bj_victoryDialogSound = CreateSoundFromLabel("QuestCompleted", false, false, false, 10000, 10000)
     set bj_defeatDialogSound = CreateSoundFromLabel("QuestFailed", false, false, false, 10000, 10000)
+
+    // Init corpse creation triggers.
+    call DelayedSuspendDecayCreate()
+
+    // Init version-specific data
+    set v = VersionGet()
+    if (v == VERSION_REIGN_OF_CHAOS) then
+        set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V0
+    elseif (v == VERSION_FROZEN_THRONE) then
+        set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V1
+    else
+        // Unrecognized version - use the most recent limit
+        set bj_MELEE_MAX_TWINKED_HEROES = bj_MELEE_MAX_TWINKED_HEROES_V1
+    endif
 endfunction
 
 //===========================================================================

@@ -8,6 +8,8 @@ type widget             extends     handle  // an interactive game object with l
 type unit               extends     widget  // a single unit reference
 type destructable       extends     widget
 type item               extends     widget
+type ability            extends     handle
+type buff               extends     ability
 type force              extends     handle
 type group              extends     handle
 type trigger            extends     handle
@@ -75,6 +77,8 @@ type questitem          extends     handle
 type defeatcondition    extends     handle
 type timerdialog        extends     handle
 type leaderboard        extends     handle
+type multiboard         extends     handle
+type multiboarditem     extends     handle
 type trackable          extends     handle
 type gamecache          extends     handle
 type version            extends     handle
@@ -525,14 +529,24 @@ globals
     constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(269)
     constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(270)
     constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(271)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CHANNEL         = ConvertPlayerUnitEvent(272)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_CAST            = ConvertPlayerUnitEvent(273)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_EFFECT          = ConvertPlayerUnitEvent(274)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_FINISH          = ConvertPlayerUnitEvent(275)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SPELL_ENDCAST         = ConvertPlayerUnitEvent(276)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
     //===================================================
 
-    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(280)
-    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(281)
-    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(282)
+    constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(286)
+    constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(287)
+    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(288)
+    constant unitevent          EVENT_UNIT_SPELL_CHANNEL                = ConvertUnitEvent(289)
+    constant unitevent          EVENT_UNIT_SPELL_CAST                   = ConvertUnitEvent(290)
+    constant unitevent          EVENT_UNIT_SPELL_EFFECT                 = ConvertUnitEvent(291)
+    constant unitevent          EVENT_UNIT_SPELL_FINISH                 = ConvertUnitEvent(292)
+    constant unitevent          EVENT_UNIT_SPELL_ENDCAST                = ConvertUnitEvent(293)
 
     //===================================================
     // Limit Event API constants    
@@ -1080,6 +1094,20 @@ constant native GetOrderTargetDestructable  takes nothing returns destructable
 constant native GetOrderTargetItem          takes nothing returns item
 constant native GetOrderTargetUnit          takes nothing returns unit
 
+// EVENT_UNIT_SPELL_CHANNEL
+// EVENT_UNIT_SPELL_CAST
+// EVENT_UNIT_SPELL_EFFECT
+// EVENT_UNIT_SPELL_FINISH
+// EVENT_UNIT_SPELL_ENDCAST
+// EVENT_PLAYER_UNIT_SPELL_CHANNEL
+// EVENT_PLAYER_UNIT_SPELL_CAST
+// EVENT_PLAYER_UNIT_SPELL_EFFECT
+// EVENT_PLAYER_UNIT_SPELL_FINISH
+// EVENT_PLAYER_UNIT_SPELL_ENDCAST
+constant native GetSpellAbilityUnit         takes nothing returns unit
+constant native GetSpellAbilityId           takes nothing returns integer
+constant native GetSpellAbility             takes nothing returns ability
+
 native TriggerRegisterPlayerAllianceChange takes trigger whichTrigger, player whichPlayer, alliancetype whichAlliance returns event
 native TriggerRegisterPlayerStateEvent takes trigger whichTrigger, player whichPlayer, playerstate whichState, limitop opcode, real limitval returns event
 
@@ -1361,6 +1389,7 @@ constant native GetUnitFoodUsed     takes unit whichUnit returns integer
 constant native GetUnitFoodMade     takes unit whichUnit returns integer
 constant native GetFoodMade         takes integer unitId returns integer
 constant native GetFoodUsed         takes integer unitId returns integer
+native          SetUnitUseFood      takes unit whichUnit, boolean useFood returns nothing
 
 constant native IsUnitInGroup       takes unit whichUnit, group whichGroup returns boolean
 constant native IsUnitInForce       takes unit whichUnit, force whichForce returns boolean
@@ -1391,8 +1420,12 @@ constant native IsUnitIdType        takes integer unitId, unittype whichUnitType
 native UnitShareVision              takes unit whichUnit, player whichPlayer, boolean share returns nothing
 native UnitSuspendDecay             takes unit whichUnit, boolean suspend returns nothing
 
+native UnitAddAbility               takes unit whichUnit, integer abilityId returns boolean
 native UnitRemoveAbility            takes unit whichUnit, integer abilityId returns boolean
 native UnitRemoveBuffs              takes unit whichUnit, boolean removePositive, boolean removeNegative returns nothing
+native UnitRemoveBuffsEx            takes unit whichUnit, boolean removePositive, boolean removeNegative, boolean magic, boolean physical, boolean timedLife, boolean aura, boolean autoDispel returns nothing
+native UnitHasBuffsEx               takes unit whichUnit, boolean removePositive, boolean removeNegative, boolean magic, boolean physical, boolean timedLife, boolean aura, boolean autoDispel returns boolean
+native UnitCountBuffsEx             takes unit whichUnit, boolean removePositive, boolean removeNegative, boolean magic, boolean physical, boolean timedLife, boolean aura, boolean autoDispel returns integer
 native UnitAddSleep                 takes unit whichUnit, boolean add returns nothing
 native UnitCanSleep                 takes unit whichUnit returns boolean
 native UnitAddSleepPerm             takes unit whichUnit, boolean add returns nothing
@@ -1404,7 +1437,7 @@ native UnitResetCooldown            takes unit whichUnit returns nothing
 native UnitSetConstructionProgress  takes unit whichUnit, integer constructionPercentage returns nothing
 native UnitSetUpgradeProgress       takes unit whichUnit, integer upgradePercentage returns nothing
 native UnitPauseTimedLife           takes unit whichUnit, boolean flag returns nothing
-
+native UnitSetUsesAltIcon           takes unit whichUnit, boolean flag returns nothing
 native IssueImmediateOrder          takes unit whichUnit, string order returns boolean
 native IssueImmediateOrderById      takes unit whichUnit, integer order returns boolean
 native IssuePointOrder              takes unit whichUnit, string order, real x, real y returns boolean
@@ -1544,7 +1577,7 @@ native          SaveGame            takes string saveFileName returns nothing
 native          RenameSaveDirectory takes string sourceDirName, string destDirName returns boolean
 native          RemoveSaveDirectory takes string sourceDirName returns boolean
 native          CopySaveGame        takes string sourceSaveName, string destSaveName returns boolean
-
+native          SaveGameExists      takes string saveName returns boolean
 native          SyncSelections      takes nothing returns nothing
 native          SetFloatGameState   takes fgamestate whichFloatGameState, real value returns nothing
 constant native GetFloatGameState   takes fgamestate whichFloatGameState returns real
@@ -1671,6 +1704,7 @@ native PlayCinematic                takes string movieName returns nothing
 native ForceUIKey                   takes string key returns nothing
 native ForceUICancel                takes nothing returns nothing
 native DisplayLoadDialog            takes nothing returns nothing
+native SetAltMinimapIcon            takes string iconPath returns nothing
 
 native CreateTextTag                takes nothing returns texttag
 native DestroyTextTag               takes texttag t returns nothing
@@ -1679,6 +1713,11 @@ native SetTextTagPos                takes texttag t, real x, real y, real height
 native SetTextTagPosUnit            takes texttag t, unit whichUnit, real heightOffset returns nothing
 native SetTextTagColor              takes texttag t, integer red, integer green, integer blue, integer alpha returns nothing
 native SetTextTagVelocity           takes texttag t, real xvel, real yvel returns nothing
+native SetTextTagVisibility         takes texttag t, boolean flag returns nothing
+
+native SetReservedLocalHeroButtons  takes integer reserved returns nothing
+native GetAllyColorFilterState      takes nothing returns integer
+native SetAllyColorFilterState      takes integer state returns nothing
 
 //============================================================================
 // Trackable API
@@ -1768,6 +1807,49 @@ native LeaderboardSetItemLabel          takes leaderboard lb, integer whichItem,
 native LeaderboardSetItemStyle          takes leaderboard lb, integer whichItem, boolean showLabel, boolean showValue, boolean showIcon returns nothing
 native LeaderboardSetItemLabelColor     takes leaderboard lb, integer whichItem, integer red, integer green, integer blue, integer alpha returns nothing
 native LeaderboardSetItemValueColor     takes leaderboard lb, integer whichItem, integer red, integer green, integer blue, integer alpha returns nothing
+
+//============================================================================
+// Multiboard API
+//============================================================================
+
+// Create a multiboard object
+native CreateMultiboard                 takes nothing returns multiboard
+native DestroyMultiboard                takes multiboard lb returns nothing
+
+native MultiboardDisplay                takes multiboard lb, boolean show returns nothing
+native IsMultiboardDisplayed            takes multiboard lb returns boolean
+
+native MultiboardMinimize               takes multiboard lb, boolean minimize returns nothing
+native IsMultiboardMinimized            takes multiboard lb returns boolean
+native MultiboardClear                  takes multiboard lb returns nothing
+
+native MultiboardSetTitleText           takes multiboard lb, string label returns nothing
+native MultiboardGetTitleText           takes multiboard lb returns string
+native MultiboardSetTitleTextColor      takes multiboard lb, integer red, integer green, integer blue, integer alpha returns nothing
+
+native MultiboardGetRowCount            takes multiboard lb returns integer
+native MultiboardGetColumnCount         takes multiboard lb returns integer
+
+native MultiboardSetColumnCount         takes multiboard lb, integer count returns nothing
+native MultiboardSetRowCount            takes multiboard lb, integer count returns nothing
+
+// broadcast settings to all items
+native MultiboardSetItemsStyle          takes multiboard lb, boolean showValues, boolean showIcons returns nothing
+native MultiboardSetItemsValue          takes multiboard lb, string value returns nothing
+native MultiboardSetItemsValueColor     takes multiboard lb, integer red, integer green, integer blue, integer alpha returns nothing
+native MultiboardSetItemsWidth          takes multiboard lb, real width returns nothing
+native MultiboardSetItemsIcon           takes multiboard lb, string iconPath returns nothing
+
+
+// funcs for modifying individual items
+native MultiboardGetItem                takes multiboard lb, integer row, integer column returns multiboarditem
+native MultiboardReleaseItem            takes multiboarditem mbi returns nothing
+
+native MultiboardSetItemStyle           takes multiboarditem mbi, boolean showValue, boolean showIcon returns nothing
+native MultiboardSetItemValue           takes multiboarditem mbi, string val returns nothing
+native MultiboardSetItemValueColor      takes multiboarditem mbi, integer red, integer green, integer blue, integer alpha returns nothing
+native MultiboardSetItemWidth           takes multiboarditem mbi, real width returns nothing
+native MultiboardSetItemIcon            takes multiboarditem mbi, string iconFileName returns nothing
 
 //============================================================================
 // Camera API
@@ -1893,6 +1975,8 @@ native GetSoundIsLoading			takes sound soundHandle returns boolean
 
 native RegisterStackedSound			takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
 native UnregisterStackedSound		takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
+
+native EnableUISounds               takes boolean enable returns nothing
 
 //============================================================================
 // Effects API

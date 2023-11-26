@@ -1,5 +1,5 @@
 //==================================================================================================
-//  $Id: common.ai,v 1.33 2003/03/27 09:52:17 rpardo Exp $
+//  $Id: common.ai,v 1.45 2003/04/07 20:03:13 bfitch Exp $
 //==================================================================================================
 native DebugS               takes string str                            returns nothing
 native DebugFI              takes string str, integer val               returns nothing
@@ -50,6 +50,7 @@ native SetCampaignAI        takes nothing                               returns 
 native SetMeleeAI           takes nothing                               returns nothing
 native SetTargetHeroes      takes boolean state                         returns nothing
 native SetPeonsRepair       takes boolean state                         returns nothing
+native SetRandomPaths       takes boolean state                         returns nothing
 native SetHeroesFlee        takes boolean state                         returns nothing
 native SetWatchMegaTargets  takes boolean state                         returns nothing
 native SetIgnoreInjured     takes boolean state                         returns nothing
@@ -162,8 +163,8 @@ globals
 
     constant integer BANISH             = 'AHbn'
     constant integer FLAME_STRIKE       = 'AHfs'
-    constant integer MANA_FLARE         = 'AHmf'
-    constant integer MARK_CHAOS         = 'AHmc'
+    constant integer SUMMON_PHOENIX     = 'AHpx'
+    constant integer SIPHON_MANA        = 'AHdr'
 
     // special human heroes
     constant integer JAINA              = 'Hjai'
@@ -186,7 +187,7 @@ globals
     constant integer RIFLEMEN           =  RIFLEMAN
     constant integer SORCERESS          = 'hsor'
     constant integer TANK               = 'hmtt'
-    constant integer STEAM_TANK         = TANK
+    constant integer STEAM_TANK         =  TANK
     constant integer MILITIA            = 'hmil'
     constant integer SPELL_BREAKER      = 'hspt'
     constant integer HUMAN_DRAGON_HAWK  = 'hdhw'
@@ -194,6 +195,7 @@ globals
     // special human units
     constant integer BLOOD_PRIEST       = 'hbep'
     constant integer BLOOD_SORCERESS    = 'hbes'
+    constant integer BLOOD_PEASANT      = 'nhew'
 
     // human buildings
     constant integer AVIARY             = 'hgra'
@@ -214,6 +216,7 @@ globals
     constant integer WATCH_TOWER        = 'hwtw'
     constant integer WORKSHOP           = 'harm'
     constant integer ARCANE_VAULT       = 'hvlt'
+    constant integer ARCANE_TOWER       = 'hatw'
 
     // human upgrades
     constant integer UPG_MELEE          = 'Rhme'
@@ -234,6 +237,11 @@ globals
     constant integer UPG_SCATTER        = 'Rhsr'
     constant integer UPG_BOMBS          = 'Rhgb'
     constant integer UPG_HAMMERS        = 'Rhhb'
+    constant integer UPG_CONT_MAGIC     = 'Rhss'
+    constant integer UPG_FRAGS          = 'Rhfs'
+    constant integer UPG_TANK           = 'Rhrt'
+    constant integer UPG_FLAK           = 'Rhfc'
+    constant integer UPG_CLOUD          = 'Rhcd'
 
     //--------------------------------------------------------------------
     //  ORCS
@@ -276,6 +284,7 @@ globals
     constant integer WITCH_DOCTOR       = 'odoc'
     constant integer GRUNT              = 'ogru'
     constant integer HEAD_HUNTER        = 'ohun'
+    constant integer BERSERKER          = 'otbk'
     constant integer KODO_BEAST         = 'okod'
     constant integer PEON               = 'opeo'
     constant integer RAIDER             = 'orai'
@@ -284,6 +293,7 @@ globals
     constant integer WYVERN             = 'owyv'
     constant integer BATRIDER           = 'otbr'
     constant integer SPIRIT_WALKER      = 'ospw'
+    constant integer SPIRIT_WALKER_M    = 'ospm'
 
     // orc buildings
     constant integer ORC_ALTAR          = 'oalt'
@@ -309,12 +319,17 @@ globals
     constant integer UPG_ORC_BERSERK    = 'Robs'
     constant integer UPG_ORC_PULVERIZE  = 'Rows'
     constant integer UPG_ORC_ENSNARE    = 'Roen'
-    constant integer UPG_ORC_WYVERNS    = 'Rowt'
     constant integer UPG_ORC_VENOM      = 'Rovs'
     constant integer UPG_ORC_DOCS       = 'Rowd'
     constant integer UPG_ORC_SHAMAN     = 'Rost'
     constant integer UPG_ORC_SPIKES     = 'Rosp'
+    constant integer UPG_ORC_BURROWS    = 'Rorb'
     constant integer UPG_ORC_REGEN      = 'Rotr'
+    constant integer UPG_ORC_FIRE       = 'Rolf'
+    constant integer UPG_ORC_SWALKER    = 'Rowt'
+    constant integer UPG_ORC_BERSERKER  = 'Robk'
+    constant integer UPG_ORC_NAPTHA     = 'Robf'
+    constant integer UPG_ORC_CHAOS      = 'Roch'
 
     // Warcraft 2 orc units
     constant integer OGRE_MAGI          = 'nomg'
@@ -402,6 +417,7 @@ globals
     constant integer DAMNED_TEMPLE      = 'utod'
     constant integer ZIGGURAT_1         = 'uzig'    // normal
     constant integer ZIGGURAT_2         = 'uzg1'    // upgraded
+    constant integer ZIGGURAT_FROST     = 'uzg2'    // frost tower
     constant integer GRAVEYARD          = 'ugrv'
     constant integer TOMB_OF_RELICS     = 'utom'
 
@@ -420,6 +436,7 @@ globals
     constant integer UPG_WYRM_BREATH    = 'Rufb'
     constant integer UPG_SKEL_LIFE      = 'Rusl'
     constant integer UPG_SKEL_MASTERY   = 'Rusm'
+    constant integer UPG_EXHUME         = 'Ruex'
     constant integer UPG_SACRIFICE      = 'Rurs'
     constant integer UPG_ABOM_EXPL      = 'Ruax'
     constant integer UPG_CR_ARMOR       = 'Rucr'
@@ -444,6 +461,7 @@ globals
     constant integer SYLVANUS           = 'Hvwd'
     constant integer CENARIUS           = 'Ecen'
     constant integer ILLIDAN            = 'Eevi'
+    constant integer MAIEV              = 'Ewrd'
 
     // elf hero abilities
     constant integer FORCE_NATURE       = 'AEfn'
@@ -587,7 +605,8 @@ globals
     constant integer NAGA_SIREN         =  NAGA_WITCH   // caster
     constant integer NAGA_MYRMIDON      = 'nmyr'        // knight
     constant integer NAGA_REAVER        = 'nnmg'        // footman
-    constant integer NAGA_TURTLE        = 'nhyc'        // siege
+    constant integer NAGA_TURTLE        =  NAGA_HYDRA   // siege
+    constant integer NAGA_ROYAL         = 'nnrg'        // royal guard
 
     // naga buildings
     constant integer NAGA_TEMPLE        = 'nntt'        // town hall
@@ -595,7 +614,15 @@ globals
     constant integer NAGA_SHRINE        = 'nnsa'        // sirens & couatls
     constant integer NAGA_SPAWNING      = 'nnsg'        // myrm, snap dragon, hydra
     constant integer NAGA_GUARDIAN      = 'nntg'        // tower
-	constant integer NAGA_ALTAR			= 'nnad'        // altar
+    constant integer NAGA_ALTAR         = 'nnad'        // altar
+
+    // naga upgrades
+    constant integer UPG_NAGA_ARMOR     = 'Rnam'
+    constant integer UPG_NAGA_ATTACK    = 'Rnat'
+    constant integer UPG_NAGA_ABOLISH   = 'Rnsi'
+    constant integer UPG_SIREN          = 'Rnsw'
+    constant integer UPG_NAGA_ENSNARE   = 'Rnen'
+
 
     //--------------------------------------------------------------------
     constant integer M1                 =    60
@@ -648,6 +675,7 @@ globals
     integer hero_id                 = 'Hamg'
     integer hero_id2                = 'Hmkg'
     integer hero_id3                = 'Hpal'
+    integer array skill
     integer array skills1
     integer array skills2
     integer array skills3
@@ -1004,7 +1032,7 @@ function TownCountEx takes integer unitid, boolean only_done, integer townid ret
         set have_qty = have_qty  + GetUnitCountEx(CASTLE,false,townid)
 
     elseif unitid == WATCH_TOWER then
-        set have_qty = have_qty + GetUnitCountEx(GUARD_TOWER,false,townid) + GetUnitCountEx(CANNON_TOWER,false,townid)
+        set have_qty = have_qty + GetUnitCountEx(GUARD_TOWER,false,townid) + GetUnitCountEx(CANNON_TOWER,false,townid) + GetUnitCountEx(ARCANE_TOWER,false,townid)
 
     elseif unitid == PEASANT then
         set have_qty = have_qty + GetUnitCountEx(MILITIA,false,townid)
@@ -1014,13 +1042,21 @@ function TownCountEx takes integer unitid, boolean only_done, integer townid ret
     elseif unitid == STRONGHOLD then
         set have_qty = have_qty + GetUnitCountEx(FORTRESS,false,townid)
 
+    elseif unitid == HEAD_HUNTER then
+        set have_qty = have_qty + GetUnitCountEx(BERSERKER,false,townid)
+
+    elseif unitid == SPIRIT_WALKER then
+        set have_qty = have_qty + GetUnitCountEx(SPIRIT_WALKER_M,false,townid)
+    elseif unitid == SPIRIT_WALKER_M then
+        set have_qty = have_qty + GetUnitCountEx(SPIRIT_WALKER,only_done,townid)
+
     elseif unitid == NECROPOLIS_1 then
         set have_qty = have_qty + GetUnitCountEx(NECROPOLIS_2,false,townid) + GetUnitCountEx(NECROPOLIS_3,false,townid)
     elseif unitid == NECROPOLIS_2 then
         set have_qty = have_qty + GetUnitCountEx(NECROPOLIS_3,false,townid)
 
     elseif unitid == ZIGGURAT_1 then
-        set have_qty = have_qty + GetUnitCountEx(ZIGGURAT_2,false,townid)
+        set have_qty = have_qty + GetUnitCountEx(ZIGGURAT_2,false,townid) + GetUnitCountEx(ZIGGURAT_FROST,false,townid)
 
     elseif unitid == GARGOYLE then
         set have_qty = have_qty + GetUnitCountEx(GARGOYLE_MORPH,false,townid)
@@ -1307,12 +1343,26 @@ function PlayGame takes nothing returns nothing
 endfunction
 
 //============================================================================
+function ConvertNeeds takes integer unitid returns nothing
+    if GetUnitCount(unitid) < 1 then
+        call StartUnit(1,unitid,-1)
+    endif
+endfunction
+
+//============================================================================
 function Conversions takes integer desire, integer unitid returns nothing
 
+    if GetUnitCount(unitid) >= desire then
+        return
+    endif
+
     if unitid == HIPPO_RIDER then
+        call ConvertNeeds(ARCHER)
+        call ConvertNeeds(HIPPO)
         call MergeUnits(desire,ARCHER,HIPPO,HIPPO_RIDER)
 
     elseif unitid == BLK_SPHINX then
+        call ConvertNeeds(OBS_STATUE)
         call ConvertUnits(desire,OBS_STATUE)
     endif
 endfunction
@@ -2289,6 +2339,42 @@ function SkillArrays takes nothing returns integer
         return skills2[level]
     else
         return skills3[level]
+    endif
+endfunction
+
+//--------------------------------------------------------------------------------------------------
+//  SetSkillArray
+//--------------------------------------------------------------------------------------------------
+function SetSkillArray takes integer index, integer id returns nothing
+    local integer i = 1
+
+    if index == 1 then
+        if hero_id != id then
+            return
+        endif
+        loop
+            set skills1[i] = skill[i]
+            exitwhen i == 10
+            set i = i + 1
+        endloop
+    elseif index == 2 then
+        if hero_id2 != id then
+            return
+        endif
+        loop
+            set skills2[i] = skill[i]
+            exitwhen i == 10
+            set i = i + 1
+        endloop
+    else
+        if hero_id3 != id then
+            return
+        endif
+        loop
+            set skills3[i] = skill[i]
+            exitwhen i == 10
+            set i = i + 1
+        endloop
     endif
 endfunction
 
