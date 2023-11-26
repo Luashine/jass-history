@@ -86,6 +86,22 @@ CDN IDs:
 
 ## My notes
 
+### Script to diff folders vs manual list
+
+As you can see I stopped making my own sorting script (call me stupid) and thought it's a one time task to do it manually. Instead here's a script to compare entries for completeness.
+
+```shell
+cd "war3extract" && \
+find . -maxdepth 1 -type d | sed 's|\./||g' | sort > find.txt && \
+sort ../version-list-sorted.txt > manual.txt && \
+diff manual.txt find.txt;
+rm -i manual.txt find.txt
+```
+
+### Patches not part of change list
+
+ROC 1.10, ROC 1.11. Maybe they'll got their own branch to not ruin the history.
+
 ### Missing patch 1.10 ROC/TFT
 
 https://wowpedia.fandom.com/wiki/Warcraft_III/Patch_1.10
