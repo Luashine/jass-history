@@ -81,8 +81,7 @@ CDN IDs:
    - `w3t.cfg:1.31.0.11889|189880a364a0594dba2164c7c7074ec0|version-w3t-101762.bmime`
    - `w3.cfg:1.31.0.12071|cc2dbb838eb5156585bc71cf9951ee65|version-w3-101763.bmime`
 
-
-
+etc. I didn't bother anymore
 
 ## My notes
 
