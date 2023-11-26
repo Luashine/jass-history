@@ -270,8 +270,7 @@ globals
 //===================================================
 
     constant igamestate GAME_STATE_DIVINE_INTERVENTION          = ConvertIGameState(0)
-    constant igamestate GAME_STATE_PLAYERS                      = ConvertIGameState(1)
-
+    constant igamestate GAME_STATE_DISCONNECTED                 = ConvertIGameState(1)
     constant fgamestate GAME_STATE_TIME_OF_DAY                  = ConvertFGameState(2)
 
     constant playerstate PLAYER_STATE_GAME_RESULT               = ConvertPlayerState(0)
@@ -290,16 +289,17 @@ globals
     constant playerstate PLAYER_STATE_PLACED                    = ConvertPlayerState(9)
     constant playerstate PLAYER_STATE_OBSERVER_ON_DEATH         = ConvertPlayerState(10)
     constant playerstate PLAYER_STATE_OBSERVER                  = ConvertPlayerState(11)
+    constant playerstate PLAYER_STATE_UNFOLLOWABLE              = ConvertPlayerState(12)
 
     // taxation rate for each resource
     //
-    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(12)
-    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(13)
+    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(13)
+    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(14)
 
     // cumulative resources collected by the player during the mission
     //
-    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(14)
-    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(15)
+    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(15)
+    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(16)
 
     constant unitstate UNIT_STATE_LIFE                          = ConvertUnitState(0)
     constant unitstate UNIT_STATE_MAX_LIFE                      = ConvertUnitState(1)
@@ -349,121 +349,122 @@ globals
 
     constant playerevent EVENT_PLAYER_DEFEAT                    = ConvertPlayerEvent(12)
     constant playerevent EVENT_PLAYER_VICTORY                   = ConvertPlayerEvent(13)
-    constant playerevent EVENT_PLAYER_CHAT                      = ConvertPlayerEvent(14)
-    constant playerevent EVENT_PLAYER_END_CINEMATIC             = ConvertPlayerEvent(15)
+    constant playerevent EVENT_PLAYER_LEAVE                     = ConvertPlayerEvent(14)
+    constant playerevent EVENT_PLAYER_CHAT                      = ConvertPlayerEvent(15)
+    constant playerevent EVENT_PLAYER_END_CINEMATIC             = ConvertPlayerEvent(16)
 
     //===================================================
     // For use with TriggerRegisterPlayerUnitEvent
     //===================================================
 
-    constant playerunitevent EVENT_PLAYER_UNIT_ATTACKED                 = ConvertPlayerUnitEvent(16)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESCUED                  = ConvertPlayerUnitEvent(17)
+    constant playerunitevent EVENT_PLAYER_UNIT_ATTACKED                 = ConvertPlayerUnitEvent(17)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESCUED                  = ConvertPlayerUnitEvent(18)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_DEATH                    = ConvertPlayerUnitEvent(18)
-    constant playerunitevent EVENT_PLAYER_UNIT_DECAY                    = ConvertPlayerUnitEvent(19)
+    constant playerunitevent EVENT_PLAYER_UNIT_DEATH                    = ConvertPlayerUnitEvent(19)
+    constant playerunitevent EVENT_PLAYER_UNIT_DECAY                    = ConvertPlayerUnitEvent(20)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_DETECTED                 = ConvertPlayerUnitEvent(20)
-    constant playerunitevent EVENT_PLAYER_UNIT_HIDDEN                   = ConvertPlayerUnitEvent(21)
+    constant playerunitevent EVENT_PLAYER_UNIT_DETECTED                 = ConvertPlayerUnitEvent(21)
+    constant playerunitevent EVENT_PLAYER_UNIT_HIDDEN                   = ConvertPlayerUnitEvent(22)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_SELECTED                 = ConvertPlayerUnitEvent(22)
-    constant playerunitevent EVENT_PLAYER_UNIT_DESELECTED               = ConvertPlayerUnitEvent(23)
+    constant playerunitevent EVENT_PLAYER_UNIT_SELECTED                 = ConvertPlayerUnitEvent(23)
+    constant playerunitevent EVENT_PLAYER_UNIT_DESELECTED               = ConvertPlayerUnitEvent(24)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_START          = ConvertPlayerUnitEvent(24)
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_CANCEL         = ConvertPlayerUnitEvent(25)
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_FINISH         = ConvertPlayerUnitEvent(26)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_START          = ConvertPlayerUnitEvent(25)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_CANCEL         = ConvertPlayerUnitEvent(26)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_FINISH         = ConvertPlayerUnitEvent(27)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_START            = ConvertPlayerUnitEvent(27)
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_CANCEL           = ConvertPlayerUnitEvent(28)
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_FINISH           = ConvertPlayerUnitEvent(29)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_START            = ConvertPlayerUnitEvent(28)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_CANCEL           = ConvertPlayerUnitEvent(29)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_FINISH           = ConvertPlayerUnitEvent(30)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_START              = ConvertPlayerUnitEvent(30)
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_CANCEL             = ConvertPlayerUnitEvent(31)
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_FINISH             = ConvertPlayerUnitEvent(32)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_START              = ConvertPlayerUnitEvent(31)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_CANCEL             = ConvertPlayerUnitEvent(32)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_FINISH             = ConvertPlayerUnitEvent(33)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_START           = ConvertPlayerUnitEvent(33)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_CANCEL          = ConvertPlayerUnitEvent(34)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_FINISH          = ConvertPlayerUnitEvent(35)
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_ORDER             = ConvertPlayerUnitEvent(36)
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER       = ConvertPlayerUnitEvent(37)
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER        = ConvertPlayerUnitEvent(38)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_START           = ConvertPlayerUnitEvent(34)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_CANCEL          = ConvertPlayerUnitEvent(35)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_FINISH          = ConvertPlayerUnitEvent(36)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_ORDER             = ConvertPlayerUnitEvent(37)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER       = ConvertPlayerUnitEvent(38)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER        = ConvertPlayerUnitEvent(39)
 
-    constant playerunitevent EVENT_PLAYER_HERO_LEVEL                    = ConvertPlayerUnitEvent(39)
-    constant playerunitevent EVENT_PLAYER_HERO_SKILL                    = ConvertPlayerUnitEvent(40)
+    constant playerunitevent EVENT_PLAYER_HERO_LEVEL                    = ConvertPlayerUnitEvent(40)
+    constant playerunitevent EVENT_PLAYER_HERO_SKILL                    = ConvertPlayerUnitEvent(41)
 
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVABLE                = ConvertPlayerUnitEvent(41)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVABLE                = ConvertPlayerUnitEvent(42)
 
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_START             = ConvertPlayerUnitEvent(42)
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_CANCEL            = ConvertPlayerUnitEvent(43)
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_FINISH            = ConvertPlayerUnitEvent(44)
-    constant playerunitevent EVENT_PLAYER_UNIT_SUMMON                   = ConvertPlayerUnitEvent(45)
-    constant playerunitevent EVENT_PLAYER_UNIT_DROP_ITEM                = ConvertPlayerUnitEvent(46)
-    constant playerunitevent EVENT_PLAYER_UNIT_PICKUP_ITEM              = ConvertPlayerUnitEvent(47)
-    constant playerunitevent EVENT_PLAYER_UNIT_USE_ITEM                 = ConvertPlayerUnitEvent(48)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_START             = ConvertPlayerUnitEvent(43)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_CANCEL            = ConvertPlayerUnitEvent(44)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_FINISH            = ConvertPlayerUnitEvent(45)
+    constant playerunitevent EVENT_PLAYER_UNIT_SUMMON                   = ConvertPlayerUnitEvent(46)
+    constant playerunitevent EVENT_PLAYER_UNIT_DROP_ITEM                = ConvertPlayerUnitEvent(47)
+    constant playerunitevent EVENT_PLAYER_UNIT_PICKUP_ITEM              = ConvertPlayerUnitEvent(48)
+    constant playerunitevent EVENT_PLAYER_UNIT_USE_ITEM                 = ConvertPlayerUnitEvent(49)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_LOADED                   = ConvertPlayerUnitEvent(49)
+    constant playerunitevent EVENT_PLAYER_UNIT_LOADED                   = ConvertPlayerUnitEvent(50)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
     //===================================================
 
-    constant unitevent EVENT_UNIT_DAMAGED                               = ConvertUnitEvent(50)
-    constant unitevent EVENT_UNIT_DEATH                                 = ConvertUnitEvent(51)
-    constant unitevent EVENT_UNIT_DECAY                                 = ConvertUnitEvent(52)
-    constant unitevent EVENT_UNIT_DETECTED                              = ConvertUnitEvent(53)
-    constant unitevent EVENT_UNIT_HIDDEN                                = ConvertUnitEvent(54)
-    constant unitevent EVENT_UNIT_SELECTED                              = ConvertUnitEvent(55)
-    constant unitevent EVENT_UNIT_DESELECTED                            = ConvertUnitEvent(56)
+    constant unitevent EVENT_UNIT_DAMAGED                               = ConvertUnitEvent(51)
+    constant unitevent EVENT_UNIT_DEATH                                 = ConvertUnitEvent(52)
+    constant unitevent EVENT_UNIT_DECAY                                 = ConvertUnitEvent(53)
+    constant unitevent EVENT_UNIT_DETECTED                              = ConvertUnitEvent(54)
+    constant unitevent EVENT_UNIT_HIDDEN                                = ConvertUnitEvent(55)
+    constant unitevent EVENT_UNIT_SELECTED                              = ConvertUnitEvent(56)
+    constant unitevent EVENT_UNIT_DESELECTED                            = ConvertUnitEvent(57)
                                                                         
-    constant unitevent EVENT_UNIT_STATE_LIMIT                           = ConvertUnitEvent(57)                                                                        
+    constant unitevent EVENT_UNIT_STATE_LIMIT                           = ConvertUnitEvent(58)                                                                        
     // Events which may have a filter for the "other unit"              
     //                                                                  
-    constant unitevent EVENT_UNIT_ACQUIRED_TARGET                       = ConvertUnitEvent(58)
-    constant unitevent EVENT_UNIT_TARGET_IN_RANGE                       = ConvertUnitEvent(59)
-    constant unitevent EVENT_UNIT_ATTACKED                              = ConvertUnitEvent(60)
-    constant unitevent EVENT_UNIT_RESCUED                               = ConvertUnitEvent(61)
+    constant unitevent EVENT_UNIT_ACQUIRED_TARGET                       = ConvertUnitEvent(59)
+    constant unitevent EVENT_UNIT_TARGET_IN_RANGE                       = ConvertUnitEvent(60)
+    constant unitevent EVENT_UNIT_ATTACKED                              = ConvertUnitEvent(61)
+    constant unitevent EVENT_UNIT_RESCUED                               = ConvertUnitEvent(62)
                                                                         
-    constant unitevent EVENT_UNIT_CONSTRUCT_CANCEL                      = ConvertUnitEvent(62)
-    constant unitevent EVENT_UNIT_CONSTRUCT_FINISH                      = ConvertUnitEvent(63)
+    constant unitevent EVENT_UNIT_CONSTRUCT_CANCEL                      = ConvertUnitEvent(63)
+    constant unitevent EVENT_UNIT_CONSTRUCT_FINISH                      = ConvertUnitEvent(64)
                                                                         
-    constant unitevent EVENT_UNIT_UPGRADE_START                         = ConvertUnitEvent(64)
-    constant unitevent EVENT_UNIT_UPGRADE_CANCEL                        = ConvertUnitEvent(65)
-    constant unitevent EVENT_UNIT_UPGRADE_FINISH                        = ConvertUnitEvent(66)
+    constant unitevent EVENT_UNIT_UPGRADE_START                         = ConvertUnitEvent(65)
+    constant unitevent EVENT_UNIT_UPGRADE_CANCEL                        = ConvertUnitEvent(66)
+    constant unitevent EVENT_UNIT_UPGRADE_FINISH                        = ConvertUnitEvent(67)
                                                                         
     // Events which involve the specified unit performing               
     // training of other units                                          
     //                                                                  
-    constant unitevent EVENT_UNIT_TRAIN_START                           = ConvertUnitEvent(67)
-    constant unitevent EVENT_UNIT_TRAIN_CANCEL                          = ConvertUnitEvent(68)
-    constant unitevent EVENT_UNIT_TRAIN_FINISH                          = ConvertUnitEvent(69)
+    constant unitevent EVENT_UNIT_TRAIN_START                           = ConvertUnitEvent(68)
+    constant unitevent EVENT_UNIT_TRAIN_CANCEL                          = ConvertUnitEvent(69)
+    constant unitevent EVENT_UNIT_TRAIN_FINISH                          = ConvertUnitEvent(70)
                                                                         
-    constant unitevent EVENT_UNIT_RESEARCH_START                        = ConvertUnitEvent(70)
-    constant unitevent EVENT_UNIT_RESEARCH_CANCEL                       = ConvertUnitEvent(71)
-    constant unitevent EVENT_UNIT_RESEARCH_FINISH                       = ConvertUnitEvent(72)
+    constant unitevent EVENT_UNIT_RESEARCH_START                        = ConvertUnitEvent(71)
+    constant unitevent EVENT_UNIT_RESEARCH_CANCEL                       = ConvertUnitEvent(72)
+    constant unitevent EVENT_UNIT_RESEARCH_FINISH                       = ConvertUnitEvent(73)
                                                                         
-    constant unitevent EVENT_UNIT_ISSUED_ORDER                          = ConvertUnitEvent(73)
-    constant unitevent EVENT_UNIT_ISSUED_POINT_ORDER                    = ConvertUnitEvent(74)
-    constant unitevent EVENT_UNIT_ISSUED_UNIT_ORDER                     = ConvertUnitEvent(75)
+    constant unitevent EVENT_UNIT_ISSUED_ORDER                          = ConvertUnitEvent(74)
+    constant unitevent EVENT_UNIT_ISSUED_POINT_ORDER                    = ConvertUnitEvent(75)
+    constant unitevent EVENT_UNIT_ISSUED_UNIT_ORDER                     = ConvertUnitEvent(76)
                                                                        
-    constant unitevent EVENT_UNIT_HERO_LEVEL                            = ConvertUnitEvent(76)
-    constant unitevent EVENT_UNIT_HERO_SKILL                            = ConvertUnitEvent(77)
+    constant unitevent EVENT_UNIT_HERO_LEVEL                            = ConvertUnitEvent(77)
+    constant unitevent EVENT_UNIT_HERO_SKILL                            = ConvertUnitEvent(78)
                                                                         
-    constant unitevent EVENT_UNIT_HERO_REVIVABLE                        = ConvertUnitEvent(78)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_START                     = ConvertUnitEvent(79)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_CANCEL                    = ConvertUnitEvent(80)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_FINISH                    = ConvertUnitEvent(81)
+    constant unitevent EVENT_UNIT_HERO_REVIVABLE                        = ConvertUnitEvent(79)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_START                     = ConvertUnitEvent(80)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_CANCEL                    = ConvertUnitEvent(81)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_FINISH                    = ConvertUnitEvent(82)
                                                                         
-    constant unitevent EVENT_UNIT_SUMMON                                = ConvertUnitEvent(82)
+    constant unitevent EVENT_UNIT_SUMMON                                = ConvertUnitEvent(83)
                                                                         
-    constant unitevent EVENT_UNIT_DROP_ITEM                             = ConvertUnitEvent(83)
-    constant unitevent EVENT_UNIT_PICKUP_ITEM                           = ConvertUnitEvent(84)
-    constant unitevent EVENT_UNIT_USE_ITEM                              = ConvertUnitEvent(85)
+    constant unitevent EVENT_UNIT_DROP_ITEM                             = ConvertUnitEvent(84)
+    constant unitevent EVENT_UNIT_PICKUP_ITEM                           = ConvertUnitEvent(85)
+    constant unitevent EVENT_UNIT_USE_ITEM                              = ConvertUnitEvent(86)
 
-    constant unitevent EVENT_UNIT_LOADED                                = ConvertUnitEvent(86)
+    constant unitevent EVENT_UNIT_LOADED                                = ConvertUnitEvent(87)
 
-    constant widgetevent EVENT_WIDGET_DEATH                             = ConvertWidgetEvent(87)
+    constant widgetevent EVENT_WIDGET_DEATH                             = ConvertWidgetEvent(88)
 
-    constant dialogevent EVENT_DIALOG_BUTTON_CLICK                      = ConvertDialogEvent(88)
-    constant dialogevent EVENT_DIALOG_CLICK                             = ConvertDialogEvent(89)
+    constant dialogevent EVENT_DIALOG_BUTTON_CLICK                      = ConvertDialogEvent(89)
+    constant dialogevent EVENT_DIALOG_CLICK                             = ConvertDialogEvent(90)
 
     //===================================================
     // Limit Event API constants    
@@ -561,7 +562,7 @@ endglobals
 
 //============================================================================
 // Debug logging API
-native SetWarningDisplayLevel   takes integer i returns nothing
+native SetWarningDisplayLevel   takes integer i, boolean exclusive returns nothing
 native JassLog                  takes string s returns nothing
 
 //============================================================================
@@ -1069,6 +1070,8 @@ constant native GetTriggerWidget takes nothing returns widget
 // Facing arguments are specified in degrees
 native          CreateDestructable          takes integer objectid, real x, real y, real face, real scale, integer variation returns destructable
 native          CreateDestructableZ         takes integer objectid, real x, real y, real z, real face, real scale, integer variation returns destructable
+native          CreateDeadDestructable      takes integer objectid, real x, real y, real face, real scale, integer variation returns destructable
+native          CreateDeadDestructableZ     takes integer objectid, real x, real y, real z, real face, real scale, integer variation returns destructable
 native          RemoveDestructable          takes destructable d returns nothing
 native          KillDestructable            takes destructable d returns nothing
 native          SetDestructableInvulnerable takes destructable d, boolean flag returns nothing
@@ -1081,6 +1084,8 @@ native          SetDestructableLife         takes destructable d, real life retu
 native          GetDestructableLife         takes destructable d returns real
 native          GetDestructableMaxLife      takes destructable d returns real
 native          DestructableRestoreLife     takes destructable d, real life, boolean birth returns nothing
+native          QueueDestructableAnimation  takes destructable d, string whichAnimation returns nothing
+native          SetDestructableAnimation    takes destructable d, string whichAnimation returns nothing
 
 //============================================================================
 // Item API
@@ -1204,6 +1209,7 @@ constant native GetUnitRace         takes unit whichUnit returns race
 constant native GetUnitName         takes unit whichUnit returns string
 constant native GetUnitFoodUsed     takes unit whichUnit returns integer
 constant native GetUnitFoodMade     takes unit whichUnit returns integer
+constant native GetFoodMade         takes integer unitId returns integer
 
 constant native IsUnitInGroup       takes unit whichUnit, group whichGroup returns boolean
 constant native IsUnitInForce       takes unit whichUnit, force whichForce returns boolean
@@ -1365,7 +1371,8 @@ native  SetMissionAvailable     takes integer campaignNumber, integer missionNum
 native  SetCampaignAvailable    takes integer campaignNumber, boolean available  returns nothing
 native  SetOpCinematicAvailable takes integer campaignNumber, boolean available  returns nothing
 native  SetEdCinematicAvailable takes integer campaignNumber, boolean available  returns nothing
-
+native  GetDefaultDifficulty    takes nothing returns gamedifficulty
+native  SetDefaultDifficulty    takes gamedifficulty g returns nothing 
 
 //============================================================================
 // Dialog API
@@ -1415,34 +1422,37 @@ native PlaceRandomItem          takes itempool whichItemPool, real x, real y ret
 native ChooseRandomCreep        takes integer level returns integer
 native ChooseRandomNPBuilding   takes nothing returns integer
 native ChooseRandomItem         takes integer level returns integer
+native SetRandomSeed            takes integer seed returns nothing
 
 //============================================================================
 // Visual API
-native SetTerrainFog            takes real a, real b, real c, real d, real e returns nothing
-native ResetTerrainFog          takes nothing returns nothing
+native SetTerrainFog                takes real a, real b, real c, real d, real e returns nothing
+native ResetTerrainFog              takes nothing returns nothing
 
-native SetUnitFog               takes real a, real b, real c, real d, real e returns nothing
-native SetTerrainFogEx          takes integer style, real zstart, real zend, real density, real red, real green, real blue returns nothing
-native DisplayTextToPlayer      takes player toPlayer, real x, real y, string message returns nothing
-native DisplayTimedTextToPlayer takes player toPlayer, real x, real y, real duration, string message returns nothing
-native SetDayNightModels        takes string terrainDNCFile, string unitDNCFile returns nothing
-native SetSkyModel              takes string skyModelFile returns nothing
-native EnableUserControl        takes boolean b returns nothing
-native SuspendTimeOfDay         takes boolean b returns nothing
-native SetTimeOfDayScale        takes real r returns nothing
-native GetTimeOfDayScale        takes nothing returns real
-native ShowInterface            takes boolean flag, real fadeDuration returns nothing
-native PauseGame                takes boolean flag returns nothing
-native UnitAddIndicator         takes unit whichUnit, integer red, integer green, integer blue, integer alpha returns nothing
-native AddIndicator             takes widget whichWidget, integer red, integer green, integer blue, integer alpha returns nothing
-native PingMinimap              takes real x, real y, real duration returns nothing
-native EnableOcclusion          takes boolean flag returns nothing
-native SetIntroShotText         takes string introText returns nothing
-native SetIntroShotModel        takes string introModelPath returns nothing
-native EnableWorldFogBoundary   takes boolean b returns nothing
+native SetUnitFog                   takes real a, real b, real c, real d, real e returns nothing
+native SetTerrainFogEx              takes integer style, real zstart, real zend, real density, real red, real green, real blue returns nothing
+native DisplayTextToPlayer          takes player toPlayer, real x, real y, string message returns nothing
+native DisplayTimedTextToPlayer     takes player toPlayer, real x, real y, real duration, string message returns nothing
+native DisplayTimedTextFromPlayer   takes player toPlayer, real x, real y, real duration, string message returns nothing
+native ClearTextMessages            takes nothing returns nothing
+native SetDayNightModels            takes string terrainDNCFile, string unitDNCFile returns nothing
+native SetSkyModel                  takes string skyModelFile returns nothing
+native EnableUserControl            takes boolean b returns nothing
+native SuspendTimeOfDay             takes boolean b returns nothing
+native SetTimeOfDayScale            takes real r returns nothing
+native GetTimeOfDayScale            takes nothing returns real
+native ShowInterface                takes boolean flag, real fadeDuration returns nothing
+native PauseGame                    takes boolean flag returns nothing
+native UnitAddIndicator             takes unit whichUnit, integer red, integer green, integer blue, integer alpha returns nothing
+native AddIndicator                 takes widget whichWidget, integer red, integer green, integer blue, integer alpha returns nothing
+native PingMinimap                  takes real x, real y, real duration returns nothing
+native EnableOcclusion              takes boolean flag returns nothing
+native SetIntroShotText             takes string introText returns nothing
+native SetIntroShotModel            takes string introModelPath returns nothing
+native EnableWorldFogBoundary       takes boolean b returns nothing
 
-native ForceUIKey               takes string key returns nothing
-native ForceUICancel            takes nothing returns nothing
+native ForceUIKey                   takes string key returns nothing
+native ForceUICancel                takes nothing returns nothing
 
 //============================================================================
 // Trackable API
@@ -1607,6 +1617,7 @@ native CreateMIDISound              takes string soundLabel, integer fadeInRate,
 
 native SetSoundParamsFromLabel      takes sound soundHandle, string soundLabel returns nothing
 native SetSoundDistanceCutoff       takes sound soundHandle, real cutoff returns nothing
+native SetSoundChannel              takes sound soundHandle, integer channel returns nothing
 native SetSoundVolume               takes sound soundHandle, integer volume returns nothing
 native SetSoundPitch                takes sound soundHandle, real pitch returns nothing
 
@@ -1687,6 +1698,7 @@ native StartMeleeAI         takes player num, string script                 retu
 native StartCampaignAI      takes player num, string script                 returns nothing
 native CommandAI            takes player num, integer command, integer data returns nothing
 native RemoveGuardPosition  takes unit hUnit                                returns nothing
+native RecycleGuardPosition takes unit hUnit                                returns nothing
 native RemoveAllGuardPositions takes player num                             returns nothing
 
 //============================================================================
