@@ -55,7 +55,7 @@ type mapsetting         extends     handle
 type mapdensity         extends     handle
 type mapcontrol         extends     handle
 type playerslotstate    extends     handle
-type volumegroup		extends		handle
+type volumegroup        extends     handle
 type camerafield        extends     handle
 type camerasetup        extends     handle
 type playercolor        extends     handle
@@ -114,7 +114,7 @@ constant native ConvertMapDensity           takes integer i returns mapdensity
 constant native ConvertMapControl           takes integer i returns mapcontrol
 constant native ConvertPlayerColor          takes integer i returns playercolor
 constant native ConvertPlayerSlotState      takes integer i returns playerslotstate
-constant native ConvertVolumeGroup		    takes integer i returns volumegroup
+constant native ConvertVolumeGroup          takes integer i returns volumegroup
 constant native ConvertCameraField          takes integer i returns camerafield
 constant native ConvertBlendMode            takes integer i returns blendmode
 constant native ConvertRarityControl        takes integer i returns raritycontrol
@@ -272,14 +272,14 @@ globals
 //===================================================
 // Sound Constants
 //===================================================
-	constant volumegroup		SOUND_VOLUMEGROUP_UNITMOVEMENT		= ConvertVolumeGroup(0)
-	constant volumegroup		SOUND_VOLUMEGROUP_UNITSOUNDS		= ConvertVolumeGroup(1)
-	constant volumegroup		SOUND_VOLUMEGROUP_COMBAT			= ConvertVolumeGroup(2)
-	constant volumegroup		SOUND_VOLUMEGROUP_SPELLS			= ConvertVolumeGroup(3)
-	constant volumegroup		SOUND_VOLUMEGROUP_UI				= ConvertVolumeGroup(4)
-	constant volumegroup		SOUND_VOLUMEGROUP_MUSIC				= ConvertVolumeGroup(5)
-	constant volumegroup		SOUND_VOLUMEGROUP_AMBIENTSOUNDS		= ConvertVolumeGroup(6)
-	constant volumegroup		SOUND_VOLUMEGROUP_FIRE		        = ConvertVolumeGroup(7)
+    constant volumegroup        SOUND_VOLUMEGROUP_UNITMOVEMENT      = ConvertVolumeGroup(0)
+    constant volumegroup        SOUND_VOLUMEGROUP_UNITSOUNDS        = ConvertVolumeGroup(1)
+    constant volumegroup        SOUND_VOLUMEGROUP_COMBAT            = ConvertVolumeGroup(2)
+    constant volumegroup        SOUND_VOLUMEGROUP_SPELLS            = ConvertVolumeGroup(3)
+    constant volumegroup        SOUND_VOLUMEGROUP_UI                = ConvertVolumeGroup(4)
+    constant volumegroup        SOUND_VOLUMEGROUP_MUSIC             = ConvertVolumeGroup(5)
+    constant volumegroup        SOUND_VOLUMEGROUP_AMBIENTSOUNDS     = ConvertVolumeGroup(6)
+    constant volumegroup        SOUND_VOLUMEGROUP_FIRE              = ConvertVolumeGroup(7)
 
 
 //===================================================
@@ -1298,7 +1298,8 @@ native          SetUnitMoveSpeed    takes unit whichUnit, real newSpeed returns 
 native          SetUnitFlyHeight    takes unit whichUnit, real newHeight, real rate returns nothing
 native          SetUnitTurnSpeed    takes unit whichUnit, real newTurnSpeed returns nothing
 native          SetUnitPropWindow   takes unit whichUnit, real newPropWindowAngle returns nothing
-native          SetUnitAcquireRange             takes unit whichUnit, real newAcquireRange returns nothing
+native          SetUnitAcquireRange takes unit whichUnit, real newAcquireRange returns nothing
+native          SetUnitCreepGuard   takes unit whichUnit, boolean creepGuard returns nothing
 
 native          GetUnitAcquireRange     takes unit whichUnit returns real
 native          GetUnitTurnSpeed        takes unit whichUnit returns real
@@ -1708,11 +1709,13 @@ native EnableOcclusion              takes boolean flag returns nothing
 native SetIntroShotText             takes string introText returns nothing
 native SetIntroShotModel            takes string introModelPath returns nothing
 native EnableWorldFogBoundary       takes boolean b returns nothing
+native PlayModelCinematic           takes string modelName returns nothing
 native PlayCinematic                takes string movieName returns nothing
 native ForceUIKey                   takes string key returns nothing
 native ForceUICancel                takes nothing returns nothing
 native DisplayLoadDialog            takes nothing returns nothing
 native SetAltMinimapIcon            takes string iconPath returns nothing
+native DisableRestartMission        takes boolean flag returns nothing
 
 native CreateTextTag                takes nothing returns texttag
 native DestroyTextTag               takes texttag t returns nothing
@@ -1859,6 +1862,11 @@ native MultiboardSetItemValueColor      takes multiboarditem mbi, integer red, i
 native MultiboardSetItemWidth           takes multiboarditem mbi, real width returns nothing
 native MultiboardSetItemIcon            takes multiboarditem mbi, string iconFileName returns nothing
 
+// meant to unequivocally suspend display of existing and
+// subsequently displayed multiboards
+//
+native MultiboardSuppressDisplay        takes boolean flag returns nothing
+
 //============================================================================
 // Camera API
 native SetCameraPosition            takes real x, real y returns nothing
@@ -1910,6 +1918,7 @@ native IsCineFilterDisplayed            takes nothing returns boolean
 
 native SetCinematicScene                takes integer portraitUnitId, playercolor color, string speakerTitle, string text, real sceneDuration, real voiceoverDuration returns nothing
 native EndCinematicScene                takes nothing returns nothing
+native ForceCinematicSubtitles          takes boolean flag returns nothing
 
 native GetCameraMargin                  takes integer whichMargin returns real
 
@@ -1969,24 +1978,26 @@ native StopMusic                    takes boolean fadeOut returns nothing
 native ResumeMusic                  takes nothing returns nothing
 
 native PlayThematicMusic            takes string musicFileName returns nothing
+native PlayThematicMusicEx          takes string musicFileName, integer frommsecs returns nothing
 native EndThematicMusic             takes nothing returns nothing
 
 native SetMusicVolume               takes integer volume returns nothing
 native SetMusicPlayPosition         takes integer millisecs returns nothing
+native SetThematicMusicPlayPosition takes integer millisecs returns nothing
 
 // other music and sound calls
-native SetSoundDuration				takes sound soundHandle, integer duration returns nothing
-native GetSoundDuration				takes sound soundHandle returns integer
-native GetSoundFileDuration			takes string musicFileName returns integer
+native SetSoundDuration             takes sound soundHandle, integer duration returns nothing
+native GetSoundDuration             takes sound soundHandle returns integer
+native GetSoundFileDuration         takes string musicFileName returns integer
 
-native VolumeGroupSetVolume			takes volumegroup vgroup, real scale returns nothing
-native VolumeGroupReset				takes nothing returns nothing
+native VolumeGroupSetVolume         takes volumegroup vgroup, real scale returns nothing
+native VolumeGroupReset             takes nothing returns nothing
 
-native GetSoundIsPlaying			takes sound soundHandle returns boolean
-native GetSoundIsLoading			takes sound soundHandle returns boolean
+native GetSoundIsPlaying            takes sound soundHandle returns boolean
+native GetSoundIsLoading            takes sound soundHandle returns boolean
 
-native RegisterStackedSound			takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
-native UnregisterStackedSound		takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
+native RegisterStackedSound         takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
+native UnregisterStackedSound       takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
 
 //============================================================================
 // Effects API
@@ -2055,6 +2066,10 @@ native IsNoDefeatCheat  takes nothing returns boolean
 
 native Preload          takes string filename returns nothing
 native PreloadEnd       takes real timeout returns nothing
+
+native PreloadStart     takes nothing returns nothing
+native PreloadRefresh   takes nothing returns nothing
+native PreloadEndEx     takes nothing returns nothing
 
 native PreloadGenClear  takes nothing returns nothing
 native PreloadGenStart  takes nothing returns nothing
