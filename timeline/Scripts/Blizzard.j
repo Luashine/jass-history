@@ -21,17 +21,19 @@ globals
     constant integer  bj_CAMERA_DEFAULT_ROTATION = 90
 
     // Constants for Melee Games:
-    //   - Starting time of day
+    //   - Starting Time of Day (TOD)
+    //   - Starting Gold
+    //   - Starting Lumber
+    //   - Starting Hero Tokens (free heroes)
     //   - Max heroes allowed per player
-    //   - Distance from mine for initial peon / tree of life placement
-    //   - Distance from necropolis for initial ghoul placement
     //   - Distance from start loc to search for nearby mines
     //
+    constant real     bj_MELEE_STARTING_TOD         = 6.00
     constant integer  bj_MELEE_STARTING_GOLD        = 750
     constant integer  bj_MELEE_STARTING_LUMBER      = 200
     constant integer  bj_MELEE_STARTING_HERO_TOKENS = 1
-    constant real     bj_MELEE_STARTING_TOD         = 8.00
     constant integer  bj_MELEE_HERO_LIMIT           = 3
+    constant integer  bj_MELEE_HERO_TYPE_LIMIT      = 1
     constant real     bj_MELEE_MINE_SEARCH_RADIUS   = 2000
 
     // Delay between a creep's death and the time it may drop an item.
@@ -1519,6 +1521,16 @@ function RectContainsUnit takes rect r, unit whichUnit returns boolean
 endfunction
 
 //===========================================================================
+function GetRectWidthBJ takes rect r returns real
+    return GetRectMaxX(r) - GetRectMinX(r)
+endfunction
+
+//===========================================================================
+function GetRectHeightBJ takes rect r returns real
+    return GetRectMaxY(r) - GetRectMinY(r)
+endfunction
+
+//===========================================================================
 function SetPlayerTechResearchedSwap takes integer techid, integer levels, player whichPlayer returns integer
     return SetPlayerTechResearched(whichPlayer, techid, levels)
 endfunction
@@ -1992,7 +2004,7 @@ function MeleeStartingUnitsNightElf takes player whichPlayer, location startLoc 
     set nearestMine = MeleeFindNearestMine(startLoc, bj_MELEE_MINE_SEARCH_RADIUS)
     if (nearestMine != null) then
         // Spawn Tree of Life near the mine and have it entangle the mine.
-        set nearMineLoc = MeleeGetProjectedLoc(GetUnitLoc(nearestMine), startLoc, 498)
+        set nearMineLoc = MeleeGetProjectedLoc(GetUnitLoc(nearestMine), startLoc, 650)
         set tree = CreateUnitAtLoc(whichPlayer, 'etol', nearMineLoc, bj_UNIT_FACING)
         call IssueTargetOrder(tree, "entangleinstant", nearestMine)
 
@@ -2086,7 +2098,26 @@ function MeleeStartingHeroLimit takes nothing returns nothing
 
     set index = 0
     loop
+        // max heroes per player
         call SetPlayerTechMaxAllowed(Player(index), 'HERO', bj_MELEE_HERO_LIMIT)
+
+        // each player is restricted to a limit per hero type as well
+        call SetPlayerTechMaxAllowed(Player(index), 'Hamg', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Hmkg', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Hpal', bj_MELEE_HERO_TYPE_LIMIT)
+
+        call SetPlayerTechMaxAllowed(Player(index), 'Obla', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Ofar', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Otch', bj_MELEE_HERO_TYPE_LIMIT)
+
+        call SetPlayerTechMaxAllowed(Player(index), 'Edem', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Ekee', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Emoo', bj_MELEE_HERO_TYPE_LIMIT)
+
+        call SetPlayerTechMaxAllowed(Player(index), 'Udea', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Udre', bj_MELEE_HERO_TYPE_LIMIT)
+        call SetPlayerTechMaxAllowed(Player(index), 'Ulic', bj_MELEE_HERO_TYPE_LIMIT)
+
 
         set index = index + 1
         exitwhen index == bj_MAX_PLAYERS
@@ -2276,7 +2307,8 @@ function MeleeDoVictoryEnum takes nothing returns nothing
 
     if (not bj_meleeVictoried[playerIndex]) then
         set bj_meleeVictoried[playerIndex] = true
-        call RemovePlayer(GetEnumPlayer(), PLAYER_GAME_RESULT_VICTORY, "Victory!")
+		call CachePlayerHeroData(thePlayer)
+        call RemovePlayer(thePlayer, PLAYER_GAME_RESULT_VICTORY, "Victory!")
     endif
 endfunction
 
@@ -2350,6 +2382,8 @@ function MeleeCheckForLosers takes nothing returns nothing
         if (not bj_meleeDefeated[playerIndex] and not bj_meleeVictoried[playerIndex]) then
             //call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, 60, "Player"+I2S(playerIndex)+" has "+I2S(MeleeGetAllyStructureCount(indexPlayer))+" ally buildings.")
             if (MeleeGetAllyStructureCount(indexPlayer) <= 0) then
+				// needs to happen before ownership change
+				call CachePlayerHeroData(indexPlayer)
                 call MakeUnitsPassiveForTeam(indexPlayer)
                 call MeleeDoDefeat(indexPlayer)
             endif
@@ -2386,6 +2420,7 @@ endfunction
 //===========================================================================
 function MeleeTriggerActionPlayerDefeated takes nothing returns nothing
     local player thePlayer = GetTriggerPlayer()
+	call CachePlayerHeroData(thePlayer)
 
     if (MeleeGetAllyCount(thePlayer) > 0) then
         // If at least one ally is still alive and kicking, share units with

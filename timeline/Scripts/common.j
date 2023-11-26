@@ -242,28 +242,25 @@ globals
     //
     constant playerstate PLAYER_STATE_RESOURCE_GOLD             = ConvertPlayerState(1)
     constant playerstate PLAYER_STATE_RESOURCE_LUMBER           = ConvertPlayerState(2)
-    constant playerstate PLAYER_STATE_RESOURCE_MANASTONES       = ConvertPlayerState(3)
-    constant playerstate PLAYER_STATE_RESOURCE_HERO_TOKENS      = ConvertPlayerState(4)
-    constant playerstate PLAYER_STATE_RESOURCE_FOOD_CAP         = ConvertPlayerState(5)
-    constant playerstate PLAYER_STATE_RESOURCE_FOOD_USED        = ConvertPlayerState(6)
-    constant playerstate PLAYER_STATE_FOOD_CAP_CEILING          = ConvertPlayerState(7)
+    constant playerstate PLAYER_STATE_RESOURCE_HERO_TOKENS      = ConvertPlayerState(3)
+    constant playerstate PLAYER_STATE_RESOURCE_FOOD_CAP         = ConvertPlayerState(4)
+    constant playerstate PLAYER_STATE_RESOURCE_FOOD_USED        = ConvertPlayerState(5)
+    constant playerstate PLAYER_STATE_FOOD_CAP_CEILING          = ConvertPlayerState(6)
 
-    constant playerstate PLAYER_STATE_GIVES_BOUNTY              = ConvertPlayerState(8)
-    constant playerstate PLAYER_STATE_EXPANDED_VIEW             = ConvertPlayerState(9)
-    constant playerstate PLAYER_STATE_ALLIED_VICTORY            = ConvertPlayerState(10)
-    constant playerstate PLAYER_STATE_PLACED                    = ConvertPlayerState(11)
+    constant playerstate PLAYER_STATE_GIVES_BOUNTY              = ConvertPlayerState(7)
+    constant playerstate PLAYER_STATE_EXPANDED_VIEW             = ConvertPlayerState(8)
+    constant playerstate PLAYER_STATE_ALLIED_VICTORY            = ConvertPlayerState(9)
+    constant playerstate PLAYER_STATE_PLACED                    = ConvertPlayerState(10)
 
     // taxation rate for each resource
     //
-    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(12)
-    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(13)
-    constant playerstate PLAYER_STATE_MANASTONES_UPKEEP_RATE    = ConvertPlayerState(14)
+    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(11)
+    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(12)
 
     // cumulative resources collected by the player during the mission
     //
-    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(15)
-    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(16)
-    constant playerstate PLAYER_STATE_MANASTONES_GATHERED       = ConvertPlayerState(17)
+    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(13)
+    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(14)
 
     constant unitstate UNIT_STATE_LIFE                          = ConvertUnitState(0)
     constant unitstate UNIT_STATE_MAX_LIFE                      = ConvertUnitState(1)
@@ -1093,6 +1090,11 @@ constant native GetPlayerTechCount      takes player whichPlayer, integer techid
 
 native SetPlayerState   takes player whichPlayer, playerstate whichPlayerState, integer value returns nothing
 native RemovePlayer     takes player whichPlayer, playergameresult gameResult, string message returns nothing
+
+// Used to store hero level data for the scorescreen
+// before units are moved to neutral passive in melee games
+//
+native CachePlayerHeroData takes player whichPlayer returns nothing
 
 // There aren't any float player states yet, but when they come...
 //native          SetFloatPlayerState     takes player whichPlayer, integer whichPlayerState, real value returns nothing
