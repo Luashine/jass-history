@@ -16,7 +16,7 @@ Find me the missing Warcraft 3 versions, pretty please with sugar on top and an 
 
 For Github, append `?w=1` or `&w=1` to the end of URL to skip whitespace changes.
 
-Simple log: ``
+Simple log: `git log --oneline --invert-grep --grep EMPTY`
 
 Advanced log: `LC_ALL=C; git log --oneline --invert-grep --grep EMPTY --pretty='format:tag: %<(35)%(describe:tags=true) -- %s'`
 
