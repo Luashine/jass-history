@@ -1,5 +1,5 @@
 //==================================================================================================
-//  $Id: u08x02.ai,v 1.14.2.7 2003/05/12 20:47:05 abond Exp $
+//  $Id: u08x02.ai,v 1.29 2003/05/12 20:00:02 bfitch Exp $
 //==================================================================================================
 globals
     constant integer ILLIDAN_TOWN_X     = 4400
@@ -797,7 +797,7 @@ function set_Illidan_force takes nothing returns nothing
     call SetAssaultGroup(1,1,ILLIDAN)
 
     set attack_qty[0] = R2I( GetPlayerUnitTypeCount(USER,FROST_WYRM) * dragon_factor )
-    call TraceI("dragon factor calls for %d couatls\n",attack_qty[0])
+    call TraceI("rebuild_Illidan ok, dragon factor calls for %d couatls\n",attack_qty[0])
     call extra_attackers()
 endfunction
 
