@@ -171,7 +171,7 @@ globals
     // pfff
     constant boolean            FALSE                           = false
     constant boolean            TRUE                            = true
-    constant integer            JASS_MAX_ARRAY_SIZE             = 8192
+    constant integer            JASS_MAX_ARRAY_SIZE             = 32768
 
     constant integer            PLAYER_NEUTRAL_PASSIVE          = GetPlayerNeutralPassive()
     constant integer            PLAYER_NEUTRAL_AGGRESSIVE       = GetPlayerNeutralAggressive()
@@ -188,6 +188,18 @@ globals
     constant playercolor        PLAYER_COLOR_LIGHT_BLUE         = ConvertPlayerColor(9)
     constant playercolor        PLAYER_COLOR_AQUA               = ConvertPlayerColor(10)
     constant playercolor        PLAYER_COLOR_BROWN              = ConvertPlayerColor(11)
+    constant playercolor        PLAYER_COLOR_MAROON             = ConvertPlayerColor(12)
+    constant playercolor        PLAYER_COLOR_NAVY               = ConvertPlayerColor(13)
+    constant playercolor        PLAYER_COLOR_TURQUOISE          = ConvertPlayerColor(14)
+    constant playercolor        PLAYER_COLOR_VIOLET             = ConvertPlayerColor(15)
+    constant playercolor        PLAYER_COLOR_WHEAT              = ConvertPlayerColor(16)
+    constant playercolor        PLAYER_COLOR_PEACH              = ConvertPlayerColor(17)
+    constant playercolor        PLAYER_COLOR_MINT               = ConvertPlayerColor(18)
+    constant playercolor        PLAYER_COLOR_LAVENDER           = ConvertPlayerColor(19)
+    constant playercolor        PLAYER_COLOR_COAL               = ConvertPlayerColor(20)
+    constant playercolor        PLAYER_COLOR_SNOW               = ConvertPlayerColor(21)
+    constant playercolor        PLAYER_COLOR_EMERALD            = ConvertPlayerColor(22)
+    constant playercolor        PLAYER_COLOR_PEANUT             = ConvertPlayerColor(23)
 
     constant race               RACE_HUMAN                      = ConvertRace(1)
     constant race               RACE_ORC                        = ConvertRace(2)
@@ -2432,109 +2444,99 @@ native PreloadGenStart  takes nothing returns nothing
 native PreloadGenEnd    takes string filename returns nothing
 native Preloader        takes string filename returns nothing
 
-// JAPI Test Functions
-native GetTriggerPlayerMouseX                   takes nothing returns real
-native GetTriggerPlayerMouseY                   takes nothing returns real
-native GetTriggerPlayerMousePosition            takes nothing returns location
-native GetTriggerPlayerMouseButton              takes nothing returns mousebuttontype
-native SetAbilityTooltip                        takes integer abilCode, string tooltip, integer level returns nothing
-native SetAbilityOnTooltip                      takes integer abilCode, string tooltip, integer level returns nothing
-native SetAbilityExtendedTooltip                takes integer abilCode, string ExtendedTooltip, integer level returns nothing
-native SetAbilityOnExtendedTooltip              takes integer abilCode, string ExtendedTooltip, integer level returns nothing
-native SetAbilityResearchTooltip                takes integer abilCode, string researchTooltip, integer level returns nothing
-native SetAbilityResearchExtendedTooltip        takes integer abilCode, string researchExtendedTooltip, integer level returns nothing
-native GetAbilityTooltip                        takes integer abilCode, integer level returns string
-native GetAbilityOnTooltip                      takes integer abilCode, integer level returns string
-native GetAbilityExtendedTooltip                takes integer abilCode, integer level returns string
-native GetAbilityOnExtendedTooltip              takes integer abilCode, integer level returns string
-native GetAbilityResearchTooltip                takes integer abilCode, integer level returns string
-native GetAbilityResearchExtendedTooltip        takes integer abilCode, integer level returns string
-native SetAbilityIcon                           takes integer abilCode, string iconPath, integer level returns nothing
-native GetAbilityIcon                           takes integer abilCode, integer level returns string
-native SetAbilityOnIcon                         takes integer abilCode, string iconPath returns nothing
-native GetAbilityOnIcon                         takes integer abilCode returns string
-native GetAbilityPosX                           takes integer abilCode returns integer
-native GetAbilityPosY                           takes integer abilCode returns integer
-native SetAbilityPosX                           takes integer abilCode, integer x returns nothing
-native SetAbilityPosY                           takes integer abilCode, integer y returns nothing
-native GetAbilityOnPosX                         takes integer abilCode returns integer
-native GetAbilityOnPosY                         takes integer abilCode returns integer
-native SetAbilityOnPosX                         takes integer abilCode, integer x returns nothing
-native SetAbilityOnPosY                         takes integer abilCode, integer y returns nothing
-native GetUnitMaxHP                             takes unit whichUnit returns integer
-native SetUnitMaxHP                             takes unit whichUnit, integer hp returns nothing
-native GetUnitMaxMana                           takes unit whichUnit returns integer
-native SetUnitMaxMana                           takes unit whichUnit, integer mana returns nothing
-native DeleteHeroAbility                        takes unit whichUnit, integer abilCode returns nothing
-native SetItemName                              takes item whichItem, string name returns nothing
-native SetItemDescription                       takes item whichItem, string name returns nothing
-native GetItemDescription                       takes item whichItem returns string
-native SetItemTooltip                           takes item whichItem, string name returns nothing
-native GetItemTooltip                           takes item whichItem returns string
-native SetItemExtendedTooltip                   takes item whichItem, string name returns nothing
-native GetItemExtendedTooltip                   takes item whichItem returns string
-native SetItemIconPath                          takes item whichItem, string name returns nothing
-native GetItemIconPath                          takes item whichItem returns string
-native SetUnitName                              takes unit whichUnit, string name returns nothing
-native SetUnitNameAll                           takes unit whichUnit, string name returns nothing
-native SetHeroProperName                        takes unit whichUnit, string name returns nothing
-native GetUnitBaseDamage                        takes unit whichUnit, integer weaponIndex returns integer
-native SetUnitBaseDamage                        takes unit whichUnit, integer baseDamage, integer weaponIndex returns nothing
-native GetUnitDiceNumber                        takes unit whichUnit, integer weaponIndex returns integer
-native SetUnitDiceNumber                        takes unit whichUnit, integer diceNumber, integer weaponIndex returns nothing
-native GetUnitDiceSides                         takes unit whichUnit, integer weaponIndex returns integer
-native SetUnitDiceSides                         takes unit whichUnit, integer diceSides, integer weaponIndex returns nothing
-native GetUnitAttackCooldown                    takes unit whichUnit, integer weaponIndex returns real
-native SetUnitAttackCooldown                    takes unit whichUnit, real cooldown, integer weaponIndex returns nothing
-native SetSpecialEffectColorByPlayer            takes effect whichEffect, player whichPlayer returns nothing
-native SetSpecialEffectColor                    takes effect whichEffect, integer r, integer g, integer b returns nothing
-native SetSpecialEffectAlpha                    takes effect whichEffect, integer alpha returns nothing
-native SetSpecialEffectScale                    takes effect whichEffect, real scale returns nothing
-native SetSpecialEffectPosition                 takes effect whichEffect, real x, real y, real z returns nothing
-native SetSpecialEffectHeight                   takes effect whichEffect, real height returns nothing
-native SetSpecialEffectTimeScale                takes effect whichEffect, real timeScale returns nothing
-native SetSpecialEffectTime                     takes effect whichEffect, real time returns nothing
-native SetSpecialEffectOrientation              takes effect whichEffect, real yaw, real pitch, real roll returns nothing
-native SetSpecialEffectYaw                      takes effect whichEffect, real yaw returns nothing
-native SetSpecialEffectPitch                    takes effect whichEffect, real pitch returns nothing
-native SetSpecialEffectRoll                     takes effect whichEffect, real roll returns nothing
-native PlaySpecialEffect                        takes effect whichEffect, integer anim returns nothing
-native PlaySpecialEffectWithTimeScale           takes effect whichEffect, integer anim, real timeScale returns nothing
-constant native DecPlayerTechResearched         takes player whichPlayer, integer techid, integer levels returns nothing
-native SetEventDamage                           takes real damage returns nothing
-
+// Automation Test
 native AutomationTestStart takes string testName returns nothing
 native AutomationTestEnd takes string testName returns nothing
 
-native SetSpecialEffectX                        takes effect whichEffect, real x returns nothing
-native SetSpecialEffectY                        takes effect whichEffect, real y returns nothing
-native SetSpecialEffectZ                        takes effect whichEffect, real z returns nothing
-native SetSpecialEffectPositionLoc              takes effect whichEffect, location loc returns nothing
-native GetLocalSpecialEffectX                   takes effect whichEffect returns real
-native GetLocalSpecialEffectY                   takes effect whichEffect returns real
-native GetLocalSpecialEffectZ                   takes effect whichEffect returns real
-native GetUnitArmor                             takes unit whichUnit returns real
-native SetUnitArmor                             takes unit whichUnit, real armorAmount returns nothing
-native UnitHideAbility                          takes unit whichUnit, integer abilId, boolean flag returns nothing
-native UnitDisableAbility                       takes unit whichUnit, integer abilId, boolean flag, boolean hideUI returns nothing
-native UnitCancelTimedLife                      takes unit whichUnit returns nothing
-native IsUnitSelectable                         takes unit whichUnit returns boolean
-native IsUnitInvulnerable                       takes unit whichUnit returns boolean
-native UnitInterruptAttack                      takes unit whichUnit returns nothing
-native GetUnitCollisionSize                     takes unit whichUnit returns real
-native GetAbilityManaCost                       takes integer abilId, integer level returns integer
-native GetAbilityCooldown                       takes integer abilId, integer level returns real
-native SetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level, real cooldown returns nothing
-native GetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level returns real
-native GetUnitAbilityCooldownRemaining          takes unit whichUnit, integer abilId returns real
-native EndUnitAbilityCooldown                   takes unit whichUnit, integer abilCode returns nothing
-native GetUnitAbilityManaCost                   takes unit whichUnit, integer abilId, integer level returns integer
-native GetLocalUnitZ                            takes unit whichUnit returns real    
-
-// native GetUnitMovementType                      takes unit whichUnit returns integer
-// native SetUnitMovementType                      takes unit whichUnit, integer movementType returns nothing
-// native GetUnitArmorType                         takes unit whichUnit returns integer
-// native SetHeroStatEx                            takes unit whichHero, integer whichStat, integer statValue, boolean permanent returns nothing
-// native GetHeroPrimaryStat                       takes unit whichHero returns integer
-// native GetHeroPrimaryStatById                   takes unit whichHero returns integer
-// native GetHeroStat                              takes unit whichHero, integer whichStat, boolean includeBonuses returns integer
+// JAPI Functions
+native BlzGetTriggerPlayerMouseX                   takes nothing returns real
+native BlzGetTriggerPlayerMouseY                   takes nothing returns real
+native BlzGetTriggerPlayerMousePosition            takes nothing returns location
+native BlzGetTriggerPlayerMouseButton              takes nothing returns mousebuttontype
+native BlzSetAbilityTooltip                        takes integer abilCode, string tooltip, integer level returns nothing
+native BlzSetAbilityActivatedTooltip               takes integer abilCode, string tooltip, integer level returns nothing
+native BlzSetAbilityExtendedTooltip                takes integer abilCode, string ExtendedTooltip, integer level returns nothing
+native BlzSetAbilityActivatedExtendedTooltip       takes integer abilCode, string ExtendedTooltip, integer level returns nothing
+native BlzSetAbilityResearchTooltip                takes integer abilCode, string researchTooltip, integer level returns nothing
+native BlzSetAbilityResearchExtendedTooltip        takes integer abilCode, string researchExtendedTooltip, integer level returns nothing
+native BlzGetAbilityTooltip                        takes integer abilCode, integer level returns string
+native BlzGetAbilityActivatedTooltip               takes integer abilCode, integer level returns string
+native BlzGetAbilityExtendedTooltip                takes integer abilCode, integer level returns string
+native BlzGetAbilityActivatedExtendedTooltip       takes integer abilCode, integer level returns string
+native BlzGetAbilityResearchTooltip                takes integer abilCode, integer level returns string
+native BlzGetAbilityResearchExtendedTooltip        takes integer abilCode, integer level returns string
+native BlzSetAbilityIcon                           takes integer abilCode, string iconPath returns nothing
+native BlzGetAbilityIcon                           takes integer abilCode returns string
+native BlzSetAbilityActivatedIcon                  takes integer abilCode, string iconPath returns nothing
+native BlzGetAbilityActivatedIcon                  takes integer abilCode returns string
+native BlzGetAbilityPosX                           takes integer abilCode returns integer
+native BlzGetAbilityPosY                           takes integer abilCode returns integer
+native BlzSetAbilityPosX                           takes integer abilCode, integer x returns nothing
+native BlzSetAbilityPosY                           takes integer abilCode, integer y returns nothing
+native BlzGetAbilityActivatedPosX                  takes integer abilCode returns integer
+native BlzGetAbilityActivatedPosY                  takes integer abilCode returns integer
+native BlzSetAbilityActivatedPosX                  takes integer abilCode, integer x returns nothing
+native BlzSetAbilityActivatedPosY                  takes integer abilCode, integer y returns nothing
+native BlzGetUnitMaxHP                             takes unit whichUnit returns integer
+native BlzSetUnitMaxHP                             takes unit whichUnit, integer hp returns nothing
+native BlzGetUnitMaxMana                           takes unit whichUnit returns integer
+native BlzSetUnitMaxMana                           takes unit whichUnit, integer mana returns nothing
+native BlzDeleteHeroAbility                        takes unit whichUnit, integer abilCode returns nothing
+native BlzSetItemName                              takes item whichItem, string name returns nothing
+native BlzSetItemDescription                       takes item whichItem, string name returns nothing
+native BlzGetItemDescription                       takes item whichItem returns string
+native BlzSetItemTooltip                           takes item whichItem, string name returns nothing
+native BlzGetItemTooltip                           takes item whichItem returns string
+native BlzSetItemExtendedTooltip                   takes item whichItem, string name returns nothing
+native BlzGetItemExtendedTooltip                   takes item whichItem returns string
+native BlzSetItemIconPath                          takes item whichItem, string name returns nothing
+native BlzGetItemIconPath                          takes item whichItem returns string
+native BlzSetUnitName                              takes unit whichUnit, string name returns nothing
+native BlzSetHeroProperName                        takes unit whichUnit, string name returns nothing
+native BlzGetUnitBaseDamage                        takes unit whichUnit, integer weaponIndex returns integer
+native BlzSetUnitBaseDamage                        takes unit whichUnit, integer baseDamage, integer weaponIndex returns nothing
+native BlzGetUnitDiceNumber                        takes unit whichUnit, integer weaponIndex returns integer
+native BlzSetUnitDiceNumber                        takes unit whichUnit, integer diceNumber, integer weaponIndex returns nothing
+native BlzGetUnitDiceSides                         takes unit whichUnit, integer weaponIndex returns integer
+native BlzSetUnitDiceSides                         takes unit whichUnit, integer diceSides, integer weaponIndex returns nothing
+native BlzGetUnitAttackCooldown                    takes unit whichUnit, integer weaponIndex returns real
+native BlzSetUnitAttackCooldown                    takes unit whichUnit, real cooldown, integer weaponIndex returns nothing
+native BlzSetSpecialEffectColorByPlayer            takes effect whichEffect, player whichPlayer returns nothing
+native BlzSetSpecialEffectColor                    takes effect whichEffect, integer r, integer g, integer b returns nothing
+native BlzSetSpecialEffectAlpha                    takes effect whichEffect, integer alpha returns nothing
+native BlzSetSpecialEffectScale                    takes effect whichEffect, real scale returns nothing
+native BlzSetSpecialEffectPosition                 takes effect whichEffect, real x, real y, real z returns nothing
+native BlzSetSpecialEffectHeight                   takes effect whichEffect, real height returns nothing
+native BlzSetSpecialEffectTimeScale                takes effect whichEffect, real timeScale returns nothing
+native BlzSetSpecialEffectTime                     takes effect whichEffect, real time returns nothing
+native BlzSetSpecialEffectOrientation              takes effect whichEffect, real yaw, real pitch, real roll returns nothing
+native BlzSetSpecialEffectYaw                      takes effect whichEffect, real yaw returns nothing
+native BlzSetSpecialEffectPitch                    takes effect whichEffect, real pitch returns nothing
+native BlzSetSpecialEffectRoll                     takes effect whichEffect, real roll returns nothing
+native BlzSetSpecialEffectX                        takes effect whichEffect, real x returns nothing
+native BlzSetSpecialEffectY                        takes effect whichEffect, real y returns nothing
+native BlzSetSpecialEffectZ                        takes effect whichEffect, real z returns nothing
+native BlzSetSpecialEffectPositionLoc              takes effect whichEffect, location loc returns nothing
+native BlzGetLocalSpecialEffectX                   takes effect whichEffect returns real
+native BlzGetLocalSpecialEffectY                   takes effect whichEffect returns real
+native BlzGetLocalSpecialEffectZ                   takes effect whichEffect returns real
+native BlzGetUnitArmor                             takes unit whichUnit returns real
+native BlzSetUnitArmor                             takes unit whichUnit, real armorAmount returns nothing
+native BlzUnitHideAbility                          takes unit whichUnit, integer abilId, boolean flag returns nothing
+native BlzUnitDisableAbility                       takes unit whichUnit, integer abilId, boolean flag, boolean hideUI returns nothing
+native BlzUnitCancelTimedLife                      takes unit whichUnit returns nothing
+native BlzIsUnitSelectable                         takes unit whichUnit returns boolean
+native BlzIsUnitInvulnerable                       takes unit whichUnit returns boolean
+native BlzUnitInterruptAttack                      takes unit whichUnit returns nothing
+native BlzGetUnitCollisionSize                     takes unit whichUnit returns real
+native BlzGetAbilityManaCost                       takes integer abilId, integer level returns integer
+native BlzGetAbilityCooldown                       takes integer abilId, integer level returns real
+native BlzSetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level, real cooldown returns nothing
+native BlzGetUnitAbilityCooldown                   takes unit whichUnit, integer abilId, integer level returns real
+native BlzGetUnitAbilityCooldownRemaining          takes unit whichUnit, integer abilId returns real
+native BlzEndUnitAbilityCooldown                   takes unit whichUnit, integer abilCode returns nothing
+native BlzGetUnitAbilityManaCost                   takes unit whichUnit, integer abilId, integer level returns integer
+native BlzSetUnitAbilityManaCost                   takes unit whichUnit, integer abilId, integer level, integer manaCost returns nothing
+native BlzGetLocalUnitZ                            takes unit whichUnit returns real    
+native BlzDecPlayerTechResearched                  takes player whichPlayer, integer techid, integer levels returns nothing
+native BlzSetEventDamage                           takes real damage returns nothing
