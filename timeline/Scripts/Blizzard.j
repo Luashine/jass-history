@@ -3528,8 +3528,7 @@ function MeleeVictoryDialogBJ takes player whichPlayer, boolean leftGame returns
     call DialogAddButton( d, GetLocalizedString( "GAMEOVER_CONTINUE_GAME" ), GetLocalizedHotkey("GAMEOVER_CONTINUE_GAME") )
 
     set t = CreateTrigger()
-    call TriggerRegisterDialogButtonEvent( t, DialogAddButton( d, GetLocalizedString( "GAMEOVER_QUIT_GAME" ), GetLocalizedHotkey("GAMEOVER_QUIT_GAME") ) )
-    call TriggerAddAction( t, function EndGameBJ )
+    call TriggerRegisterDialogButtonEvent( t, DialogAddQuitButton( d, true, GetLocalizedString( "GAMEOVER_QUIT_GAME" ), GetLocalizedHotkey("GAMEOVER_QUIT_GAME") ) )
 
     call DialogDisplay( whichPlayer, d, true )
     call StartSoundForPlayerBJ( whichPlayer, bj_victoryDialogSound )
@@ -3558,8 +3557,7 @@ function MeleeDefeatDialogBJ takes player whichPlayer, boolean leftGame returns 
     endif
 
     set t = CreateTrigger()
-    call TriggerRegisterDialogButtonEvent( t, DialogAddButton( d, GetLocalizedString( "GAMEOVER_QUIT_GAME" ), GetLocalizedHotkey("GAMEOVER_QUIT_GAME") ) )
-    call TriggerAddAction( t, function EndGameBJ )
+    call TriggerRegisterDialogButtonEvent( t, DialogAddQuitButton( d, true, GetLocalizedString( "GAMEOVER_QUIT_GAME" ), GetLocalizedHotkey("GAMEOVER_QUIT_GAME") ) )
 
     call DialogDisplay( whichPlayer, d, true )
     call StartSoundForPlayerBJ( whichPlayer, bj_defeatDialogSound )
@@ -3583,8 +3581,7 @@ function GameOverDialogBJ takes player whichPlayer, boolean leftGame returns not
     call DialogSetMessage( d, s )
 
     set t = CreateTrigger()
-    call TriggerRegisterDialogButtonEvent( t, DialogAddButton( d, GetLocalizedString( "GAMEOVER_OK" ), GetLocalizedHotkey("GAMEOVER_OK") ) )
-    call TriggerAddAction( t, function EndGameBJ )
+    call TriggerRegisterDialogButtonEvent( t, DialogAddQuitButton( d, true, GetLocalizedString( "GAMEOVER_OK" ), GetLocalizedHotkey("GAMEOVER_OK") ) )
 
     call DialogDisplay( whichPlayer, d, true )
     call StartSoundForPlayerBJ( whichPlayer, bj_defeatDialogSound )
@@ -4971,7 +4968,7 @@ endfunction
 
 //===========================================================================
 function GetStoredRealBJ takes string key, string missionKey, gamecache cache returns real
-    call SyncStoredReal(cache, missionKey, key)
+    //call SyncStoredReal(cache, missionKey, key)
     return GetStoredReal(cache, missionKey, key)
 endfunction
 
