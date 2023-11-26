@@ -7308,7 +7308,7 @@ function SetCinematicAvailableBJ takes boolean available, integer cinematicIndex
         call PlayCinematic( "NightElfEd" )
     elseif (cinematicIndex == bj_CINEMATICINDEX_XOP) then
         call SetOpCinematicAvailable( bj_CAMPAIGN_OFFSET_XN, available )
-        call PlayCinematic( "IntroX" )
+        // call PlayCinematic( "IntroX" )
     elseif (cinematicIndex == bj_CINEMATICINDEX_XED) then
         call SetEdCinematicAvailable( bj_CAMPAIGN_OFFSET_XU, available )
         call PlayCinematic( "OutroX" )
