@@ -607,6 +607,7 @@ globals
     button             bj_lastCreatedButton        = null
     unit               bj_lastReplacedUnit         = null
     texttag            bj_lastCreatedTextTag       = null
+    lightning          bj_lastCreatedLightning     = null
 
     // Filter function vars
     boolexpr           filterIssueHauntOrderAtLocBJ      = null
@@ -1909,6 +1910,63 @@ function GetLastCreatedTerrainDeformation takes nothing returns terraindeformati
 endfunction
 
 //===========================================================================
+function AddLightningLoc takes string codeName, location where1, location where2 returns lightning
+    set bj_lastCreatedLightning = AddLightning(codeName, true, GetLocationX(where1), GetLocationY(where1), GetLocationX(where2), GetLocationY(where2))
+    return bj_lastCreatedLightning
+endfunction
+
+//===========================================================================
+function DestroyLightningBJ takes lightning whichBolt returns boolean
+    return DestroyLightning(whichBolt)
+endfunction
+
+//===========================================================================
+function MoveLightningLoc takes lightning whichBolt, location where1, location where2 returns boolean
+    return MoveLightning(whichBolt, true, GetLocationX(where1), GetLocationY(where1), GetLocationX(where2), GetLocationY(where2))
+endfunction
+
+//===========================================================================
+function GetLightningColorABJ takes lightning whichBolt returns real
+    return GetLightningColorA(whichBolt)
+endfunction
+
+//===========================================================================
+function GetLightningColorRBJ takes lightning whichBolt returns real
+    return GetLightningColorR(whichBolt)
+endfunction
+
+//===========================================================================
+function GetLightningColorGBJ takes lightning whichBolt returns real
+    return GetLightningColorG(whichBolt)
+endfunction
+
+//===========================================================================
+function GetLightningColorBBJ takes lightning whichBolt returns real
+    return GetLightningColorB(whichBolt)
+endfunction
+
+//===========================================================================
+function SetLightningColorBJ takes lightning whichBolt, real r, real g, real b, real a returns boolean
+    return SetLightningColor(whichBolt, r, g, b, a)
+endfunction
+
+//===========================================================================
+function GetLastCreatedLightningBJ takes nothing returns lightning
+    return bj_lastCreatedLightning
+endfunction
+
+//===========================================================================
+function GetAbilityEffectBJ takes string abilityString, effecttype t, integer index returns string
+    return GetAbilityEffect(abilityString, t, index)
+endfunction
+
+//===========================================================================
+function GetAbilitySoundBJ takes string abilityString, soundtype t returns string
+    return GetAbilitySound(abilityString, t)
+endfunction
+
+
+//===========================================================================
 function GetTerrainCliffLevelBJ takes location where returns integer
     return GetTerrainCliffLevel(GetLocationX(where), GetLocationY(where))
 endfunction
@@ -2433,6 +2491,21 @@ function SetHeroLevelBJ takes unit whichHero, integer newLevel, boolean showEyeC
 endfunction
 
 //===========================================================================
+function DecUnitAbilityLevelSwapped takes integer abilcode, unit whichUnit returns integer
+    return DecUnitAbilityLevel(whichUnit, abilcode)
+endfunction
+
+//===========================================================================
+function IncUnitAbilityLevelSwapped takes integer abilcode, unit whichUnit returns integer
+    return IncUnitAbilityLevel(whichUnit, abilcode)
+endfunction
+
+//===========================================================================
+function SetUnitAbilityLevelSwapped takes integer abilcode, unit whichUnit, integer level returns integer
+    return SetUnitAbilityLevel(whichUnit, abilcode, level)
+endfunction
+
+//===========================================================================
 function GetUnitAbilityLevelSwapped takes integer abilcode, unit whichUnit returns integer
     return GetUnitAbilityLevel(whichUnit, abilcode)
 endfunction
@@ -2587,6 +2660,26 @@ function ModifyHeroSkillPoints takes unit whichHero, integer modifyMethod, integ
 endfunction
 
 //===========================================================================
+function UnitDropItemPointBJ takes unit whichUnit, item whichItem, real x, real y returns boolean
+    return UnitDropItemPoint(whichUnit, whichItem, x, y)
+endfunction
+
+//===========================================================================
+function UnitDropItemPointLoc takes unit whichUnit, item whichItem, location loc returns boolean
+    return UnitDropItemPoint(whichUnit, whichItem, GetLocationX(loc), GetLocationY(loc))
+endfunction
+
+//===========================================================================
+function UnitDropItemSlotBJ takes unit whichUnit, item whichItem, integer slot returns boolean
+    return UnitDropItemSlot(whichUnit, whichItem, slot-1)
+endfunction
+
+//===========================================================================
+function UnitDropItemTargetBJ takes unit whichUnit, item whichItem, widget target returns boolean
+    return UnitDropItemTarget(whichUnit, whichItem, target)
+endfunction
+
+//===========================================================================
 // Two distinct trigger actions can't share the same function name, so this
 // dummy function simply mimics the behavior of an existing call.
 //
@@ -2657,6 +2750,11 @@ function UnitInventoryCount takes unit whichUnit returns integer
     endloop
 
     return count
+endfunction
+
+//===========================================================================
+function UnitInventorySizeBJ takes unit whichUnit returns integer
+    return UnitInventorySize(whichUnit)
 endfunction
 
 //===========================================================================
@@ -3656,6 +3754,16 @@ endfunction
 //===========================================================================
 function SetUnitUseFoodBJ takes boolean enable, unit whichUnit returns nothing
     call SetUnitUseFood(whichUnit, enable)
+endfunction
+
+//===========================================================================
+function UnitDamagePointLoc takes unit whichUnit, real delay, real radius, location loc, real amount, attacktype whichAttack, damagetype whichDamage returns boolean
+    return UnitDamagePoint(whichUnit, delay, radius, GetLocationX(loc), GetLocationY(loc), amount, true, false, whichAttack, whichDamage, WEAPON_TYPE_WHOKNOWS)
+endfunction
+
+//===========================================================================
+function UnitDamageTargetBJ takes unit whichUnit, unit target, real amount, attacktype whichAttack, damagetype whichDamage returns boolean
+    return UnitDamageTarget(whichUnit, target, amount, true, false, whichAttack, whichDamage, WEAPON_TYPE_WHOKNOWS)
 endfunction
 
 
@@ -7264,7 +7372,9 @@ function MeleeStartingHeroLimit takes nothing returns nothing
         call ReducePlayerTechMaxAllowed(Player(index), 'Nngs', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nplh', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Nbst', bj_MELEE_HERO_TYPE_LIMIT)
+        call ReducePlayerTechMaxAllowed(Player(index), 'Nalc', bj_MELEE_HERO_TYPE_LIMIT)
         call ReducePlayerTechMaxAllowed(Player(index), 'Ntin', bj_MELEE_HERO_TYPE_LIMIT)
+        call ReducePlayerTechMaxAllowed(Player(index), 'Nfir', bj_MELEE_HERO_TYPE_LIMIT)
 
         set index = index + 1
         exitwhen index == bj_MAX_PLAYERS

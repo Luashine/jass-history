@@ -85,6 +85,11 @@ type gamecache          extends     handle
 type version            extends     handle
 type itemtype           extends     handle
 type texttag            extends     handle
+type attacktype         extends     handle
+type damagetype         extends     handle
+type weapontype         extends     handle
+type soundtype          extends     handle
+type lightning          extends     handle
 
 constant native ConvertRace                 takes integer i returns race
 constant native ConvertAllianceType         takes integer i returns alliancetype
@@ -125,6 +130,10 @@ constant native ConvertFogState             takes integer i returns fogstate
 constant native ConvertEffectType           takes integer i returns effecttype
 constant native ConvertVersion              takes integer i returns version
 constant native ConvertItemType             takes integer i returns itemtype
+constant native ConvertAttackType           takes integer i returns attacktype
+constant native ConvertDamageType           takes integer i returns damagetype
+constant native ConvertWeaponType           takes integer i returns weapontype
+constant native ConvertSoundType            takes integer i returns soundtype
 constant native OrderId                     takes string  orderIdString     returns integer
 constant native OrderId2String              takes integer orderId           returns string
 constant native UnitId                      takes string  unitIdString      returns integer
@@ -189,6 +198,62 @@ globals
 
     constant version            VERSION_REIGN_OF_CHAOS          = ConvertVersion(0)
     constant version            VERSION_FROZEN_THRONE           = ConvertVersion(1)
+
+    constant attacktype         ATTACK_TYPE_NORMAL              = ConvertAttackType(0)
+    constant attacktype         ATTACK_TYPE_MELEE               = ConvertAttackType(1)
+    constant attacktype         ATTACK_TYPE_PIERCE              = ConvertAttackType(2)
+    constant attacktype         ATTACK_TYPE_SIEGE               = ConvertAttackType(3)
+    constant attacktype         ATTACK_TYPE_MAGIC               = ConvertAttackType(4)
+    constant attacktype         ATTACK_TYPE_CHAOS               = ConvertAttackType(5)
+    constant attacktype         ATTACK_TYPE_HERO                = ConvertAttackType(6)
+
+    constant damagetype         DAMAGE_TYPE_UNKNOWN             = ConvertDamageType(0)
+    constant damagetype         DAMAGE_TYPE_NORMAL              = ConvertDamageType(4)
+    constant damagetype         DAMAGE_TYPE_ENHANCED            = ConvertDamageType(5)
+    constant damagetype         DAMAGE_TYPE_FIRE                = ConvertDamageType(8)
+    constant damagetype         DAMAGE_TYPE_COLD                = ConvertDamageType(9)
+    constant damagetype         DAMAGE_TYPE_LIGHTNING           = ConvertDamageType(10)
+    constant damagetype         DAMAGE_TYPE_POISON              = ConvertDamageType(11)
+    constant damagetype         DAMAGE_TYPE_DISEASE             = ConvertDamageType(12)
+    constant damagetype         DAMAGE_TYPE_DIVINE              = ConvertDamageType(13)
+    constant damagetype         DAMAGE_TYPE_MAGIC               = ConvertDamageType(14)
+    constant damagetype         DAMAGE_TYPE_SONIC               = ConvertDamageType(15)
+    constant damagetype         DAMAGE_TYPE_ACID                = ConvertDamageType(16)
+    constant damagetype         DAMAGE_TYPE_FORCE               = ConvertDamageType(17)
+    constant damagetype         DAMAGE_TYPE_DEATH               = ConvertDamageType(18)
+    constant damagetype         DAMAGE_TYPE_MIND                = ConvertDamageType(19)
+    constant damagetype         DAMAGE_TYPE_PLANT               = ConvertDamageType(20)
+    constant damagetype         DAMAGE_TYPE_DEFENSIVE           = ConvertDamageType(21)
+    constant damagetype         DAMAGE_TYPE_DEMOLITION          = ConvertDamageType(22)
+    constant damagetype         DAMAGE_TYPE_SLOW_POISON         = ConvertDamageType(23)
+    constant damagetype         DAMAGE_TYPE_SPIRIT_LINK         = ConvertDamageType(24)
+    constant damagetype         DAMAGE_TYPE_SHADOW_STRIKE       = ConvertDamageType(25)
+    constant damagetype         DAMAGE_TYPE_UNIVERSAL           = ConvertDamageType(26)
+
+    constant weapontype         WEAPON_TYPE_WHOKNOWS            = ConvertWeaponType(0)
+    constant weapontype         WEAPON_TYPE_METAL_LIGHT_CHOP    = ConvertWeaponType(1)
+    constant weapontype         WEAPON_TYPE_METAL_MEDIUM_CHOP   = ConvertWeaponType(2)
+    constant weapontype         WEAPON_TYPE_METAL_HEAVY_CHOP    = ConvertWeaponType(3)
+    constant weapontype         WEAPON_TYPE_METAL_LIGHT_SLICE   = ConvertWeaponType(4)
+    constant weapontype         WEAPON_TYPE_METAL_MEDIUM_SLICE  = ConvertWeaponType(5)
+    constant weapontype         WEAPON_TYPE_METAL_HEAVY_SLICE   = ConvertWeaponType(6)
+    constant weapontype         WEAPON_TYPE_METAL_MEDIUM_BASH   = ConvertWeaponType(7)
+    constant weapontype         WEAPON_TYPE_METAL_HEAVY_BASH    = ConvertWeaponType(8)
+    constant weapontype         WEAPON_TYPE_METAL_MEDIUM_STAB   = ConvertWeaponType(9)
+    constant weapontype         WEAPON_TYPE_METAL_HEAVY_STAB    = ConvertWeaponType(10)
+    constant weapontype         WEAPON_TYPE_WOOD_LIGHT_SLICE    = ConvertWeaponType(11)
+    constant weapontype         WEAPON_TYPE_WOOD_MEDIUM_SLICE   = ConvertWeaponType(12)
+    constant weapontype         WEAPON_TYPE_WOOD_HEAVY_SLICE    = ConvertWeaponType(13)
+    constant weapontype         WEAPON_TYPE_WOOD_LIGHT_BASH     = ConvertWeaponType(14)
+    constant weapontype         WEAPON_TYPE_WOOD_MEDIUM_BASH    = ConvertWeaponType(15)
+    constant weapontype         WEAPON_TYPE_WOOD_HEAVY_BASH     = ConvertWeaponType(16)
+    constant weapontype         WEAPON_TYPE_WOOD_LIGHT_STAB     = ConvertWeaponType(17)
+    constant weapontype         WEAPON_TYPE_WOOD_MEDIUM_STAB    = ConvertWeaponType(18)
+    constant weapontype         WEAPON_TYPE_CLAW_LIGHT_SLICE    = ConvertWeaponType(19)
+    constant weapontype         WEAPON_TYPE_CLAW_MEDIUM_SLICE   = ConvertWeaponType(20)
+    constant weapontype         WEAPON_TYPE_CLAW_HEAVY_SLICE    = ConvertWeaponType(21)
+    constant weapontype         WEAPON_TYPE_AXE_MEDIUM_CHOP     = ConvertWeaponType(22)
+	constant weapontype         WEAPON_TYPE_ROCK_HEAVY_BASH     = ConvertWeaponType(23)
 
 //===================================================
 // Map Setup Constants    
@@ -690,6 +755,11 @@ globals
     constant effecttype     EFFECT_TYPE_CASTER              = ConvertEffectType(2)
     constant effecttype     EFFECT_TYPE_SPECIAL             = ConvertEffectType(3)
     constant effecttype     EFFECT_TYPE_AREA_EFFECT         = ConvertEffectType(4)
+    constant effecttype     EFFECT_TYPE_MISSILE             = ConvertEffectType(5)
+    constant effecttype     EFFECT_TYPE_LIGHTNING           = ConvertEffectType(6)
+
+    constant soundtype      SOUND_TYPE_EFFECT               = ConvertSoundType(0)
+    constant soundtype      SOUND_TYPE_EFFECT_LOOPED        = ConvertSoundType(1)
 
 endglobals
 
@@ -1187,6 +1257,7 @@ native TriggerRegisterUnitEvent takes trigger whichTrigger, unit whichUnit, unit
 
 // EVENT_UNIT_DAMAGED
 constant native GetEventDamage takes nothing returns real
+constant native GetEventDamageSource takes nothing returns unit
 
 // EVENT_UNIT_DEATH
 // EVENT_UNIT_DECAY
@@ -1402,6 +1473,9 @@ native          SuspendHeroXP       takes unit whichHero, boolean flag returns n
 native          IsSuspendedXP       takes unit whichHero returns boolean
 native          SelectHeroSkill     takes unit whichHero, integer abilcode returns nothing
 native          GetUnitAbilityLevel takes unit whichUnit, integer abilcode returns integer
+native          DecUnitAbilityLevel takes unit whichUnit, integer abilcode returns integer
+native          IncUnitAbilityLevel takes unit whichUnit, integer abilcode returns integer
+native          SetUnitAbilityLevel takes unit whichUnit, integer abilcode, integer level returns integer
 native          ReviveHero          takes unit whichHero, real x, real y, boolean doEyecandy returns boolean
 native          ReviveHeroLoc       takes unit whichHero, location loc, boolean doEyecandy returns boolean
 native          SetUnitExploded     takes unit whichUnit, boolean exploded returns nothing
@@ -1424,6 +1498,11 @@ native          UnitRemoveItem          takes unit whichUnit, item whichItem ret
 native          UnitRemoveItemFromSlot  takes unit whichUnit, integer itemSlot returns item
 native          UnitHasItem             takes unit whichUnit, item whichItem returns boolean
 native          UnitItemInSlot          takes unit whichUnit, integer itemSlot returns item
+native          UnitInventorySize       takes unit whichUnit returns integer
+
+native          UnitDropItemPoint       takes unit whichUnit, item whichItem, real x, real y returns boolean
+native          UnitDropItemSlot        takes unit whichUnit, item whichItem, integer slot returns boolean
+native          UnitDropItemTarget      takes unit whichUnit, item whichItem, widget target returns boolean
 
 native          UnitUseItem             takes unit whichUnit, item whichItem returns boolean
 native          UnitUseItemPoint        takes unit whichUnit, item whichItem, real x, real y returns boolean
@@ -1502,6 +1581,10 @@ native UnitSetConstructionProgress  takes unit whichUnit, integer constructionPe
 native UnitSetUpgradeProgress       takes unit whichUnit, integer upgradePercentage returns nothing
 native UnitPauseTimedLife           takes unit whichUnit, boolean flag returns nothing
 native UnitSetUsesAltIcon           takes unit whichUnit, boolean flag returns nothing
+
+native UnitDamagePoint              takes unit whichUnit, real delay, real radius, real x, real y, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
+native UnitDamageTarget             takes unit whichUnit, widget target, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
+
 native IssueImmediateOrder          takes unit whichUnit, string order returns boolean
 native IssueImmediateOrderById      takes unit whichUnit, integer order returns boolean
 native IssuePointOrder              takes unit whichUnit, string order, real x, real y returns boolean
@@ -1510,6 +1593,8 @@ native IssuePointOrderById          takes unit whichUnit, integer order, real x,
 native IssuePointOrderByIdLoc       takes unit whichUnit, integer order, location whichLocation returns boolean
 native IssueTargetOrder             takes unit whichUnit, string order, widget targetWidget returns boolean
 native IssueTargetOrderById         takes unit whichUnit, integer order, widget targetWidget returns boolean
+native IssueInstantPointOrder       takes unit whichUnit, string order, real x, real y, widget instantTargetWidget returns boolean
+native IssueInstantPointOrderById   takes unit whichUnit, integer order, real x, real y, widget instantTargetWidget returns boolean
 native IssueInstantTargetOrder      takes unit whichUnit, string order, widget targetWidget, widget instantTargetWidget returns boolean
 native IssueInstantTargetOrderById  takes unit whichUnit, integer order, widget targetWidget, widget instantTargetWidget returns boolean
 native IssueBuildOrder              takes unit whichPeon, string unitToBuild, real x, real y returns boolean
@@ -2083,6 +2168,20 @@ native AddSpellEffectById           takes integer abilityId, effecttype t,real x
 native AddSpellEffectByIdLoc        takes integer abilityId, effecttype t,location where returns effect
 native AddSpellEffectTarget         takes string modelName, effecttype t, widget targetWidget, string attachPoint returns effect
 native AddSpellEffectTargetById     takes integer abilityId, effecttype t, widget targetWidget, string attachPoint returns effect
+
+native AddLightning                 takes string codeName, boolean checkVisibility, real x1, real y1, real x2, real y2 returns lightning
+native DestroyLightning             takes lightning whichBolt returns boolean
+native MoveLightning                takes lightning whichBolt, boolean checkVisibility, real x1, real y1, real x2, real y2 returns boolean
+native GetLightningColorA           takes lightning whichBolt returns real
+native GetLightningColorR           takes lightning whichBolt returns real
+native GetLightningColorG           takes lightning whichBolt returns real
+native GetLightningColorB           takes lightning whichBolt returns real
+native SetLightningColor            takes lightning whichBolt, real r, real g, real b, real a returns boolean
+
+native GetAbilityEffect             takes string abilityString, effecttype t, integer index returns string
+native GetAbilityEffectById         takes integer abilityId, effecttype t, integer index returns string
+native GetAbilitySound              takes string abilityString, soundtype t returns string
+native GetAbilitySoundById          takes integer abilityId, soundtype t returns string
 
 //============================================================================
 // Terrain API
