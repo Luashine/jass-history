@@ -40,6 +40,7 @@ type playerunitevent    extends     eventid
 type unitevent          extends     eventid
 type limitop            extends     eventid
 type widgetevent        extends     eventid
+type dialogevent        extends     eventid
 type unittype           extends     handle
 
 type gamespeed          extends     handle
@@ -51,6 +52,7 @@ type mapsetting         extends     handle
 type mapdensity         extends     handle
 type mapcontrol         extends     handle
 type playerslotstate    extends     handle
+type volumegroup		extends		handle
 type camerafield        extends     handle
 type camerasetup        extends     handle
 type playercolor        extends     handle
@@ -58,19 +60,22 @@ type placement          extends     handle
 type startlocprio       extends     handle
 type raritycontrol      extends     handle
 type blendmode          extends     handle
-type materialid         extends     handle
 type texmapflags        extends     handle
 type effect             extends     handle
 type effecttype         extends     handle
 type weathereffect      extends     handle
 type fogstate           extends     handle
 type fogmodifier        extends     handle
-
+type dialog             extends     handle
+type button             extends     handle
 type quest              extends     handle
 type questitem          extends     handle
 type defeatcondition    extends     handle
 type timerdialog        extends     handle
 type leaderboard        extends     handle
+type trackable          extends     handle
+type gamecache          extends     handle
+
 
 constant native ConvertRace                 takes integer i returns race
 constant native ConvertAllianceType         takes integer i returns alliancetype
@@ -84,6 +89,7 @@ constant native ConvertGameEvent            takes integer i returns gameevent
 constant native ConvertPlayerEvent          takes integer i returns playerevent
 constant native ConvertPlayerUnitEvent      takes integer i returns playerunitevent
 constant native ConvertWidgetEvent          takes integer i returns widgetevent
+constant native ConvertDialogEvent          takes integer i returns dialogevent
 constant native ConvertUnitEvent            takes integer i returns unitevent
 constant native ConvertLimitOp              takes integer i returns limitop
 constant native ConvertUnitType             takes integer i returns unittype
@@ -99,8 +105,8 @@ constant native ConvertMapDensity           takes integer i returns mapdensity
 constant native ConvertMapControl           takes integer i returns mapcontrol
 constant native ConvertPlayerColor          takes integer i returns playercolor
 constant native ConvertPlayerSlotState      takes integer i returns playerslotstate
+constant native ConvertVolumeGroup		    takes integer i returns volumegroup
 constant native ConvertCameraField          takes integer i returns camerafield
-constant native ConvertMaterialId           takes integer i returns materialid
 constant native ConvertBlendMode            takes integer i returns blendmode
 constant native ConvertRarityControl        takes integer i returns raritycontrol
 constant native ConvertTexMapFlags          takes integer i returns texmapflags
@@ -151,6 +157,7 @@ globals
     constant playergameresult   PLAYER_GAME_RESULT_VICTORY      = ConvertPlayerGameResult(0)
     constant playergameresult   PLAYER_GAME_RESULT_DEFEAT       = ConvertPlayerGameResult(1)
     constant playergameresult   PLAYER_GAME_RESULT_TIE          = ConvertPlayerGameResult(2)
+    constant playergameresult   PLAYER_GAME_RESULT_NEUTRAL      = ConvertPlayerGameResult(3)
 
     constant alliancetype       ALLIANCE_PASSIVE                = ConvertAllianceType(0)
     constant alliancetype       ALLIANCE_HELP_REQUEST           = ConvertAllianceType(1)
@@ -160,8 +167,7 @@ globals
     constant alliancetype       ALLIANCE_SHARED_VISION          = ConvertAllianceType(5)
     constant alliancetype       ALLIANCE_SHARED_CONTROL         = ConvertAllianceType(6)
     constant alliancetype       ALLIANCE_SHARED_ADVANCED_CONTROL= ConvertAllianceType(7)
-    constant alliancetype       ALLIANCE_SHARED_INFO            = ConvertAllianceType(8)
-    constant alliancetype       ALLIANCE_RESCUABLE              = ConvertAllianceType(9)
+    constant alliancetype       ALLIANCE_RESCUABLE              = ConvertAllianceType(8)
 
 //===================================================
 // Map Setup Constants    
@@ -197,7 +203,7 @@ globals
 
     constant mapflag            MAP_USE_HANDICAPS                   = ConvertMapFlag(8)
     constant mapflag            MAP_OBSERVERS                       = ConvertMapFlag(16)
-    constant mapflag            MAP_OBSERVERS_CHAT                  = ConvertMapFlag(32)
+    constant mapflag            MAP_OBSERVERS_ON_DEATH              = ConvertMapFlag(32)
 
     constant mapflag            MAP_FIXED_COLORS                    = ConvertMapFlag(128)
     
@@ -245,6 +251,18 @@ globals
     constant playerslotstate    PLAYER_SLOT_STATE_LEFT              = ConvertPlayerSlotState(2)
 
 //===================================================
+// Sound Constants
+//===================================================
+	constant volumegroup		SOUND_VOLUMEGROUP_UNITMOVEMENT		= ConvertVolumeGroup(0)
+	constant volumegroup		SOUND_VOLUMEGROUP_UNITSOUNDS		= ConvertVolumeGroup(1)
+	constant volumegroup		SOUND_VOLUMEGROUP_COMBAT			= ConvertVolumeGroup(2)
+	constant volumegroup		SOUND_VOLUMEGROUP_SPELLS			= ConvertVolumeGroup(3)
+	constant volumegroup		SOUND_VOLUMEGROUP_UI				= ConvertVolumeGroup(4)
+	constant volumegroup		SOUND_VOLUMEGROUP_MUSIC				= ConvertVolumeGroup(5)
+	constant volumegroup		SOUND_VOLUMEGROUP_AMBIENTSOUNDS		= ConvertVolumeGroup(6)
+
+
+//===================================================
 // Game, Player, and Unit States
 //
 // For use with TriggerRegister<X>StateEvent
@@ -270,23 +288,24 @@ globals
     constant playerstate PLAYER_STATE_GIVES_BOUNTY              = ConvertPlayerState(7)
     constant playerstate PLAYER_STATE_ALLIED_VICTORY            = ConvertPlayerState(8)
     constant playerstate PLAYER_STATE_PLACED                    = ConvertPlayerState(9)
+    constant playerstate PLAYER_STATE_OBSERVER_ON_DEATH         = ConvertPlayerState(10)
+    constant playerstate PLAYER_STATE_OBSERVER                  = ConvertPlayerState(11)
 
     // taxation rate for each resource
     //
-    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(10)
-    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(11)
+    constant playerstate PLAYER_STATE_GOLD_UPKEEP_RATE          = ConvertPlayerState(12)
+    constant playerstate PLAYER_STATE_LUMBER_UPKEEP_RATE        = ConvertPlayerState(13)
 
     // cumulative resources collected by the player during the mission
     //
-    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(12)
-    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(13)
+    constant playerstate PLAYER_STATE_GOLD_GATHERED             = ConvertPlayerState(14)
+    constant playerstate PLAYER_STATE_LUMBER_GATHERED           = ConvertPlayerState(15)
 
     constant unitstate UNIT_STATE_LIFE                          = ConvertUnitState(0)
     constant unitstate UNIT_STATE_MAX_LIFE                      = ConvertUnitState(1)
     constant unitstate UNIT_STATE_MANA                          = ConvertUnitState(2)
     constant unitstate UNIT_STATE_MAX_MANA                      = ConvertUnitState(3)
     
-
 //===================================================
 // Game, Player and Unit Events
 //
@@ -317,127 +336,134 @@ globals
     constant gameevent EVENT_GAME_ENTER_REGION                  = ConvertGameEvent(5)
     constant gameevent EVENT_GAME_LEAVE_REGION                  = ConvertGameEvent(6)
 
+    constant gameevent EVENT_GAME_TRACKABLE_HIT                 = ConvertGameEvent(7)
+    constant gameevent EVENT_GAME_TRACKABLE_TRACK               = ConvertGameEvent(8)
+
+    constant gameevent EVENT_GAME_SHOW_SKILL                    = ConvertGameEvent(9)    
+
     //===================================================
     // For use with TriggerRegisterPlayerEvent
     //===================================================
-    constant playerevent EVENT_PLAYER_STATE_LIMIT               = ConvertPlayerEvent(7)
-    constant playerevent EVENT_PLAYER_ALLIANCE_CHANGED          = ConvertPlayerEvent(8)
+    constant playerevent EVENT_PLAYER_STATE_LIMIT               = ConvertPlayerEvent(10)
+    constant playerevent EVENT_PLAYER_ALLIANCE_CHANGED          = ConvertPlayerEvent(11)
 
-    constant playerevent EVENT_PLAYER_DEFEAT                    = ConvertPlayerEvent(9)
-    constant playerevent EVENT_PLAYER_VICTORY                   = ConvertPlayerEvent(10)
-    constant playerevent EVENT_PLAYER_CHAT                      = ConvertPlayerEvent(11)
-    constant playerevent EVENT_PLAYER_END_CINEMATIC             = ConvertPlayerEvent(12)
+    constant playerevent EVENT_PLAYER_DEFEAT                    = ConvertPlayerEvent(12)
+    constant playerevent EVENT_PLAYER_VICTORY                   = ConvertPlayerEvent(13)
+    constant playerevent EVENT_PLAYER_CHAT                      = ConvertPlayerEvent(14)
+    constant playerevent EVENT_PLAYER_END_CINEMATIC             = ConvertPlayerEvent(15)
 
     //===================================================
     // For use with TriggerRegisterPlayerUnitEvent
     //===================================================
 
-    constant playerunitevent EVENT_PLAYER_UNIT_ATTACKED                 = ConvertPlayerUnitEvent(13)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESCUED                  = ConvertPlayerUnitEvent(14)
+    constant playerunitevent EVENT_PLAYER_UNIT_ATTACKED                 = ConvertPlayerUnitEvent(16)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESCUED                  = ConvertPlayerUnitEvent(17)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_DEATH                    = ConvertPlayerUnitEvent(15)
-    constant playerunitevent EVENT_PLAYER_UNIT_DECAY                    = ConvertPlayerUnitEvent(16)
+    constant playerunitevent EVENT_PLAYER_UNIT_DEATH                    = ConvertPlayerUnitEvent(18)
+    constant playerunitevent EVENT_PLAYER_UNIT_DECAY                    = ConvertPlayerUnitEvent(19)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_DETECTED                 = ConvertPlayerUnitEvent(17)
-    constant playerunitevent EVENT_PLAYER_UNIT_HIDDEN                   = ConvertPlayerUnitEvent(18)
+    constant playerunitevent EVENT_PLAYER_UNIT_DETECTED                 = ConvertPlayerUnitEvent(20)
+    constant playerunitevent EVENT_PLAYER_UNIT_HIDDEN                   = ConvertPlayerUnitEvent(21)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_SELECTED                 = ConvertPlayerUnitEvent(19)
-    constant playerunitevent EVENT_PLAYER_UNIT_DESELECTED               = ConvertPlayerUnitEvent(20)
+    constant playerunitevent EVENT_PLAYER_UNIT_SELECTED                 = ConvertPlayerUnitEvent(22)
+    constant playerunitevent EVENT_PLAYER_UNIT_DESELECTED               = ConvertPlayerUnitEvent(23)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_START          = ConvertPlayerUnitEvent(21)
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_CANCEL         = ConvertPlayerUnitEvent(22)
-    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_FINISH         = ConvertPlayerUnitEvent(23)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_START          = ConvertPlayerUnitEvent(24)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_CANCEL         = ConvertPlayerUnitEvent(25)
+    constant playerunitevent EVENT_PLAYER_UNIT_CONSTRUCT_FINISH         = ConvertPlayerUnitEvent(26)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_START            = ConvertPlayerUnitEvent(24)
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_CANCEL           = ConvertPlayerUnitEvent(25)
-    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_FINISH           = ConvertPlayerUnitEvent(26)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_START            = ConvertPlayerUnitEvent(27)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_CANCEL           = ConvertPlayerUnitEvent(28)
+    constant playerunitevent EVENT_PLAYER_UNIT_UPGRADE_FINISH           = ConvertPlayerUnitEvent(29)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_START              = ConvertPlayerUnitEvent(27)
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_CANCEL             = ConvertPlayerUnitEvent(28)
-    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_FINISH             = ConvertPlayerUnitEvent(29)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_START              = ConvertPlayerUnitEvent(30)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_CANCEL             = ConvertPlayerUnitEvent(31)
+    constant playerunitevent EVENT_PLAYER_UNIT_TRAIN_FINISH             = ConvertPlayerUnitEvent(32)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_START           = ConvertPlayerUnitEvent(30)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_CANCEL          = ConvertPlayerUnitEvent(31)
-    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_FINISH          = ConvertPlayerUnitEvent(32)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_START           = ConvertPlayerUnitEvent(33)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_CANCEL          = ConvertPlayerUnitEvent(34)
+    constant playerunitevent EVENT_PLAYER_UNIT_RESEARCH_FINISH          = ConvertPlayerUnitEvent(35)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_ORDER             = ConvertPlayerUnitEvent(36)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER       = ConvertPlayerUnitEvent(37)
+    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER        = ConvertPlayerUnitEvent(38)
 
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_ORDER             = ConvertPlayerUnitEvent(33)
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER       = ConvertPlayerUnitEvent(34)
-    constant playerunitevent EVENT_PLAYER_UNIT_ISSUED_UNIT_ORDER        = ConvertPlayerUnitEvent(35)
+    constant playerunitevent EVENT_PLAYER_HERO_LEVEL                    = ConvertPlayerUnitEvent(39)
+    constant playerunitevent EVENT_PLAYER_HERO_SKILL                    = ConvertPlayerUnitEvent(40)
 
-    constant playerunitevent EVENT_PLAYER_HERO_LEVEL                    = ConvertPlayerUnitEvent(36)
-    constant playerunitevent EVENT_PLAYER_HERO_SKILL                    = ConvertPlayerUnitEvent(37)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVABLE                = ConvertPlayerUnitEvent(41)
 
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVABLE                = ConvertPlayerUnitEvent(38)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_START             = ConvertPlayerUnitEvent(42)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_CANCEL            = ConvertPlayerUnitEvent(43)
+    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_FINISH            = ConvertPlayerUnitEvent(44)
+    constant playerunitevent EVENT_PLAYER_UNIT_SUMMON                   = ConvertPlayerUnitEvent(45)
+    constant playerunitevent EVENT_PLAYER_UNIT_DROP_ITEM                = ConvertPlayerUnitEvent(46)
+    constant playerunitevent EVENT_PLAYER_UNIT_PICKUP_ITEM              = ConvertPlayerUnitEvent(47)
+    constant playerunitevent EVENT_PLAYER_UNIT_USE_ITEM                 = ConvertPlayerUnitEvent(48)
 
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_START             = ConvertPlayerUnitEvent(39)
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_CANCEL            = ConvertPlayerUnitEvent(40)
-    constant playerunitevent EVENT_PLAYER_HERO_REVIVE_FINISH            = ConvertPlayerUnitEvent(41)
-
-    constant playerunitevent EVENT_PLAYER_UNIT_SUMMON                   = ConvertPlayerUnitEvent(42)
-
-    constant playerunitevent EVENT_PLAYER_UNIT_DROP_ITEM                = ConvertPlayerUnitEvent(43)
-    constant playerunitevent EVENT_PLAYER_UNIT_PICKUP_ITEM              = ConvertPlayerUnitEvent(44)
-    constant playerunitevent EVENT_PLAYER_UNIT_USE_ITEM                 = ConvertPlayerUnitEvent(45)
+    constant playerunitevent EVENT_PLAYER_UNIT_LOADED                   = ConvertPlayerUnitEvent(49)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
     //===================================================
 
-    constant unitevent EVENT_UNIT_DAMAGED                         = ConvertUnitEvent(46)
-    constant unitevent EVENT_UNIT_DEATH                           = ConvertUnitEvent(47)
-    constant unitevent EVENT_UNIT_DECAY                           = ConvertUnitEvent(48)
-    constant unitevent EVENT_UNIT_DETECTED                        = ConvertUnitEvent(49)
-    constant unitevent EVENT_UNIT_HIDDEN                          = ConvertUnitEvent(50)
+    constant unitevent EVENT_UNIT_DAMAGED                               = ConvertUnitEvent(50)
+    constant unitevent EVENT_UNIT_DEATH                                 = ConvertUnitEvent(51)
+    constant unitevent EVENT_UNIT_DECAY                                 = ConvertUnitEvent(52)
+    constant unitevent EVENT_UNIT_DETECTED                              = ConvertUnitEvent(53)
+    constant unitevent EVENT_UNIT_HIDDEN                                = ConvertUnitEvent(54)
+    constant unitevent EVENT_UNIT_SELECTED                              = ConvertUnitEvent(55)
+    constant unitevent EVENT_UNIT_DESELECTED                            = ConvertUnitEvent(56)
+                                                                        
+    constant unitevent EVENT_UNIT_STATE_LIMIT                           = ConvertUnitEvent(57)                                                                        
+    // Events which may have a filter for the "other unit"              
+    //                                                                  
+    constant unitevent EVENT_UNIT_ACQUIRED_TARGET                       = ConvertUnitEvent(58)
+    constant unitevent EVENT_UNIT_TARGET_IN_RANGE                       = ConvertUnitEvent(59)
+    constant unitevent EVENT_UNIT_ATTACKED                              = ConvertUnitEvent(60)
+    constant unitevent EVENT_UNIT_RESCUED                               = ConvertUnitEvent(61)
+                                                                        
+    constant unitevent EVENT_UNIT_CONSTRUCT_CANCEL                      = ConvertUnitEvent(62)
+    constant unitevent EVENT_UNIT_CONSTRUCT_FINISH                      = ConvertUnitEvent(63)
+                                                                        
+    constant unitevent EVENT_UNIT_UPGRADE_START                         = ConvertUnitEvent(64)
+    constant unitevent EVENT_UNIT_UPGRADE_CANCEL                        = ConvertUnitEvent(65)
+    constant unitevent EVENT_UNIT_UPGRADE_FINISH                        = ConvertUnitEvent(66)
+                                                                        
+    // Events which involve the specified unit performing               
+    // training of other units                                          
+    //                                                                  
+    constant unitevent EVENT_UNIT_TRAIN_START                           = ConvertUnitEvent(67)
+    constant unitevent EVENT_UNIT_TRAIN_CANCEL                          = ConvertUnitEvent(68)
+    constant unitevent EVENT_UNIT_TRAIN_FINISH                          = ConvertUnitEvent(69)
+                                                                        
+    constant unitevent EVENT_UNIT_RESEARCH_START                        = ConvertUnitEvent(70)
+    constant unitevent EVENT_UNIT_RESEARCH_CANCEL                       = ConvertUnitEvent(71)
+    constant unitevent EVENT_UNIT_RESEARCH_FINISH                       = ConvertUnitEvent(72)
+                                                                        
+    constant unitevent EVENT_UNIT_ISSUED_ORDER                          = ConvertUnitEvent(73)
+    constant unitevent EVENT_UNIT_ISSUED_POINT_ORDER                    = ConvertUnitEvent(74)
+    constant unitevent EVENT_UNIT_ISSUED_UNIT_ORDER                     = ConvertUnitEvent(75)
+                                                                       
+    constant unitevent EVENT_UNIT_HERO_LEVEL                            = ConvertUnitEvent(76)
+    constant unitevent EVENT_UNIT_HERO_SKILL                            = ConvertUnitEvent(77)
+                                                                        
+    constant unitevent EVENT_UNIT_HERO_REVIVABLE                        = ConvertUnitEvent(78)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_START                     = ConvertUnitEvent(79)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_CANCEL                    = ConvertUnitEvent(80)
+    constant unitevent EVENT_UNIT_HERO_REVIVE_FINISH                    = ConvertUnitEvent(81)
+                                                                        
+    constant unitevent EVENT_UNIT_SUMMON                                = ConvertUnitEvent(82)
+                                                                        
+    constant unitevent EVENT_UNIT_DROP_ITEM                             = ConvertUnitEvent(83)
+    constant unitevent EVENT_UNIT_PICKUP_ITEM                           = ConvertUnitEvent(84)
+    constant unitevent EVENT_UNIT_USE_ITEM                              = ConvertUnitEvent(85)
 
-    constant unitevent EVENT_UNIT_SELECTED                        = ConvertUnitEvent(51)
-    constant unitevent EVENT_UNIT_DESELECTED                      = ConvertUnitEvent(52)
+    constant unitevent EVENT_UNIT_LOADED                                = ConvertUnitEvent(86)
 
-    constant unitevent EVENT_UNIT_STATE_LIMIT                     = ConvertUnitEvent(53)
-    
-    // Events which may have a filter for the "other unit"
-    //
-    constant unitevent EVENT_UNIT_ACQUIRED_TARGET                 = ConvertUnitEvent(54)
-    constant unitevent EVENT_UNIT_TARGET_IN_RANGE                 = ConvertUnitEvent(55)
-    constant unitevent EVENT_UNIT_ATTACKED                        = ConvertUnitEvent(56)
-    constant unitevent EVENT_UNIT_RESCUED                         = ConvertUnitEvent(57)
+    constant widgetevent EVENT_WIDGET_DEATH                             = ConvertWidgetEvent(87)
 
-    constant unitevent EVENT_UNIT_CONSTRUCT_CANCEL                = ConvertUnitEvent(58)
-    constant unitevent EVENT_UNIT_CONSTRUCT_FINISH                = ConvertUnitEvent(59)
-
-    constant unitevent EVENT_UNIT_UPGRADE_START                   = ConvertUnitEvent(60)
-    constant unitevent EVENT_UNIT_UPGRADE_CANCEL                  = ConvertUnitEvent(61)
-    constant unitevent EVENT_UNIT_UPGRADE_FINISH                  = ConvertUnitEvent(62)
-
-    // Events which involve the specified unit performing
-    // training of other units
-    //
-    constant unitevent EVENT_UNIT_TRAIN_START                     = ConvertUnitEvent(63)
-    constant unitevent EVENT_UNIT_TRAIN_CANCEL                    = ConvertUnitEvent(64)
-    constant unitevent EVENT_UNIT_TRAIN_FINISH                    = ConvertUnitEvent(65)
-
-    constant unitevent EVENT_UNIT_RESEARCH_START                  = ConvertUnitEvent(66)
-    constant unitevent EVENT_UNIT_RESEARCH_CANCEL                 = ConvertUnitEvent(67)
-    constant unitevent EVENT_UNIT_RESEARCH_FINISH                 = ConvertUnitEvent(68)
-
-    constant unitevent EVENT_UNIT_ISSUED_ORDER                    = ConvertUnitEvent(69)
-    constant unitevent EVENT_UNIT_ISSUED_POINT_ORDER              = ConvertUnitEvent(70)
-    constant unitevent EVENT_UNIT_ISSUED_UNIT_ORDER               = ConvertUnitEvent(71)
-
-    constant unitevent EVENT_UNIT_HERO_LEVEL                      = ConvertUnitEvent(72)
-    constant unitevent EVENT_UNIT_HERO_SKILL                      = ConvertUnitEvent(73)
-
-    constant unitevent EVENT_UNIT_HERO_REVIVABLE                  = ConvertUnitEvent(74)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_START               = ConvertUnitEvent(75)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_CANCEL              = ConvertUnitEvent(76)
-    constant unitevent EVENT_UNIT_HERO_REVIVE_FINISH              = ConvertUnitEvent(77)
-
-    constant unitevent EVENT_UNIT_SUMMON                          = ConvertUnitEvent(78)
-
-    constant unitevent EVENT_UNIT_DROP_ITEM                       = ConvertUnitEvent(79)
-    constant unitevent EVENT_UNIT_PICKUP_ITEM                     = ConvertUnitEvent(80)
-    constant unitevent EVENT_UNIT_USE_ITEM                        = ConvertUnitEvent(81)
-
-    constant widgetevent EVENT_WIDGET_DEATH                       = ConvertWidgetEvent(82)
+    constant dialogevent EVENT_DIALOG_BUTTON_CLICK                      = ConvertDialogEvent(88)
+    constant dialogevent EVENT_DIALOG_CLICK                             = ConvertDialogEvent(89)
 
     //===================================================
     // Limit Event API constants    
@@ -474,6 +500,13 @@ globals
     constant unittype UNIT_TYPE_PLAGUED                     = ConvertUnitType(12)
     constant unittype UNIT_TYPE_SNARED                      = ConvertUnitType(13)
 
+    constant unittype UNIT_TYPE_UNDEAD                      = ConvertUnitType(14)
+    constant unittype UNIT_TYPE_MECHANICAL                  = ConvertUnitType(15)
+    constant unittype UNIT_TYPE_PEON                        = ConvertUnitType(16)
+    constant unittype UNIT_TYPE_SAPPER                      = ConvertUnitType(17)
+    constant unittype UNIT_TYPE_TOWNHALL                    = ConvertUnitType(18)    
+    constant unittype UNIT_TYPE_ANCIENT                     = ConvertUnitType(19)
+
 //===================================================
 // Animatable Camera Fields
 //===================================================
@@ -485,10 +518,6 @@ globals
     constant camerafield CAMERA_FIELD_ROLL                  = ConvertCameraField(4)
     constant camerafield CAMERA_FIELD_ROTATION              = ConvertCameraField(5)
     constant camerafield CAMERA_FIELD_ZOFFSET               = ConvertCameraField(6)
-
-    constant materialid  MATERIAL_ID_UNIT_COLOR             = ConvertMaterialId(0)
-    constant materialid  MATERIAL_ID_TEAM_COLOR             = ConvertMaterialId(1)
-    constant materialid  MATERIAL_ID_TEAM_GLOW              = ConvertMaterialId(2)
 
     constant blendmode   BLEND_MODE_NONE                    = ConvertBlendMode(0)
     constant blendmode   BLEND_MODE_DONT_CARE               = ConvertBlendMode(0)
@@ -509,6 +538,15 @@ globals
     constant fogstate       FOG_OF_WAR_MASKED               = ConvertFogState(1)
     constant fogstate       FOG_OF_WAR_FOGGED               = ConvertFogState(2)
     constant fogstate       FOG_OF_WAR_VISIBLE              = ConvertFogState(4)
+
+//===================================================
+// Camera Margin constants for use with GetCameraMargin
+//===================================================
+
+    constant integer        CAMERA_MARGIN_LEFT              = 0
+    constant integer        CAMERA_MARGIN_RIGHT             = 1
+    constant integer        CAMERA_MARGIN_TOP               = 2
+    constant integer        CAMERA_MARGIN_BOTTOM            = 3
 
 //===================================================
 // Effect API constants
@@ -563,6 +601,8 @@ native R2SW takes real r, integer width, integer precision returns string
 native S2I  takes string s returns integer
 native S2R  takes string s returns real
 native SubString takes string source, integer start, integer end returns string
+
+native GetLocalizedString takes string source returns string
 
 //============================================================================
 // Map Setup API
@@ -624,6 +664,8 @@ native SetPlayerTaxRate         takes player sourcePlayer, player otherPlayer, p
 native SetPlayerRacePreference  takes player whichPlayer, racepreference whichRacePreference returns nothing
 native SetPlayerRaceSelectable  takes player whichPlayer, boolean value returns nothing
 native SetPlayerController      takes player whichPlayer, mapcontrol controlType returns nothing
+
+native SetPlayerOnScoreScreen   takes player whichPlayer, boolean flag returns nothing
 
 native GetPlayerTeam            takes player whichPlayer returns integer
 native GetPlayerStartLocation   takes player whichPlayer returns integer
@@ -746,6 +788,9 @@ native EnableTrigger    takes trigger whichTrigger returns nothing
 native DisableTrigger   takes trigger whichTrigger returns nothing
 native IsTriggerEnabled takes trigger whichTrigger returns boolean
 
+native TriggerWaitOnSleeps   takes trigger whichTrigger, boolean flag returns nothing
+native IsTriggerWaitOnSleeps takes trigger whichTrigger returns boolean
+
 constant native GetFilterUnit       takes nothing returns unit
 constant native GetEnumUnit         takes nothing returns unit
 
@@ -778,13 +823,16 @@ native TriggerRegisterVariableEvent takes trigger whichTrigger, string varName, 
     // EVENT_GAME_VARIABLE_LIMIT
     //constant native string GetTriggeringVariableName takes nothing returns string
 
+// Creates it's own timer and triggers when it expires
 native TriggerRegisterTimerEvent takes trigger whichTrigger, real timeout, boolean periodic returns event
 
-    // EVENT_GAME_TIMER_EXPIRED
-    // Does this mean we need a IsSameTimer( timer, timer ) ?
-    // constant native GetTimerEvent takes nothing returns event
+// Triggers when the timer you tell it about expires
+native TriggerRegisterTimerExpireEvent takes trigger whichTrigger, timer t returns event
 
 native TriggerRegisterGameStateEvent takes trigger whichTrigger, gamestate whichState, limitop opcode, real limitval returns event
+
+native TriggerRegisterDialogEvent       takes trigger whichTrigger, dialog whichDialog returns event
+native TriggerRegisterDialogButtonEvent takes trigger whichTrigger, button whichButton returns event
 
 //  EVENT_GAME_STATE_LIMIT
 constant native GetEventGameState takes nothing returns gamestate
@@ -806,6 +854,16 @@ constant native GetEnteringUnit takes nothing returns unit
 native TriggerRegisterLeaveRegion takes trigger whichTrigger, region whichRegion, boolexpr filter returns event
 constant native GetLeavingUnit takes nothing returns unit
 
+native TriggerRegisterTrackableHitEvent takes trigger whichTrigger, trackable t returns event
+native TriggerRegisterTrackableTrackEvent takes trigger whichTrigger, trackable t returns event
+
+// EVENT_GAME_TRACKABLE_HIT
+// EVENT_GAME_TRACKABLE_TRACK
+constant native GetTriggeringTrackable takes nothing returns trackable
+
+// EVENT_DIALOG_BUTTON_CLICK
+constant native GetClickedButton takes nothing returns button
+constant native GetClickedDialog    takes nothing returns dialog
 
 //============================================================================
 // Trigger Player Based Event API
@@ -882,6 +940,10 @@ constant native GetDetectedUnit takes nothing returns unit
 // EVENT_PLAYER_UNIT_SUMMONED
 constant native GetSummoningUnit    takes nothing returns unit
 constant native GetSummonedUnit     takes nothing returns unit
+
+// EVENT_PLAYER_UNIT_LOADED
+constant native GetTransportUnit    takes nothing returns unit
+constant native GetLoadedUnit       takes nothing returns unit
 
 // EVENT_PLAYER_UNIT_DROP_ITEM
 // EVENT_PLAYER_UNIT_PICKUP_ITEM
@@ -986,12 +1048,13 @@ native TriggerAddCondition    takes trigger whichTrigger, boolexpr condition ret
 native TriggerRemoveCondition takes trigger whichTrigger, triggercondition whichCondition returns nothing
 native TriggerClearConditions takes trigger whichTrigger returns nothing
 
-native TriggerAddAction    takes trigger whichTrigger, code actionFunc returns triggeraction
-native TriggerRemoveAction takes trigger whichTrigger, triggeraction whichAction returns nothing
-native TriggerClearActions takes trigger whichTrigger returns nothing
-native TriggerSleepAction  takes real timeout returns nothing
-native TriggerEvaluate takes trigger whichTrigger returns boolean
-native TriggerExecute  takes trigger whichTrigger returns nothing
+native TriggerAddAction     takes trigger whichTrigger, code actionFunc returns triggeraction
+native TriggerRemoveAction  takes trigger whichTrigger, triggeraction whichAction returns nothing
+native TriggerClearActions  takes trigger whichTrigger returns nothing
+native TriggerSleepAction   takes real timeout returns nothing
+native TriggerEvaluate      takes trigger whichTrigger returns boolean
+native TriggerExecute       takes trigger whichTrigger returns nothing
+native TriggerExecuteWait   takes trigger whichTrigger returns nothing
 
 //============================================================================
 // Widget API
@@ -1016,6 +1079,8 @@ native          GetDestructableX            takes destructable d returns real
 native          GetDestructableY            takes destructable d returns real
 native          SetDestructableLife         takes destructable d, real life returns nothing
 native          GetDestructableLife         takes destructable d returns real
+native          GetDestructableMaxLife      takes destructable d returns real
+native          DestructableRestoreLife     takes destructable d, real life, boolean birth returns nothing
 
 //============================================================================
 // Item API
@@ -1026,6 +1091,7 @@ native          GetItemTypeId   takes item i returns integer
 native          GetItemX        takes item i returns real
 native          GetItemY        takes item i returns real
 native          SetItemPosition takes item i, real x, real y returns nothing
+native          SetItemDropOnDeath  takes item whichItem, boolean flag returns nothing
 native          SetItemDroppable takes item i, boolean flag returns nothing
 native          SetItemPlayer    takes item whichItem, player whichPlayer, boolean changeColor returns nothing
 native          SetItemInvulnerable takes item whichItem, boolean flag returns nothing
@@ -1038,6 +1104,7 @@ native          CreateUnit              takes player id, integer unitid, real x,
 native          CreateUnitByName        takes player whichPlayer, string unitname, real x, real y, real face returns unit
 native          CreateUnitAtLoc         takes player id, integer unitid, location whichLocation, real face returns unit
 native          CreateUnitAtLocByName   takes player id, string unitname, location whichLocation, real face returns unit
+native          CreateCorpse            takes player whichPlayer, integer unitid, real x, real y, real face returns unit
 
 native          KillUnit            takes unit whichUnit returns nothing
 native          RemoveUnit          takes unit whichUnit returns nothing
@@ -1074,15 +1141,21 @@ native          SetUnitTimeScale    takes unit whichUnit, real timeScale returns
 native          SetUnitBlendTime    takes unit whichUnit, real blendTime returns nothing
 native          SetUnitVertexColor  takes unit whichUnit, integer red, integer green, integer blue, integer alpha returns nothing
 
+native          QueueUnitAnimation          takes unit whichUnit, string whichAnimation returns nothing
 native          SetUnitAnimation            takes unit whichUnit, string whichAnimation returns nothing
 native          SetUnitAnimationByIndex     takes unit whichUnit, integer whichAnimation returns nothing
 native          SetUnitAnimationWithRarity  takes unit whichUnit, string whichAnimation, raritycontrol rarity returns nothing
+native          AddUnitAnimationProperties  takes unit whichUnit, string animProperties, boolean add returns nothing
 
 native          SetUnitLookAt       takes unit whichUnit, string whichBone, unit lookAtTarget, real offsetX, real offsetY, real offsetZ returns nothing
 native          ResetUnitLookAt     takes unit whichUnit returns nothing
 
 native          SetUnitRescuable    takes unit whichUnit, player byWhichPlayer, boolean flag returns nothing
 native          SetUnitRescueRange  takes unit whichUnit, real range returns nothing
+
+native          SetHeroStr          takes unit whichHero, integer newStr, boolean permanent returns nothing
+native          SetHeroAgi          takes unit whichHero, integer newAgi, boolean permanent returns nothing
+native          SetHeroInt          takes unit whichHero, integer newInt, boolean permanent returns nothing
 
 native          SetHeroXP           takes unit whichHero, integer newXpVal,  boolean showEyeCandy returns nothing
 native          AddHeroXP           takes unit whichHero, integer xpToAdd,   boolean showEyeCandy returns nothing
@@ -1093,7 +1166,10 @@ native          IsSuspendedXP       takes unit whichHero returns boolean
 native          SelectHeroSkill     takes unit whichHero, integer abilcode returns nothing
 native          ReviveHero          takes unit whichHero, real x, real y, boolean doEyecandy returns boolean
 native          ReviveHeroLoc       takes unit whichHero, location loc, boolean doEyecandy returns boolean
+native          SetUnitExploded     takes unit whichUnit, boolean exploded returns nothing
 native          SetUnitInvulnerable takes unit whichUnit, boolean flag returns nothing
+native          PauseUnit           takes unit whichUnit, boolean flag returns nothing
+native          IsUnitPaused        takes unit whichHero returns boolean
 native          SetUnitPathing      takes unit whichUnit, boolean flag returns nothing
 
 native          ClearSelection      takes nothing returns nothing
@@ -1103,7 +1179,6 @@ native          GetUnitPointValue       takes unit whichUnit returns integer
 native          GetUnitPointValueByType takes integer unitType returns integer
 //native        SetUnitPointValueByType takes integer unitType, integer newPointValue returns nothing
 
-native          StoreUnit               takes unit whichUnit, real x, real y, real facing returns nothing
 native          UnitAddItem             takes unit whichUnit, item whichItem returns boolean
 native          UnitAddItemById         takes unit whichUnit, integer itemId returns item
 native          UnitAddItemToSlotById   takes unit whichUnit, integer itemId, integer itemSlot returns boolean
@@ -1115,19 +1190,6 @@ native          UnitItemInSlot          takes unit whichUnit, integer itemSlot r
 native          UnitUseItem             takes unit whichUnit, item whichItem returns boolean
 native          UnitUseItemPoint        takes unit whichUnit, item whichItem, real x, real y returns boolean
 native          UnitUseItemTarget       takes unit whichUnit, item whichItem, widget target returns boolean
-
-// This is a truly horrible API for adding texture layers to one or more materials
-//
-//  the first blendmode parameter specifies how you want the added layer to be blended
-//  the texmapflags determines if/how the texture will use wrap modes ( all added texture
-//  layers are assumed to use bilinear filtering )
-//  the materialid specifies which materials should have the texture layer added to them
-//      and works in conjunction with the second blendmode parameter to narrow the
-//      search ( i.e. if you only want to add the texture layer to 
-
-native          UnitAddMaterial     takes unit whichUnit, string textureFile, texmapflags tflags, blendmode mode, materialid mat, blendmode modeToAddTo returns nothing
-native          UnitRemoveMaterial  takes unit whichUnit, materialid mat, blendmode mode returns nothing
-native          UnitShowMaterial    takes unit whichUnit, materialid mat, blendmode mode, boolean show returns nothing
 
 constant native GetUnitX            takes unit whichUnit returns real
 constant native GetUnitY            takes unit whichUnit returns real
@@ -1141,6 +1203,7 @@ constant native GetUnitTypeId       takes unit whichUnit returns integer
 constant native GetUnitRace         takes unit whichUnit returns race
 constant native GetUnitName         takes unit whichUnit returns string
 constant native GetUnitFoodUsed     takes unit whichUnit returns integer
+constant native GetUnitFoodMade     takes unit whichUnit returns integer
 
 constant native IsUnitInGroup       takes unit whichUnit, group whichGroup returns boolean
 constant native IsUnitInForce       takes unit whichUnit, force whichForce returns boolean
@@ -1160,10 +1223,23 @@ constant native IsUnitInRange       takes unit whichUnit, unit otherUnit, real d
 constant native IsUnitInRangeXY     takes unit whichUnit, real x, real y, real distance returns boolean
 constant native IsUnitInRangeLoc    takes unit whichUnit, location whichLocation, real distance returns boolean
 constant native IsUnitHidden        takes unit whichUnit returns boolean
+constant native IsUnitIllusion      takes unit whichUnit returns boolean
+
+constant native IsUnitInTransport   takes unit whichUnit, unit whichTransport returns boolean
+constant native IsUnitLoaded        takes unit whichUnit returns boolean
 
 constant native IsHeroUnitId        takes integer unitId returns boolean
 
 native UnitShareVision              takes unit whichUnit, player whichPlayer, boolean share returns nothing
+native UnitSuspendDecay             takes unit whichUnit, boolean suspend returns nothing
+
+native UnitRemoveAbility            takes unit whichUnit, integer abilityId returns boolean
+native UnitRemoveBuffs              takes unit whichUnit, boolean removePositive, boolean removeNegative returns nothing
+native UnitAddSleep                 takes unit whichUnit, boolean add returns nothing
+native UnitIsSleeping               takes unit whichUnit returns boolean
+native UnitCanSleep                 takes unit whichUnit returns boolean
+native UnitWakeUp                   takes unit whichUnit returns nothing
+native UnitApplyTimedLife           takes unit whichUnit, integer buffId, real duration returns nothing
 
 native IssueImmediateOrder          takes unit whichUnit, string order returns boolean
 native IssueImmediateOrderById      takes unit whichUnit, integer order returns boolean
@@ -1189,6 +1265,12 @@ native SetResourceAmount            takes unit whichUnit, integer amount returns
 native AddResourceAmount            takes unit whichUnit, integer amount returns nothing
 native GetResourceAmount            takes unit whichUnit returns integer
 
+native WaygateGetDestinationX       takes unit waygate returns real
+native WaygateGetDestinationY       takes unit waygate returns real
+native WaygateSetDestination        takes unit waygate, real x, real y returns nothing
+native WaygateActivate              takes unit waygate, boolean activate returns nothing
+native WaygateIsActive              takes unit waygate returns boolean
+
 //============================================================================
 // Player API
 constant native Player              takes integer number returns player
@@ -1196,6 +1278,7 @@ constant native GetLocalPlayer      takes nothing returns player
 constant native IsPlayerAlly        takes player whichPlayer, player otherPlayer returns boolean
 constant native IsPlayerEnemy       takes player whichPlayer, player otherPlayer returns boolean
 constant native IsPlayerInForce     takes player whichPlayer, force whichForce returns boolean
+constant native IsPlayerObserver    takes player whichPlayer returns boolean
 constant native IsVisibleToPlayer           takes real x, real y, player whichPlayer returns boolean
 constant native IsLocationVisibleToPlayer   takes location whichLocation, player whichPlayer returns boolean
 constant native IsFoggedToPlayer            takes real x, real y, player whichPlayer returns boolean
@@ -1211,6 +1294,11 @@ constant native GetPlayerStructureCount takes player whichPlayer, boolean includ
 constant native GetPlayerState          takes player whichPlayer, playerstate whichPlayerState returns integer
 constant native GetPlayerAlliance       takes player sourcePlayer, player otherPlayer, alliancetype whichAllianceSetting returns boolean
 
+constant native GetPlayerHandicap       takes player whichPlayer returns real
+constant native GetPlayerHandicapXP     takes player whichPlayer returns real
+constant native SetPlayerHandicap       takes player whichPlayer, real handicap returns nothing
+constant native SetPlayerHandicapXP     takes player whichPlayer, real handicap returns nothing
+
 constant native SetPlayerTechMaxAllowed takes player whichPlayer, integer techid, integer maximum returns nothing
 constant native GetPlayerTechMaxAllowed takes player whichPlayer, integer techid returns integer
 constant native AddPlayerTechResearched takes player whichPlayer, integer techid, integer levels returns nothing
@@ -1221,7 +1309,7 @@ constant native GetPlayerTechCount      takes player whichPlayer, integer techid
 native SetPlayerAbilityAvailable        takes player whichPlayer, integer abilid, boolean avail returns nothing
 
 native SetPlayerState   takes player whichPlayer, playerstate whichPlayerState, integer value returns nothing
-native RemovePlayer     takes player whichPlayer, playergameresult gameResult, string message returns nothing
+native RemovePlayer     takes player whichPlayer, playergameresult gameResult returns nothing
 
 // Used to store hero level data for the scorescreen
 // before units are moved to neutral passive in melee games
@@ -1254,15 +1342,57 @@ native FogModifierStop              takes fogmodifier whichFogModifier returns n
 
 //============================================================================
 // Game API
+native EndGame takes boolean doScoreScreen returns nothing
+
+// Async only!
+native          ChangeLevel         takes string newLevel, boolean doScoreScreen returns nothing
+native          RestartGame         takes boolean doScoreScreen returns nothing
+native          ReloadGame          takes nothing returns nothing
+native          LoadGame            takes string loadFile, boolean doScoreScreen returns nothing
+native          SaveGame            takes string saveFile returns nothing
+
+native          SyncSelections      takes nothing returns nothing
 native          SetFloatGameState   takes fgamestate whichFloatGameState, real value returns nothing
 constant native GetFloatGameState   takes fgamestate whichFloatGameState returns real
-
 native          SetIntegerGameState takes igamestate whichIntegerGameState, integer value returns nothing
 constant native GetIntegerGameState takes igamestate whichIntegerGameState returns integer
 
-native          EndGame     takes nothing returns nothing
-native          ChangeLevel takes string nextLevelScript, playergameresult gameResult, string message returns nothing
-native          SyncSelections  takes nothing returns nothing
+
+//============================================================================
+// Campaign API
+native  SetTutorialCleared      takes boolean cleared returns nothing
+native  SetMissionAvailable     takes integer campaignNumber, integer missionNumber, boolean available returns nothing
+native  SetCampaignAvailable    takes integer campaignNumber, boolean available  returns nothing
+native  SetOpCinematicAvailable takes integer campaignNumber, boolean available  returns nothing
+native  SetEdCinematicAvailable takes integer campaignNumber, boolean available  returns nothing
+
+
+//============================================================================
+// Dialog API
+native DialogCreate     takes nothing returns dialog
+native DialogDestroy    takes dialog whichDialog returns nothing
+native DialogSetAsync   takes dialog whichDialog returns nothing
+native DialogClear      takes dialog whichDialog returns nothing
+native DialogSetMessage takes dialog whichDialog, string messageText returns nothing
+native DialogAddButton  takes dialog whichDialog, string buttonText returns button
+native DialogDisplay    takes player whichPlayer, dialog whichDialog, boolean flag returns nothing
+
+// Creates a new or reads in an existing game cache file stored
+// in the current campaign profile dir
+//
+native  InitGameCache   takes string campaignFile returns gamecache
+native  SaveGameCache   takes gamecache whichCache returns boolean
+                                
+native  StoreInteger    takes gamecache cache, string missionKey, string key, integer value returns nothing
+native  StoreReal       takes gamecache cache, string missionKey, string key, real value returns nothing
+native  StoreBoolean    takes gamecache cache, string missionKey, string key, boolean value returns nothing
+native  StoreUnit       takes gamecache cache, string missionKey, string key, unit whichUnit returns boolean
+
+// Will return 0 if the specified value's data is not found in the cache
+native  GetStoredInteger        takes gamecache cache, string missionKey, string key returns integer
+native  GetStoredReal           takes gamecache cache, string missionKey, string key returns real
+native  GetStoredBoolean        takes gamecache cache, string missionKey, string key returns boolean
+native  RestoreUnit             takes gamecache cache, string missionKey, string key, player forWhichPlayer, real x, real y, real facing returns unit
 
 //============================================================================
 // Randomization API
@@ -1281,9 +1411,16 @@ native ItemPoolAddItemType      takes itempool whichItemPool, integer itemId, re
 native ItemPoolRemoveItemType   takes itempool whichItemPool, integer itemId returns nothing
 native PlaceRandomItem          takes itempool whichItemPool, real x, real y returns item
 
+// Choose any random unit/item. (NP means Neutral Passive)
+native ChooseRandomCreep        takes integer level returns integer
+native ChooseRandomNPBuilding   takes nothing returns integer
+native ChooseRandomItem         takes integer level returns integer
+
 //============================================================================
 // Visual API
 native SetTerrainFog            takes real a, real b, real c, real d, real e returns nothing
+native ResetTerrainFog          takes nothing returns nothing
+
 native SetUnitFog               takes real a, real b, real c, real d, real e returns nothing
 native SetTerrainFogEx          takes integer style, real zstart, real zend, real density, real red, real green, real blue returns nothing
 native DisplayTextToPlayer      takes player toPlayer, real x, real y, string message returns nothing
@@ -1294,11 +1431,10 @@ native EnableUserControl        takes boolean b returns nothing
 native SuspendTimeOfDay         takes boolean b returns nothing
 native SetTimeOfDayScale        takes real r returns nothing
 native GetTimeOfDayScale        takes nothing returns real
-native StartPortraitTalk        takes real duration, integer sequence returns nothing
-native StopPortraitTalk         takes nothing returns nothing
 native ShowInterface            takes boolean flag, real fadeDuration returns nothing
 native PauseGame                takes boolean flag returns nothing
 native UnitAddIndicator         takes unit whichUnit, integer red, integer green, integer blue, integer alpha returns nothing
+native AddIndicator             takes widget whichWidget, integer red, integer green, integer blue, integer alpha returns nothing
 native PingMinimap              takes real x, real y, real duration returns nothing
 native EnableOcclusion          takes boolean flag returns nothing
 native SetIntroShotText         takes string introText returns nothing
@@ -1307,6 +1443,10 @@ native EnableWorldFogBoundary   takes boolean b returns nothing
 
 native ForceUIKey               takes string key returns nothing
 native ForceUICancel            takes nothing returns nothing
+
+//============================================================================
+// Trackable API
+native CreateTrackable      takes string trackableModelPath, real x, real y, real facing returns trackable
 
 //============================================================================
 // Quest API
@@ -1319,11 +1459,20 @@ native QuestSetIconPath     takes quest whichQuest, string iconPath returns noth
 native QuestSetRequired     takes quest whichQuest, boolean required   returns nothing
 native QuestSetCompleted    takes quest whichQuest, boolean completed  returns nothing
 native QuestSetDiscovered   takes quest whichQuest, boolean discovered returns nothing
+native QuestSetFailed       takes quest whichQuest, boolean failed     returns nothing
 native QuestSetEnabled      takes quest whichQuest, boolean enabled    returns nothing
     
+native IsQuestRequired     takes quest whichQuest returns boolean
+native IsQuestCompleted    takes quest whichQuest returns boolean
+native IsQuestDiscovered   takes quest whichQuest returns boolean
+native IsQuestFailed       takes quest whichQuest returns boolean
+native IsQuestEnabled      takes quest whichQuest returns boolean
+
 native QuestCreateItem          takes quest whichQuest returns questitem
 native QuestItemSetDescription  takes questitem whichQuestItem, string description returns nothing
 native QuestItemSetCompleted    takes questitem whichQuestItem, boolean completed returns nothing
+
+native IsQuestItemCompleted     takes questitem whichQuestItem returns boolean
 
 native CreateDefeatCondition            takes nothing returns defeatcondition
 native DestroyDefeatCondition           takes defeatcondition whichCondition returns nothing
@@ -1353,12 +1502,19 @@ native DestroyLeaderboard               takes leaderboard lb returns nothing
 native LeaderboardDisplay               takes leaderboard lb, boolean show returns nothing
 native IsLeaderboardDisplayed           takes leaderboard lb returns boolean
 
-native LeaderboardSetItemCount          takes leaderboard lb, integer count returns nothing
-native LeaderboardAddItem               takes leaderboard lb, string label, string value, player p returns nothing
+native LeaderboardGetItemCount          takes leaderboard lb returns integer
+
+native LeaderboardSetSizeByItemCount    takes leaderboard lb, integer count returns nothing
+native LeaderboardAddItem               takes leaderboard lb, string label, integer value, player p returns nothing
 native LeaderboardRemoveItem            takes leaderboard lb, integer index returns nothing
 native LeaderboardRemovePlayerItem      takes leaderboard lb, player p returns nothing
 native LeaderboardClear                 takes leaderboard lb returns nothing
 
+native LeaderboardSortItemsByValue      takes leaderboard lb, boolean ascending returns nothing
+native LeaderboardSortItemsByPlayer     takes leaderboard lb, boolean ascending returns nothing
+native LeaderboardSortItemsByLabel      takes leaderboard lb, boolean ascending returns nothing
+
+native LeaderboardHasPlayerItem         takes leaderboard lb, player p returns boolean
 native LeaderboardGetPlayerIndex        takes leaderboard lb, player p returns integer
 native LeaderboardSetLabel              takes leaderboard lb, string label returns nothing
 native LeaderboardGetLabelText          takes leaderboard lb returns string
@@ -1370,7 +1526,7 @@ native LeaderboardSetLabelColor         takes leaderboard lb, integer red, integ
 native LeaderboardSetValueColor         takes leaderboard lb, integer red, integer green, integer blue, integer alpha returns nothing
 native LeaderboardSetStyle              takes leaderboard lb, boolean showLabel, boolean showNames, boolean showValues, boolean showIcons returns nothing
 
-native LeaderboardSetItemValue          takes leaderboard lb, integer whichItem, string val returns nothing
+native LeaderboardSetItemValue          takes leaderboard lb, integer whichItem, integer val returns nothing
 native LeaderboardSetItemLabel          takes leaderboard lb, integer whichItem, string val returns nothing
 native LeaderboardSetItemStyle          takes leaderboard lb, integer whichItem, boolean showLabel, boolean showValue, boolean showIcon returns nothing
 native LeaderboardSetItemLabelColor     takes leaderboard lb, integer whichItem, integer red, integer green, integer blue, integer alpha returns nothing
@@ -1407,6 +1563,7 @@ native CameraSetupApplyForceDurationWithZ   takes camerasetup whichSetup, real z
 
 native CameraSetTargetNoise             takes real mag, real velocity returns nothing
 native CameraSetSourceNoise             takes real mag, real velocity returns nothing
+native CameraSetSmoothingFactor         takes real factor returns nothing
 
 native SetCineFilterTexture             takes string filename returns nothing
 native SetCineFilterBlendMode           takes blendmode whichMode returns nothing
@@ -1419,10 +1576,10 @@ native SetCineFilterDuration            takes real duration returns nothing
 native DisplayCineFilter                takes boolean flag returns nothing
 native IsCineFilterDisplayed            takes nothing returns boolean
 
-native SetCineDialogText                takes string text returns nothing
-native SetCinePortraitModel             takes string text returns nothing
-native StartCinePortraitTalk            takes real duration, integer sequence returns nothing
-native StopCinePortraitTalk             takes nothing returns nothing
+native SetCinematicScene                takes integer portraitUnitId, playercolor color, string speakerTitle, string text, real sceneDuration, real voiceoverDuration returns nothing
+native EndCinematicScene                takes nothing returns nothing
+
+native GetCameraMargin                  takes integer whichMargin returns real
 
 // These return values for the local players camera only...
 constant native GetCameraBoundMinX          takes nothing returns real
@@ -1447,6 +1604,8 @@ native NewSoundEnvironment          takes string environmentName returns nothing
 native CreateSound                  takes string fileName, boolean looping, boolean is3D, boolean stopwhenoutofrange, integer fadeInRate, integer fadeOutRate, string eaxSetting returns sound
 native CreateSoundFromLabel         takes string soundLabel, boolean looping, boolean is3D, boolean stopwhenoutofrange, integer fadeInRate, integer fadeOutRate returns sound
 native CreateMIDISound              takes string soundLabel, integer fadeInRate, integer fadeOutRate returns sound
+
+native SetSoundParamsFromLabel      takes sound soundHandle, string soundLabel returns nothing
 native SetSoundDistanceCutoff       takes sound soundHandle, real cutoff returns nothing
 native SetSoundVolume               takes sound soundHandle, integer volume returns nothing
 native SetSoundPitch                takes sound soundHandle, real pitch returns nothing
@@ -1457,6 +1616,7 @@ native SetSoundConeAngles           takes sound soundHandle, real inside, real o
 native SetSoundConeOrientation      takes sound soundHandle, real x, real y, real z returns nothing
 native SetSoundPosition             takes sound soundHandle, real x, real y, real z returns nothing
 native SetSoundVelocity             takes sound soundHandle, real x, real y, real z returns nothing
+native AttachSoundToUnit            takes sound soundHandle, unit whichUnit returns nothing
 
 native StartSound                   takes sound soundHandle returns nothing
 native StopSound                    takes sound soundHandle, boolean killWhenDone, boolean fadeOut returns nothing
@@ -1464,14 +1624,26 @@ native KillSoundWhenDone            takes sound soundHandle returns nothing
 
 // Music Interface. Note that if music is disabled, these calls do nothing
 native SetMusicVolume               takes integer volume returns nothing
-native PlayMusic                    takes string musicFileName returns nothing
-native PlayThematicMusic            takes string musicName returns nothing
+native PlayMusic                    takes string musicName returns nothing
+native SetMapMusic                  takes string musicName, boolean random, integer index returns nothing
+native ClearMapMusic                takes nothing returns nothing
+native PlayThematicMusic            takes string musicFileName returns nothing
 native StopMusic                    takes boolean fadeOut returns nothing
 native ResumeMusic                  takes nothing returns nothing
 
 native SetSoundDuration				takes sound soundHandle, integer duration returns nothing
 native GetSoundDuration				takes sound soundHandle returns integer
 native GetSoundFileDuration			takes string musicFileName returns integer
+
+native VolumeGroupSetVolume			takes volumegroup vgroup, real scale returns nothing
+native VolumeGroupReset				takes nothing returns nothing
+
+native GetSoundTimeRemaining        takes sound soundHandle returns integer
+native GetSoundIsPlaying			takes sound soundHandle returns boolean
+native GetSoundIsLoading			takes sound soundHandle returns boolean
+
+native RegisterStackedSound			takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
+native UnregisterStackedSound		takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
 
 //============================================================================
 // Effects API
@@ -1504,7 +1676,8 @@ native CreateBlightedGoldmine   takes player id, real x, real y, real face retur
 //============================================================================
 // Doodad API
 //
-native SetDoodadAnimation takes real x, real y, real z, real radius, integer doodadID, boolean nearestOnly, string animName, boolean animRandom returns nothing
+native SetDoodadAnimation       takes real x, real y, real radius, integer doodadID, boolean nearestOnly, string animName, boolean animRandom returns nothing
+native SetDoodadAnimationRect   takes rect r, integer doodadID, string animName, boolean animRandom returns nothing
 
 //============================================================================
 // Computer AI interface
@@ -1514,6 +1687,10 @@ native StartMeleeAI         takes player num, string script                 retu
 native StartCampaignAI      takes player num, string script                 returns nothing
 native CommandAI            takes player num, integer command, integer data returns nothing
 native RemoveGuardPosition  takes unit hUnit                                returns nothing
+native RemoveAllGuardPositions takes player num                             returns nothing
+
+//============================================================================
+native ExecuteFunc          takes string funcName returns nothing
 
 //============================================================================
 // Inhouse interface....remove before ship...
