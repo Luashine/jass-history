@@ -975,6 +975,8 @@ constant native GetClickedDialog    takes nothing returns dialog
 
 // EVENT_GAME_TOURNAMENT_FINISH_SOON
 constant native GetTournamentFinishSoonTimeRemaining takes nothing returns real
+constant native GetTournamentFinishNowRule takes nothing returns integer
+constant native GetTournamentFinishNowPlayer takes nothing returns player
 constant native GetTournamentScore takes player whichPlayer returns integer
 
 // EVENT_GAME_SAVE
@@ -1254,6 +1256,7 @@ native          GetItemY        takes item i returns real
 native          SetItemPosition takes item i, real x, real y returns nothing
 native          SetItemDropOnDeath  takes item whichItem, boolean flag returns nothing
 native          SetItemDroppable takes item i, boolean flag returns nothing
+native          SetItemPawnable takes item i, boolean flag returns nothing
 native          SetItemPlayer    takes item whichItem, player whichPlayer, boolean changeColor returns nothing
 native          SetItemInvulnerable takes item whichItem, boolean flag returns nothing
 native          IsItemInvulnerable  takes item whichItem returns boolean
@@ -1262,8 +1265,10 @@ native          IsItemVisible   takes item whichItem returns boolean
 native          IsItemOwned     takes item whichItem returns boolean
 native          IsItemPowerup   takes item whichItem returns boolean
 native          IsItemSellable  takes item whichItem returns boolean
+native          IsItemPawnable  takes item whichItem returns boolean
 native          IsItemIdPowerup takes integer itemId returns boolean
 native          IsItemIdSellable takes integer itemId returns boolean
+native          IsItemIdPawnable takes integer itemId returns boolean
 native          EnumItemsInRect     takes rect r, boolexpr filter, code actionFunc returns nothing
 native          GetItemLevel    takes item whichItem returns integer
 native          GetItemType     takes item whichItem returns itemtype
@@ -1433,6 +1438,8 @@ native UnitCanSleepPerm             takes unit whichUnit returns boolean
 native UnitIsSleeping               takes unit whichUnit returns boolean
 native UnitWakeUp                   takes unit whichUnit returns nothing
 native UnitApplyTimedLife           takes unit whichUnit, integer buffId, real duration returns nothing
+native UnitIgnoreAlarm              takes unit whichUnit, boolean flag returns boolean
+native UnitIgnoreAlarmToggled       takes unit whichUnit returns boolean
 native UnitResetCooldown            takes unit whichUnit returns nothing
 native UnitSetConstructionProgress  takes unit whichUnit, integer constructionPercentage returns nothing
 native UnitSetUpgradeProgress       takes unit whichUnit, integer upgradePercentage returns nothing
@@ -1687,6 +1694,7 @@ native ClearTextMessages            takes nothing returns nothing
 native SetDayNightModels            takes string terrainDNCFile, string unitDNCFile returns nothing
 native SetSkyModel                  takes string skyModelFile returns nothing
 native EnableUserControl            takes boolean b returns nothing
+native EnableUserUI                 takes boolean b returns nothing
 native SuspendTimeOfDay             takes boolean b returns nothing
 native SetTimeOfDayScale            takes real r returns nothing
 native GetTimeOfDayScale            takes nothing returns real
@@ -1883,6 +1891,10 @@ native CameraSetupApplyForceDurationWithZ   takes camerasetup whichSetup, real z
 
 native CameraSetTargetNoise             takes real mag, real velocity returns nothing
 native CameraSetSourceNoise             takes real mag, real velocity returns nothing
+
+native CameraSetTargetNoiseEx           takes real mag, real velocity, boolean vertOnly returns nothing
+native CameraSetSourceNoiseEx           takes real mag, real velocity, boolean vertOnly returns nothing
+
 native CameraSetSmoothingFactor         takes real factor returns nothing
 
 native SetCineFilterTexture             takes string filename returns nothing
@@ -1975,8 +1987,6 @@ native GetSoundIsLoading			takes sound soundHandle returns boolean
 
 native RegisterStackedSound			takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
 native UnregisterStackedSound		takes sound soundHandle, boolean byPosition, real rectwidth, real rectheight returns nothing
-
-native EnableUISounds               takes boolean enable returns nothing
 
 //============================================================================
 // Effects API
