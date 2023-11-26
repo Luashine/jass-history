@@ -86,7 +86,6 @@ TFT-v1.30.3.11235
 TFT-v1.30.4.11274
 TFT-v1.31.0.11889-w3t
 TFT-v1.31.1.12173
-Reforged-v1.32.0.13369
 Reforged-v1.32.0.13369-w3b-ab0c8ee
 Reforged-v1.32.0.14411
 Reforged-v1.32.0.14481-w3-11be6c1
@@ -104,7 +103,6 @@ Reforged-v1.32.8.15731-w3t-0349a4d
 Reforged-v1.32.8.15801
 Reforged-v1.32.9.15935-w3t-7d69888
 Reforged-v1.32.9.16589
-Reforged-v1.32.10.18820
 Reforged-v1.32.10.18820-w3-aa2b20f
 Reforged-v1.32.10.19202
 Reforged-v1.33.0.18857-w3t-3e93420
