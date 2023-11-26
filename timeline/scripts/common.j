@@ -93,6 +93,8 @@ type soundtype          extends     handle
 type lightning          extends     handle
 type pathingtype        extends     handle
 type mousebuttontype    extends     handle
+type animtype           extends     handle
+type subanimtype        extends     handle
 type image              extends     handle
 type ubersplat          extends     handle
 type hashtable          extends     agent
@@ -142,6 +144,8 @@ constant native ConvertWeaponType           takes integer i returns weapontype
 constant native ConvertSoundType            takes integer i returns soundtype
 constant native ConvertPathingType          takes integer i returns pathingtype
 constant native ConvertMouseButtonType      takes integer i returns mousebuttontype
+constant native ConvertAnimType             takes integer i returns animtype
+constant native ConvertSubAnimType          takes integer i returns subanimtype
 
 constant native OrderId                     takes string  orderIdString     returns integer
 constant native OrderId2String              takes integer orderId           returns string
@@ -295,6 +299,71 @@ globals
     constant mousebuttontype    MOUSE_BUTTON_TYPE_LEFT          = ConvertMouseButtonType(1)
     constant mousebuttontype    MOUSE_BUTTON_TYPE_MIDDLE        = ConvertMouseButtonType(2)
     constant mousebuttontype    MOUSE_BUTTON_TYPE_RIGHT         = ConvertMouseButtonType(3)
+
+    constant animtype           ANIM_TYPE_BIRTH                 = ConvertAnimType(0)
+    constant animtype           ANIM_TYPE_DEATH                 = ConvertAnimType(1)
+    constant animtype           ANIM_TYPE_DECAY                 = ConvertAnimType(2)
+    constant animtype           ANIM_TYPE_DISSIPATE             = ConvertAnimType(3)
+    constant animtype           ANIM_TYPE_STAND                 = ConvertAnimType(4)
+    constant animtype           ANIM_TYPE_WALK                  = ConvertAnimType(5)
+    constant animtype           ANIM_TYPE_ATTACK                = ConvertAnimType(6)
+    constant animtype           ANIM_TYPE_MORPH                 = ConvertAnimType(7)
+    constant animtype           ANIM_TYPE_SLEEP                 = ConvertAnimType(8)
+    constant animtype           ANIM_TYPE_SPELL                 = ConvertAnimType(9)
+    constant animtype           ANIM_TYPE_PORTRAIT              = ConvertAnimType(10)
+
+    constant subanimtype        SUBANIM_TYPE_ROOTED             = ConvertSubAnimType(11)
+    constant subanimtype        SUBANIM_TYPE_ALTERNATE_EX       = ConvertSubAnimType(12)
+    constant subanimtype        SUBANIM_TYPE_LOOPING            = ConvertSubAnimType(13)
+    constant subanimtype        SUBANIM_TYPE_SLAM               = ConvertSubAnimType(14)
+    constant subanimtype        SUBANIM_TYPE_THROW              = ConvertSubAnimType(15)
+    constant subanimtype        SUBANIM_TYPE_SPIKED             = ConvertSubAnimType(16)
+    constant subanimtype        SUBANIM_TYPE_FAST               = ConvertSubAnimType(17)
+    constant subanimtype        SUBANIM_TYPE_SPIN               = ConvertSubAnimType(18)
+    constant subanimtype        SUBANIM_TYPE_READY              = ConvertSubAnimType(19)
+    constant subanimtype        SUBANIM_TYPE_CHANNEL            = ConvertSubAnimType(20)
+    constant subanimtype        SUBANIM_TYPE_DEFEND             = ConvertSubAnimType(21)
+    constant subanimtype        SUBANIM_TYPE_VICTORY            = ConvertSubAnimType(22)
+    constant subanimtype        SUBANIM_TYPE_TURN               = ConvertSubAnimType(23)
+    constant subanimtype        SUBANIM_TYPE_LEFT               = ConvertSubAnimType(24)
+    constant subanimtype        SUBANIM_TYPE_RIGHT              = ConvertSubAnimType(25)
+    constant subanimtype        SUBANIM_TYPE_FIRE               = ConvertSubAnimType(26)
+    constant subanimtype        SUBANIM_TYPE_FLESH              = ConvertSubAnimType(27)
+    constant subanimtype        SUBANIM_TYPE_HIT                = ConvertSubAnimType(28)
+    constant subanimtype        SUBANIM_TYPE_WOUNDED            = ConvertSubAnimType(29)
+    constant subanimtype        SUBANIM_TYPE_LIGHT              = ConvertSubAnimType(30)
+    constant subanimtype        SUBANIM_TYPE_MODERATE           = ConvertSubAnimType(31)
+    constant subanimtype        SUBANIM_TYPE_SEVERE             = ConvertSubAnimType(32)
+    constant subanimtype        SUBANIM_TYPE_CRITICAL           = ConvertSubAnimType(33)
+    constant subanimtype        SUBANIM_TYPE_COMPLETE           = ConvertSubAnimType(34)
+    constant subanimtype        SUBANIM_TYPE_GOLD               = ConvertSubAnimType(35)
+    constant subanimtype        SUBANIM_TYPE_LUMBER             = ConvertSubAnimType(36)
+    constant subanimtype        SUBANIM_TYPE_WORK               = ConvertSubAnimType(37)
+    constant subanimtype        SUBANIM_TYPE_TALK               = ConvertSubAnimType(38)
+    constant subanimtype        SUBANIM_TYPE_FIRST              = ConvertSubAnimType(39)
+    constant subanimtype        SUBANIM_TYPE_SECOND             = ConvertSubAnimType(40)
+    constant subanimtype        SUBANIM_TYPE_THIRD              = ConvertSubAnimType(41)
+    constant subanimtype        SUBANIM_TYPE_FOURTH             = ConvertSubAnimType(42)
+    constant subanimtype        SUBANIM_TYPE_FIFTH              = ConvertSubAnimType(43)
+    constant subanimtype        SUBANIM_TYPE_ONE                = ConvertSubAnimType(44)
+    constant subanimtype        SUBANIM_TYPE_TWO                = ConvertSubAnimType(45)
+    constant subanimtype        SUBANIM_TYPE_THREE              = ConvertSubAnimType(46)
+    constant subanimtype        SUBANIM_TYPE_FOUR               = ConvertSubAnimType(47)
+    constant subanimtype        SUBANIM_TYPE_FIVE               = ConvertSubAnimType(48)
+    constant subanimtype        SUBANIM_TYPE_SMALL              = ConvertSubAnimType(49)
+    constant subanimtype        SUBANIM_TYPE_MEDIUM             = ConvertSubAnimType(50)
+    constant subanimtype        SUBANIM_TYPE_LARGE              = ConvertSubAnimType(51)
+    constant subanimtype        SUBANIM_TYPE_UPGRADE            = ConvertSubAnimType(52)
+    constant subanimtype        SUBANIM_TYPE_DRAIN              = ConvertSubAnimType(53)
+    constant subanimtype        SUBANIM_TYPE_FILL               = ConvertSubAnimType(54)
+    constant subanimtype        SUBANIM_TYPE_CHAINLIGHTNING     = ConvertSubAnimType(55)
+    constant subanimtype        SUBANIM_TYPE_EATTREE            = ConvertSubAnimType(56)
+    constant subanimtype        SUBANIM_TYPE_PUKE               = ConvertSubAnimType(57)
+    constant subanimtype        SUBANIM_TYPE_FLAIL              = ConvertSubAnimType(58)
+    constant subanimtype        SUBANIM_TYPE_OFF                = ConvertSubAnimType(59)
+    constant subanimtype        SUBANIM_TYPE_SWIM               = ConvertSubAnimType(60)
+    constant subanimtype        SUBANIM_TYPE_ENTANGLE           = ConvertSubAnimType(61)
+    constant subanimtype        SUBANIM_TYPE_BERSERK            = ConvertSubAnimType(62)
 
 //===================================================
 // Map Setup Constants    
@@ -768,6 +837,7 @@ globals
     constant camerafield CAMERA_FIELD_ROLL                  = ConvertCameraField(4)
     constant camerafield CAMERA_FIELD_ROTATION              = ConvertCameraField(5)
     constant camerafield CAMERA_FIELD_ZOFFSET               = ConvertCameraField(6)
+    constant camerafield CAMERA_FIELD_NEARZ                 = ConvertCameraField(7)
 
     constant blendmode   BLEND_MODE_NONE                    = ConvertBlendMode(0)
     constant blendmode   BLEND_MODE_DONT_CARE               = ConvertBlendMode(0)
@@ -2445,8 +2515,10 @@ native PreloadGenEnd    takes string filename returns nothing
 native Preloader        takes string filename returns nothing
 
 // Automation Test
-native AutomationTestStart takes string testName returns nothing
-native AutomationTestEnd takes string testName returns nothing
+native AutomationSetTestType                    takes string testType returns nothing
+native AutomationTestStart                      takes string testName returns nothing
+native AutomationTestEnd                        takes nothing returns nothing
+native AutomationTestingFinished                takes nothing returns nothing
 
 // JAPI Functions
 native BlzGetTriggerPlayerMouseX                   takes nothing returns real
@@ -2481,7 +2553,6 @@ native BlzGetUnitMaxHP                             takes unit whichUnit returns 
 native BlzSetUnitMaxHP                             takes unit whichUnit, integer hp returns nothing
 native BlzGetUnitMaxMana                           takes unit whichUnit returns integer
 native BlzSetUnitMaxMana                           takes unit whichUnit, integer mana returns nothing
-native BlzDeleteHeroAbility                        takes unit whichUnit, integer abilCode returns nothing
 native BlzSetItemName                              takes item whichItem, string name returns nothing
 native BlzSetItemDescription                       takes item whichItem, string name returns nothing
 native BlzGetItemDescription                       takes item whichItem returns string
@@ -2520,6 +2591,12 @@ native BlzSetSpecialEffectPositionLoc              takes effect whichEffect, loc
 native BlzGetLocalSpecialEffectX                   takes effect whichEffect returns real
 native BlzGetLocalSpecialEffectY                   takes effect whichEffect returns real
 native BlzGetLocalSpecialEffectZ                   takes effect whichEffect returns real
+native BlzSpecialEffectClearSubAnimations          takes effect whichEffect returns nothing
+native BlzSpecialEffectRemoveSubAnimation          takes effect whichEffect, subanimtype whichSubAnim returns nothing
+native BlzSpecialEffectAddSubAnimation             takes effect whichEffect, subanimtype whichSubAnim returns nothing
+native BlzPlaySpecialEffect                        takes effect whichEffect, animtype whichAnim returns nothing
+native BlzPlaySpecialEffectWithTimeScale           takes effect whichEffect, animtype whichAnim, real timeScale returns nothing
+native BlzGetAnimName                              takes animtype whichAnim returns string
 native BlzGetUnitArmor                             takes unit whichUnit returns real
 native BlzSetUnitArmor                             takes unit whichUnit, real armorAmount returns nothing
 native BlzUnitHideAbility                          takes unit whichUnit, integer abilId, boolean flag returns nothing
@@ -2540,3 +2617,9 @@ native BlzSetUnitAbilityManaCost                   takes unit whichUnit, integer
 native BlzGetLocalUnitZ                            takes unit whichUnit returns real    
 native BlzDecPlayerTechResearched                  takes player whichPlayer, integer techid, integer levels returns nothing
 native BlzSetEventDamage                           takes real damage returns nothing
+native RequestExtraIntegerData                     takes integer dataType, player whichPlayer, string param1, string param2, boolean param3, integer param4, integer param5, integer param6 returns integer
+native RequestExtraBooleanData                     takes integer dataType, player whichPlayer, string param1, string param2, boolean param3, integer param4, integer param5, integer param6 returns boolean
+native RequestExtraStringData                      takes integer dataType, player whichPlayer, string param1, string param2, boolean param3, integer param4, integer param5, integer param6 returns string
+native RequestExtraRealData                        takes integer dataType, player whichPlayer, string param1, string param2, boolean param3, integer param4, integer param5, integer param6 returns real
+// Add this function to follow the style of GetUnitX and GetUnitY, it has the same result as BlzGetLocalUnitZ
+native BlzGetUnitZ                                 takes unit whichUnit returns real
