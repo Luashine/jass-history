@@ -138,7 +138,7 @@ globals
     // pfff
     constant boolean            FALSE                           = false
     constant boolean            TRUE                            = true
-    constant integer            JASS_MAX_ARRAY_SIZE             = 1024
+    constant integer            JASS_MAX_ARRAY_SIZE             = 8192
 
     constant integer            PLAYER_NEUTRAL_PASSIVE          = 15
     constant integer            PLAYER_NEUTRAL_AGGRESSIVE       = 12
@@ -524,6 +524,7 @@ globals
 
     constant playerunitevent    EVENT_PLAYER_UNIT_SELL                  = ConvertPlayerUnitEvent(269)
     constant playerunitevent    EVENT_PLAYER_UNIT_CHANGE_OWNER          = ConvertPlayerUnitEvent(270)
+    constant playerunitevent    EVENT_PLAYER_UNIT_SELL_ITEM             = ConvertPlayerUnitEvent(271)
 
     //===================================================
     // For use with TriggerRegisterUnitEvent
@@ -531,6 +532,7 @@ globals
 
     constant unitevent          EVENT_UNIT_SELL                         = ConvertUnitEvent(280)
     constant unitevent          EVENT_UNIT_CHANGE_OWNER                 = ConvertUnitEvent(281)
+    constant unitevent          EVENT_UNIT_SELL_ITEM                    = ConvertUnitEvent(282)
 
     //===================================================
     // Limit Event API constants    
@@ -958,6 +960,7 @@ constant native GetClickedDialog    takes nothing returns dialog
 
 // EVENT_GAME_TOURNAMENT_FINISH_SOON
 constant native GetTournamentFinishSoonTimeRemaining takes nothing returns real
+constant native GetTournamentScore takes player whichPlayer returns integer
 
 // EVENT_GAME_SAVE
 constant native GetSaveBasicFilename takes nothing returns string
@@ -1047,6 +1050,13 @@ constant native GetLoadedUnit       takes nothing returns unit
 constant native GetSellingUnit      takes nothing returns unit
 constant native GetSoldUnit         takes nothing returns unit
 constant native GetBuyingUnit       takes nothing returns unit
+
+// EVENT_PLAYER_UNIT_SELL_ITEM
+constant native GetSoldItem         takes nothing returns item
+
+// EVENT_PLAYER_UNIT_CHANGE_OWNER
+constant native GetChangingUnit             takes nothing returns unit
+constant native GetChangingUnitPrevOwner    takes nothing returns player
 
 // EVENT_PLAYER_UNIT_DROP_ITEM
 // EVENT_PLAYER_UNIT_PICKUP_ITEM
