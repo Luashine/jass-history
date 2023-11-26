@@ -689,6 +689,7 @@ globals
     constant effecttype     EFFECT_TYPE_TARGET              = ConvertEffectType(1)
     constant effecttype     EFFECT_TYPE_CASTER              = ConvertEffectType(2)
     constant effecttype     EFFECT_TYPE_SPECIAL             = ConvertEffectType(3)
+    constant effecttype     EFFECT_TYPE_AREA_EFFECT         = ConvertEffectType(4)
 
 endglobals
 
@@ -1396,6 +1397,7 @@ native          AddHeroXP           takes unit whichHero, integer xpToAdd,   boo
 native          SetHeroLevel        takes unit whichHero, integer level,  boolean showEyeCandy returns nothing
 constant native GetHeroLevel        takes unit whichHero returns integer
 constant native GetUnitLevel        takes unit whichUnit returns integer
+native          GetHeroProperName   takes unit whichHero returns string
 native          SuspendHeroXP       takes unit whichHero, boolean flag returns nothing
 native          IsSuspendedXP       takes unit whichHero returns boolean
 native          SelectHeroSkill     takes unit whichHero, integer abilcode returns nothing
@@ -1476,6 +1478,8 @@ constant native IsUnitIdType        takes integer unitId, unittype whichUnitType
 
 native UnitShareVision              takes unit whichUnit, player whichPlayer, boolean share returns nothing
 native UnitSuspendDecay             takes unit whichUnit, boolean suspend returns nothing
+native UnitAddType                  takes unit whichUnit, unittype whichUnitType returns boolean
+native UnitRemoveType               takes unit whichUnit, unittype whichUnitType returns boolean
 
 native UnitAddAbility               takes unit whichUnit, integer abilityId returns boolean
 native UnitRemoveAbility            takes unit whichUnit, integer abilityId returns boolean
