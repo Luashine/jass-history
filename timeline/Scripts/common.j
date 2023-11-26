@@ -812,6 +812,7 @@ native FirstOfGroup             takes group whichGroup returns unit
 // Force API
 //
 native CreateForce              takes nothing returns force
+native DestroyForce             takes force whichForce returns nothing
 native ForceAddPlayer           takes force whichForce, player whichPlayer returns nothing
 native ForceRemovePlayer        takes force whichForce, player whichPlayer returns nothing
 native ForceClear               takes force whichForce returns nothing
@@ -1209,7 +1210,10 @@ native          GetDestructableMaxLife      takes destructable d returns real
 native          DestructableRestoreLife     takes destructable d, real life, boolean birth returns nothing
 native          QueueDestructableAnimation  takes destructable d, string whichAnimation returns nothing
 native          SetDestructableAnimation    takes destructable d, string whichAnimation returns nothing
+native          SetDestructableAnimationSpeed takes destructable d, real speedFactor returns nothing
 native          ShowDestructable            takes destructable d, boolean flag returns nothing
+native          GetDestructableOccluderHeight takes destructable d returns real
+native          SetDestructableOccluderHeight takes destructable d, real height returns nothing
 
 //============================================================================
 // Item API
@@ -1356,6 +1360,7 @@ constant native GetUnitName         takes unit whichUnit returns string
 constant native GetUnitFoodUsed     takes unit whichUnit returns integer
 constant native GetUnitFoodMade     takes unit whichUnit returns integer
 constant native GetFoodMade         takes integer unitId returns integer
+constant native GetFoodUsed         takes integer unitId returns integer
 
 constant native IsUnitInGroup       takes unit whichUnit, group whichGroup returns boolean
 constant native IsUnitInForce       takes unit whichUnit, force whichForce returns boolean
@@ -1445,6 +1450,9 @@ native SetAllUnitTypeSlots          takes integer slots returns nothing
 native SetItemTypeSlots             takes unit whichUnit, integer slots returns nothing
 native SetUnitTypeSlots             takes unit whichUnit, integer slots returns nothing
 
+native GetUnitUserData              takes unit whichUnit returns integer
+native SetUnitUserData              takes unit whichUnit, integer data returns nothing
+
 //============================================================================
 // Player API
 constant native Player              takes integer number returns player
@@ -1479,6 +1487,9 @@ constant native AddPlayerTechResearched takes player whichPlayer, integer techid
 constant native SetPlayerTechResearched takes player whichPlayer, integer techid, integer setToLevel returns nothing
 constant native GetPlayerTechResearched takes player whichPlayer, integer techid, boolean specificonly returns boolean
 constant native GetPlayerTechCount      takes player whichPlayer, integer techid, boolean specificonly returns integer
+
+native SetPlayerUnitsOwner takes player whichPlayer, integer newOwner returns nothing
+native CripplePlayer takes player whichPlayer, force toWhichPlayers, boolean flag returns nothing
 
 native SetPlayerAbilityAvailable        takes player whichPlayer, integer abilid, boolean avail returns nothing
 
@@ -1519,7 +1530,10 @@ native EndGame takes boolean doScoreScreen returns nothing
 native          ChangeLevel         takes string newLevel, boolean doScoreScreen returns nothing
 native          RestartGame         takes boolean doScoreScreen returns nothing
 native          ReloadGame          takes nothing returns nothing
+// %%% SetCampaignMenuRace is deprecated.  It must remain to support
+// old maps which use it, but all new maps should use SetCampaignMenuRaceEx
 native          SetCampaignMenuRace takes race r returns nothing
+native          SetCampaignMenuRaceEx takes integer campaignIndex returns nothing
 native          ForceCampaignSelectScreen takes nothing returns nothing
 
 // NOTE: These funcs are reserved for Blizzard maps as they
@@ -1648,6 +1662,7 @@ native PauseGame                    takes boolean flag returns nothing
 native UnitAddIndicator             takes unit whichUnit, integer red, integer green, integer blue, integer alpha returns nothing
 native AddIndicator                 takes widget whichWidget, integer red, integer green, integer blue, integer alpha returns nothing
 native PingMinimap                  takes real x, real y, real duration returns nothing
+native PingMinimapEx                takes real x, real y, real duration, integer red, integer green, integer blue, boolean extraEffects returns nothing
 native EnableOcclusion              takes boolean flag returns nothing
 native SetIntroShotText             takes string introText returns nothing
 native SetIntroShotModel            takes string introModelPath returns nothing
@@ -1908,7 +1923,8 @@ native AddSpellEffectTargetById     takes integer abilityId, effecttype t, widge
 //============================================================================
 // Terrain API
 //
-native GetTerrainCliffLevel     takes real x, real y returns integer
+native GetTerrainCliffLevel         takes real x, real y returns integer
+native SetWaterBaseColor            takes integer red, integer green, integer blue, integer alpha returns nothing
 
 //============================================================================
 // Blight API
