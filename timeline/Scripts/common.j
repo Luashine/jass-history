@@ -90,6 +90,9 @@ type damagetype         extends     handle
 type weapontype         extends     handle
 type soundtype          extends     handle
 type lightning          extends     handle
+type pathingtype        extends     handle
+type image              extends     handle
+type ubersplat          extends     handle
 
 constant native ConvertRace                 takes integer i returns race
 constant native ConvertAllianceType         takes integer i returns alliancetype
@@ -134,6 +137,8 @@ constant native ConvertAttackType           takes integer i returns attacktype
 constant native ConvertDamageType           takes integer i returns damagetype
 constant native ConvertWeaponType           takes integer i returns weapontype
 constant native ConvertSoundType            takes integer i returns soundtype
+constant native ConvertPathingType          takes integer i returns pathingtype
+
 constant native OrderId                     takes string  orderIdString     returns integer
 constant native OrderId2String              takes integer orderId           returns string
 constant native UnitId                      takes string  unitIdString      returns integer
@@ -253,7 +258,16 @@ globals
     constant weapontype         WEAPON_TYPE_CLAW_MEDIUM_SLICE   = ConvertWeaponType(20)
     constant weapontype         WEAPON_TYPE_CLAW_HEAVY_SLICE    = ConvertWeaponType(21)
     constant weapontype         WEAPON_TYPE_AXE_MEDIUM_CHOP     = ConvertWeaponType(22)
-	constant weapontype         WEAPON_TYPE_ROCK_HEAVY_BASH     = ConvertWeaponType(23)
+    constant weapontype         WEAPON_TYPE_ROCK_HEAVY_BASH     = ConvertWeaponType(23)
+
+    constant pathingtype        PATHING_TYPE_ANY                = ConvertPathingType(0)
+    constant pathingtype        PATHING_TYPE_WALKABILITY        = ConvertPathingType(1)
+    constant pathingtype        PATHING_TYPE_FLYABILITY         = ConvertPathingType(2)
+    constant pathingtype        PATHING_TYPE_BUILDABILITY       = ConvertPathingType(3)
+    constant pathingtype        PATHING_TYPE_PEONHARVESTPATHING = ConvertPathingType(4)
+    constant pathingtype        PATHING_TYPE_BLIGHTPATHING      = ConvertPathingType(5)
+    constant pathingtype        PATHING_TYPE_FLOATABILITY       = ConvertPathingType(6)
+    constant pathingtype        PATHING_TYPE_AMPHIBIOUSPATHING  = ConvertPathingType(7)
 
 //===================================================
 // Map Setup Constants    
@@ -687,6 +701,14 @@ globals
     constant unittype UNIT_TYPE_SAPPER                      = ConvertUnitType(17)
     constant unittype UNIT_TYPE_TOWNHALL                    = ConvertUnitType(18)    
     constant unittype UNIT_TYPE_ANCIENT                     = ConvertUnitType(19)
+    
+    constant unittype UNIT_TYPE_TAUREN                      = ConvertUnitType(20)
+    constant unittype UNIT_TYPE_POISONED                    = ConvertUnitType(21)
+    constant unittype UNIT_TYPE_POLYMORPHED                 = ConvertUnitType(22)
+    constant unittype UNIT_TYPE_SLEEPING                    = ConvertUnitType(23)
+    constant unittype UNIT_TYPE_RESISTANT                   = ConvertUnitType(24)
+    constant unittype UNIT_TYPE_ETHEREAL                    = ConvertUnitType(25)
+    constant unittype UNIT_TYPE_MAGIC_IMMUNE                = ConvertUnitType(26)
 
 //===================================================
 // Unit Type Constants for use with ChooseRandomItemEx()
@@ -975,7 +997,11 @@ native Location                 takes real x, real y returns location
 native RemoveLocation           takes location whichLocation returns nothing
 native MoveLocation             takes location whichLocation, real newX, real newY returns nothing
 native GetLocationX             takes location whichLocation returns real
-native GetLocationY             takes location whichLocation returns real   
+native GetLocationY             takes location whichLocation returns real
+
+// This function is asynchronous. The values it returns are not guaranteed synchronous between each player.
+//  If you attempt to use it in a synchronous manner, it may cause a desync.
+native GetLocationZ             takes location whichLocation returns real
 
 native IsUnitInRegion               takes region whichRegion, unit whichUnit returns boolean
 native IsPointInRegion              takes region whichRegion, real x, real y returns boolean
@@ -1866,6 +1892,11 @@ native SetTextTagPosUnit            takes texttag t, unit whichUnit, real height
 native SetTextTagColor              takes texttag t, integer red, integer green, integer blue, integer alpha returns nothing
 native SetTextTagVelocity           takes texttag t, real xvel, real yvel returns nothing
 native SetTextTagVisibility         takes texttag t, boolean flag returns nothing
+native SetTextTagSuspended          takes texttag t, boolean flag returns nothing
+native SetTextTagPermanent          takes texttag t, boolean flag returns nothing
+native SetTextTagAge                takes texttag t, real age returns nothing
+native SetTextTagLifespan           takes texttag t, real lifespan returns nothing
+native SetTextTagFadepoint          takes texttag t, real fadepoint returns nothing
 
 native SetReservedLocalHeroButtons  takes integer reserved returns nothing
 native GetAllyColorFilterState      takes nothing returns integer
@@ -1873,6 +1904,9 @@ native SetAllyColorFilterState      takes integer state returns nothing
 native GetCreepCampFilterState      takes nothing returns boolean
 native SetCreepCampFilterState      takes boolean state returns nothing
 native EnableMinimapFilterButtons   takes boolean enableAlly, boolean enableCreep returns nothing
+native EnableDragSelect             takes boolean state, boolean ui returns nothing
+native EnablePreSelect              takes boolean state, boolean ui returns nothing
+native EnableSelect                 takes boolean state, boolean ui returns nothing
 
 //============================================================================
 // Trackable API
@@ -2170,8 +2204,10 @@ native AddSpellEffectTarget         takes string modelName, effecttype t, widget
 native AddSpellEffectTargetById     takes integer abilityId, effecttype t, widget targetWidget, string attachPoint returns effect
 
 native AddLightning                 takes string codeName, boolean checkVisibility, real x1, real y1, real x2, real y2 returns lightning
+native AddLightningEx               takes string codeName, boolean checkVisibility, real x1, real y1, real z1, real x2, real y2, real z2 returns lightning
 native DestroyLightning             takes lightning whichBolt returns boolean
 native MoveLightning                takes lightning whichBolt, boolean checkVisibility, real x1, real y1, real x2, real y2 returns boolean
+native MoveLightningEx              takes lightning whichBolt, boolean checkVisibility, real x1, real y1, real z1, real x2, real y2, real z2 returns boolean
 native GetLightningColorA           takes lightning whichBolt returns real
 native GetLightningColorR           takes lightning whichBolt returns real
 native GetLightningColorG           takes lightning whichBolt returns real
@@ -2189,6 +2225,36 @@ native GetAbilitySoundById          takes integer abilityId, soundtype t returns
 native GetTerrainCliffLevel         takes real x, real y returns integer
 native SetWaterBaseColor            takes integer red, integer green, integer blue, integer alpha returns nothing
 native SetWaterDeforms              takes boolean val returns nothing
+native GetTerrainType               takes real x, real y returns integer
+native GetTerrainVariance           takes real x, real y returns integer
+native SetTerrainType               takes real x, real y, integer terrainType, integer variation, integer area, integer shape returns nothing
+native IsTerrainPathable            takes real x, real y, pathingtype t returns boolean
+native SetTerrainPathable           takes real x, real y, pathingtype t, boolean flag returns nothing
+
+//============================================================================
+// Image API
+//
+native CreateImage                  takes string file, real sizeX, real sizeY, real sizeZ, real posX, real posY, real posZ, real originX, real originY, real originZ, integer imageType returns image
+native DestroyImage                 takes image whichImage returns nothing
+native ShowImage                    takes image whichImage, boolean flag returns nothing
+native SetImageConstantHeight       takes image whichImage, boolean flag, real height returns nothing
+native SetImagePosition             takes image whichImage, real x, real y, real z returns nothing
+native SetImageColor                takes image whichImage, integer red, integer green, integer blue, integer alpha returns nothing
+native SetImageRender               takes image whichImage, boolean flag returns nothing
+native SetImageRenderAlways         takes image whichImage, boolean flag returns nothing
+native SetImageAboveWater           takes image whichImage, boolean flag, boolean useWaterAlpha returns nothing
+native SetImageType                 takes image whichImage, integer imageType returns nothing
+
+//============================================================================
+// Ubersplat API
+//
+native CreateUbersplat              takes real x, real y, string name, integer red, integer green, integer blue, integer alpha, boolean forcePaused, boolean noBirthTime returns ubersplat
+native DestroyUbersplat             takes ubersplat whichSplat returns nothing
+native ResetUbersplat               takes ubersplat whichSplat returns nothing
+native FinishUbersplat              takes ubersplat whichSplat returns nothing
+native ShowUbersplat                takes ubersplat whichSplat, boolean flag returns nothing
+native SetUbersplatRender           takes ubersplat whichSplat, boolean flag returns nothing
+native SetUbersplatRenderAlways     takes ubersplat whichSplat, boolean flag returns nothing
 
 //============================================================================
 // Blight API
