@@ -380,8 +380,6 @@ function build_sequence takes nothing returns nothing
     call GuardSecondary( 2, 1, BURROW          )
     call GuardSecondary( 2, 1, ORC_WATCH_TOWER )
 
-    call SetBuildUnit( 6, BURROW        )
-    call BuildFactory(    LODGE         )
     call BuildFactory(    BESTIARY      )
     call SetBuildUnit( 1, FORTRESS      )
 

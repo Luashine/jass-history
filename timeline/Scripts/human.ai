@@ -388,12 +388,10 @@ function forces_sequence takes nothing returns nothing
     if farms < 12 then
         return
     endif
-    if sanctum then
-        if GetUpgradeLevel(UPG_SORCERY)>=2 then
-            call SetBuildUnit( 2, SORCERESS )
-        else
-            call SetBuildUnit( 1, SORCERESS )
-        endif
+    if sanctum and GetUpgradeLevel(UPG_SORCERY)>=2 then
+        call SetBuildUnit( 3, SORCERESS )
+    else
+        call SetBuildUnit( 1, SORCERESS )
     endif
 endfunction
 
@@ -464,9 +462,7 @@ function build_sequence takes nothing returns nothing
 
     call BasicExpansion( mines < 2, TOWN_HALL )
 
-    call SetBuildUnit(  7, HOUSE        )
-    call SetBuildUnit( 13, PEASANT      )
-    call SetBuildUnit(  8, HOUSE        )
+    call SetBuildUnit( 6, HOUSE         )
 
     call GuardSecondary( 1, 2, WATCH_TOWER )
     call GuardSecondary( 2, 2, WATCH_TOWER )
@@ -476,7 +472,7 @@ function build_sequence takes nothing returns nothing
     call SetBuildUnit( 1, hero_id2      )
 
     if mines > 1 then
-        call SetBuildUnit( 16, PEASANT  )
+        call SetBuildUnit( 14, PEASANT  )
     endif
 
     call forces_sequence()
@@ -491,7 +487,7 @@ function build_sequence takes nothing returns nothing
     call BuildFactory( SANCTUM )
 
     call SetBuildUnit( 1, CASTLE        )
-    call SetBuildUnit(10, HOUSE         )
+    call SetBuildUnit( 8, HOUSE         )
     call SetBuildUnit( 1, AVIARY        )
 
     if GetUnitCount(AVIARY)>0 and GetUnitCount(ZEPPELIN)<3 then
@@ -504,7 +500,7 @@ function build_sequence takes nothing returns nothing
 endfunction
 
 //============================================================================
-//  peon_assignment
+//  peon_asignment
 //============================================================================
 function peon_assignment takes nothing returns nothing
     local integer halls = TownCountDone(TOWN_HALL)

@@ -1387,10 +1387,10 @@ native  SetDefaultDifficulty    takes gamedifficulty g returns nothing
 // Dialog API
 native DialogCreate                 takes nothing returns dialog
 native DialogDestroy                takes dialog whichDialog returns nothing
+native DialogSetAsync               takes dialog whichDialog returns nothing
 native DialogClear                  takes dialog whichDialog returns nothing
 native DialogSetMessage             takes dialog whichDialog, string messageText returns nothing
 native DialogAddButton              takes dialog whichDialog, string buttonText, integer hotkey returns button
-native DialogAddQuitButton          takes dialog whichDialog, boolean doScoreScreen, string buttonText, integer hotkey returns button
 native DialogDisplay                takes player whichPlayer, dialog whichDialog, boolean flag returns nothing
 
 // Creates a new or reads in an existing game cache file stored
