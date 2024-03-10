@@ -110,29 +110,6 @@ rm -i manual.txt find.txt
 
 ROC 1.10, ROC 1.11. Maybe they'll got their own branch to not ruin the history.
 
-### Missing patch 1.10 ROC/TFT
-
-https://wowpedia.fandom.com/wiki/Warcraft_III/Patch_1.10
-
-And then 1.11 seems to be a minor patch. So probably all of the script changes appeared in 1.10, but the common version and patch everyone had is 1.11.
-
-The Russian TFT CD installs straight to 1.11.
-
-Firstrun70 found this, labelled "TFT-en" and "TFT-ru" (MadSerg also had the ru file):
-
-- `War3TFT_110_English_Not official.exe` aka `WarCraft3_X_110.exe`, `5338206` bytes (5.1 MiB)
-   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_english-852342` it's here under the X name
-   -
-- md5 89e76fb2befcb95b2f269111b1111ef5
-- sha256 7a0c61cccc36cd90504b9629b6636d95d93b6b48be820c7aa066f2ad1cce4865
-
-- `War3TFT_110_Russian_Not official.exe` aka `WarCraft3_X_110_ru.exe`, `5584253` bytes (5.3 MiB)
-   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_russian-852343` it's there under the X name
-      - some people say it didn't work under Windows XP
-- md5 220e8ba301d450614c5f18869986b7a6
-- sha256 20ffe6508d8c3281289540d1ffe0cc89f91f3d9f41cc59681fcee359eb12ad81
-
-
 ### LF vs CRLF
 
 `Beta-TFT-v306/Scripts/u03x04.ai` and `Beta-TFT-v307/Scripts/u03x04.ai` had LF line endings.
@@ -157,4 +134,46 @@ This means realistically we are jumping like this:
 - TFT 1.11 (and standalone ROC 1.11 diverges from here)
 
 Apparently the ROC versions still shared updates to common.j, but I'm not going to go down this path and assume TFT-only from this point onwards.
+The enforcement of "TFT-only map" game API was done by World Editor for GUI Triggers. The "expansion-only" flag is to be found in triggerdata.txt.
 
+### Missing patch 1.10 ROC/TFT
+
+https://wowpedia.fandom.com/wiki/Warcraft_III/Patch_1.10
+
+And then 1.11 seems to be a minor patch. So probably all of the script changes appeared in 1.10, but the common version and patch everyone had is 1.11.
+
+The Russian TFT CD installs straight to 1.11.
+
+Firstrun70 found this, labelled "TFT-en" and "TFT-ru" (MadSerg also had the ru file):
+
+- `War3TFT_110_English_Not official.exe` aka `WarCraft3_X_110.exe`, `5338206` bytes (5.1 MiB)
+   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_english-852342` it's here under the X name
+   -
+- md5 89e76fb2befcb95b2f269111b1111ef5
+- sha256 7a0c61cccc36cd90504b9629b6636d95d93b6b48be820c7aa066f2ad1cce4865
+
+- `War3TFT_110_Russian_Not official.exe` aka `WarCraft3_X_110_ru.exe`, `5584253` bytes (5.3 MiB)
+   - `https://www.playground.ru/warcraft_3/file/warcraft_3_v1_10_russian-852343` it's there under the X name
+      - some people say it didn't work under Windows XP
+- md5 220e8ba301d450614c5f18869986b7a6
+- sha256 20ffe6508d8c3281289540d1ffe0cc89f91f3d9f41cc59681fcee359eb12ad81
+
+
+**My explanation:**
+
+https://www.hiveworkshop.com/threads/list-of-official-patches-for-warcraft-3.322919/post-3602270
+
+> After looking into the unofficial 1.10 patch (1.07->1.10) it appears that it was never released as a standalone patch.
+Instead it was ripped (BNFTP) from the bnet in-game update service for PVPGN servers and their players.
+The unofficial patcher uses the game's own update utility to install it and there's Blizzard's original changelog in there too.
+
+> The game files are authentic, but the installer isn't.
+
+> Then realistically, ROC 1.07 is not a standalone version.
+While it runs on top of TFT's updated core, there is no separate game data patch MPQ for the ROC version.
+At the same time, it loads some stuff from the TFT MPQ archives.
+ROC 1.10 does have it's own patched data, but it does not exist separately from a TFT installation
+(since the patch is only 1.07->1.10 and no patch for ROC x->1.07 existed, there's no pure ROC 1.07/1.10). However ROC 1.11+ again existed as standalone.
+
+> UPD: If you delete the war3x.mpq and war3xlocal.mpq, then 1.07/1.10 ROC doesn't load correctly (black screen in main menu, only version shown).
+ROC v1.11 patch restores the ROC-only install. QED.
