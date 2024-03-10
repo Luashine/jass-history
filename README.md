@@ -10,7 +10,19 @@ Scripts are there https://github.com/Luashine/wc3-jass-history-scripts
 
 ## How to contribute?
 
-Find me the missing Warcraft 3 versions, pretty please with sugar on top and an air kiss. *I'll be completely and fully satisfied* with a first version for each release, like 1.30.0 and 1.31.0.
+Find me the missing Warcraft 3 versions, pretty please with sugar on top and an air kiss.
+*I'll be completely and fully satisfied* with a first version for each release.
+
+### WANTED VERSIONS
+
+Missing these (see `version-list-sorted.txt`)
+
+- TFT-v1.29.1 (between TFT-v1.29.0.8803 and TFT-v1.29.2.9231)
+- 1.31.1, earlier version than TFT-v1.31.1.12173 (very low priority)
+
+Not needed:
+
+- no changes ~~TFT-v1.28.1 (between TFT-v1.28.0.7205-zhtw and TFT-v1.28.2.7395)~~ 
 
 ## How to filter non-empty commits
 
