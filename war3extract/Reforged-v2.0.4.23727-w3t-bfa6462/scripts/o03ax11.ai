@@ -1,0 +1,14 @@
+//============================================================================
+//  $Id
+//============================================================================
+
+function main takes nothing returns nothing
+
+    call CampaignAI(HOUSE,null)
+    call SetBuildUnit( 1, PEASANT )
+    call CampaignDefenderEx( 1, 2, 3, FOOTMAN   )
+	call CampaignDefenderEx( 1, 1, 1, KNIGHT    )
+	call CampaignDefenderEx( 1, 1, 2, RIFLEMAN  )
+    call SleepForever()
+
+endfunction
