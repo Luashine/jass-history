@@ -1,0 +1,35 @@
+//============================================================================
+//  Night Elf 02 -- pink player -- AI Script
+//	Reforged revision: rkinports 2020
+//============================================================================
+globals
+    player attacked = Player(4)
+endglobals
+
+//============================================================================
+//  main
+//============================================================================
+function main takes nothing returns nothing
+    call CampaignAI(ZIGGURAT_1,null)
+	call SetReplacements(1,1,3)
+	call SetCaptainHome(DEFENSE_CAPTAIN,2013,568)
+	call SetCaptainHome(ATTACK_CAPTAIN,2010,570)
+
+    call SetBuildUnitEx( 0,7,7, ZIGGURAT_1         )
+	call SetBuildUnitEx( 0,7,7, ZIGGURAT_2         )
+    call SetBuildUnitEx( 0,1,1, SLAUGHTERHOUSE           )
+    call SetBuildUnitEx( 5,5,5, ACOLYTE       )
+    call SetBuildUnitEx( 0,1,1, UNDEAD_ALTAR        )
+	call SetBuildUnitEx( 0,1,1, NECROPOLIS_1              )
+	call SetBuildUnitEx( 0,1,1, NECROPOLIS_2              )
+	call SetBuildUnitEx( 0,1,1, NECROPOLIS_3              )
+	call SetBuildUnitEx( 0,2,2, CRYPT              )
+	call SetBuildUnitEx( 0,1,1, GRAVEYARD              )
+
+    call WaitForSignal()
+  
+    //*** WAVE 1,2,3.... ***
+    call CampaignAttacker( EASY,    4, GARGOYLE		)
+    call SuicideOnPlayer(M3,attacked)
+    call ForeverSuicideOnPlayer(M2,attacked)
+endfunction
