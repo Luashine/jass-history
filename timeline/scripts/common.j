@@ -3879,6 +3879,7 @@ native ResumeMusic                  takes nothing returns nothing
 
 native PlayThematicMusic            takes string musicFileName returns nothing
 native PlayThematicMusicEx          takes string musicFileName, integer frommsecs returns nothing
+native BlzPlayThematicMusicWithAbsoluteVolume takes string musicFileName, integer absoluteVolume returns nothing
 native BlzPauseThematicMusicOnFocusLost takes boolean pause returns nothing
 native EndThematicMusic             takes nothing returns nothing
 
