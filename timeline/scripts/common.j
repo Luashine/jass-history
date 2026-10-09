@@ -3172,6 +3172,7 @@ native UnitSetUsesAltIcon           takes unit whichUnit, boolean flag returns n
 
 native UnitDamagePoint              takes unit whichUnit, real delay, real radius, real x, real y, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
 native UnitDamageTarget             takes unit whichUnit, widget target, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
+native BlzUnitHeal                  takes unit whichUnit, unit source, real life, boolean isItem, boolean applyStatBonuses returns real
 
 native IssueImmediateOrder          takes unit whichUnit, string order returns boolean
 native IssueImmediateOrderById      takes unit whichUnit, integer order returns boolean
@@ -3879,13 +3880,13 @@ native ResumeMusic                  takes nothing returns nothing
 
 native PlayThematicMusic            takes string musicFileName returns nothing
 native PlayThematicMusicEx          takes string musicFileName, integer frommsecs returns nothing
-native BlzPlayThematicMusicWithAbsoluteVolume takes string musicFileName, integer absoluteVolume returns nothing
 native BlzPauseThematicMusicOnFocusLost takes boolean pause returns nothing
 native EndThematicMusic             takes nothing returns nothing
 
 native SetMusicVolume               takes integer volume returns nothing
 native SetMusicPlayPosition         takes integer millisecs returns nothing
 native SetThematicMusicVolume       takes integer volume returns nothing
+native BlzSetThematicMusicAbsoluteVolume takes integer volume returns nothing
 native SetThematicMusicPlayPosition takes integer millisecs returns nothing
 
 // other music and sound calls
@@ -3930,6 +3931,7 @@ native AddSpecialEffect             takes string modelName, real x, real y retur
 native AddSpecialEffectLoc          takes string modelName, location where returns effect
 native AddSpecialEffectTarget       takes string modelName, widget targetWidget, string attachPointName returns effect
 native DestroyEffect                takes effect whichEffect returns nothing
+native BlzRemoveEffect              takes effect whichEffect returns nothing
 
 native AddSpellEffect               takes string abilityString, effecttype t, real x, real y returns effect
 native AddSpellEffectLoc            takes string abilityString, effecttype t,location where returns effect
