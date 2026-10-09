@@ -3214,6 +3214,7 @@ native UnitSetUsesAltIcon           takes unit whichUnit, boolean flag returns n
 
 native UnitDamagePoint              takes unit whichUnit, real delay, real radius, real x, real y, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
 native UnitDamageTarget             takes unit whichUnit, widget target, real amount, boolean attack, boolean ranged, attacktype attackType, damagetype damageType, weapontype weaponType returns boolean
+native BlzUnitHeal                  takes unit whichUnit, unit source, real life, boolean isItem, boolean applyStatBonuses returns real
 
 native IssueImmediateOrder          takes unit whichUnit, string order returns boolean
 native IssueImmediateOrderById      takes unit whichUnit, integer order returns boolean
@@ -3266,6 +3267,8 @@ native SetUnitTypeSlots             takes unit whichUnit, integer slots returns 
 
 native GetUnitUserData              takes unit whichUnit returns integer
 native SetUnitUserData              takes unit whichUnit, integer data returns nothing
+
+native BlzResetUnitTalents          takes unit whichUnit returns nothing
 
 //============================================================================
 // Player API
@@ -3975,6 +3978,7 @@ native AddSpecialEffect             takes string modelName, real x, real y retur
 native AddSpecialEffectLoc          takes string modelName, location where returns effect
 native AddSpecialEffectTarget       takes string modelName, widget targetWidget, string attachPointName returns effect
 native DestroyEffect                takes effect whichEffect returns nothing
+native BlzRemoveEffect              takes effect whichEffect returns nothing
 
 native AddSpellEffect               takes string abilityString, effecttype t, real x, real y returns effect
 native AddSpellEffectLoc            takes string abilityString, effecttype t,location where returns effect

@@ -3051,6 +3051,11 @@ function DestroyEffectBJ takes effect whichEffect returns nothing
 endfunction
 
 //===========================================================================
+function RemoveEffectBJ takes effect whichEffect returns nothing
+    call BlzRemoveEffect(whichEffect)
+endfunction
+
+//===========================================================================
 function GetLastCreatedEffectBJ takes nothing returns effect
     return bj_lastCreatedEffect
 endfunction
@@ -3072,6 +3077,25 @@ function DestroyEffectAfterTimeBJ takes effect whichEffect, real time returns no
 	
 	// Externalize to an async thread
 	call ExecuteFunc("DestroyEffectAsyncBJ")
+endfunction
+
+//===========================================================================
+// Note: this function should be used in conjunction with the one below, which is the only one that is really exposed in GUI
+function RemoveEffectAsyncBJ takes nothing returns nothing
+	local effect localEffect = bj_destroyOrRemoveEffectAsyncEffect
+	local real localTime = bj_destroyOrRemoveEffectAsyncTime
+	
+	call TriggerSleepAction(localTime)
+	call BlzRemoveEffect(localEffect)
+endfunction
+
+function RemoveEffectAfterTimeBJ takes effect whichEffect, real time returns nothing
+	// Save arguments to globals
+	set bj_destroyOrRemoveEffectAsyncEffect = whichEffect
+	set bj_destroyOrRemoveEffectAsyncTime = time
+	
+	// Externalize to an async thread
+	call ExecuteFunc("RemoveEffectAsyncBJ")
 endfunction
 
 
@@ -4728,6 +4752,16 @@ endfunction
 //===========================================================================
 function UnitDamageTargetBJ takes unit whichUnit, unit target, real amount, attacktype whichAttack, damagetype whichDamage returns boolean
     return UnitDamageTarget(whichUnit, target, amount, true, false, whichAttack, whichDamage, WEAPON_TYPE_WHOKNOWS)
+endfunction
+
+//===========================================================================
+function UnitHealBJ takes unit whichUnit, real life returns real
+    return BlzUnitHeal(whichUnit, whichUnit, life, false, true)
+endfunction
+
+//===========================================================================
+function UnitHealFromOtherBJ takes unit whichUnit, unit source, real life returns real
+    return BlzUnitHeal(whichUnit, source, life, false, true)
 endfunction
 
 //***************************************************************************
