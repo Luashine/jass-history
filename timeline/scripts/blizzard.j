@@ -3228,7 +3228,7 @@ endfunction
 
 //===========================================================================
 function UnitEquipItemSwapped takes item whichItem, unit whichHero returns boolean
-    local boolean success = UnitEquipItem(whichHero, whichItem)
+    local boolean success = BlzUnitEquipItem(whichHero, whichItem)
     if (success) then
         set bj_lastEquippedItem = whichItem
     endif
@@ -3244,7 +3244,7 @@ function UnitEquipItemByIdSwapped takes integer itemId, unit whichHero returns i
     local boolean success
     
     set bj_lastCreatedItem = CreateItem(itemId, GetUnitX(whichHero), GetUnitY(whichHero))
-    set success = UnitEquipItem(whichHero, bj_lastCreatedItem)
+    set success = BlzUnitEquipItem(whichHero, bj_lastCreatedItem)
     
     if (success) then
         set bj_lastEquippedItem = bj_lastCreatedItem
@@ -3263,11 +3263,11 @@ endfunction
 
 function UnitUnequipItemSwapped takes unit whichHero, item whichItem returns nothing
     set bj_lastUnequippedItem = whichItem
-    call UnitUnequipItem(whichHero, whichItem)
+    call BlzUnitUnequipItem(whichHero, whichItem)
 endfunction
 
 function UnitUnequipItemFromSlotSwapped takes unit whichHero, loadoutslot slot returns item
-    set bj_lastUnequippedItem = UnitUnequipItemFromSlot(whichHero, slot)
+    set bj_lastUnequippedItem = BlzUnitUnequipItemFromSlot(whichHero, slot)
     return bj_lastUnequippedItem
 endfunction
 
@@ -3452,11 +3452,11 @@ function UnitItemInSlotBJ takes unit whichUnit, integer itemSlot returns item
 endfunction
 
 function UnitItemInBagSlotBJ takes unit whichUnit, integer itemSlot returns item
-    return UnitItemInBagSlot(whichUnit, itemSlot-1)
+    return BlzUnitItemInBagSlot(whichUnit, itemSlot-1)
 endfunction
 
 function UnitItemInEquipmentSlotBJ takes unit whichUnit, loadoutslot slot returns item
-    return UnitItemInEquipmentSlot(whichUnit, slot)
+    return BlzUnitItemInEquipmentSlot(whichUnit, slot)
 endfunction
 
 //===========================================================================
@@ -3502,7 +3502,7 @@ function GetInventoryBagIndexOfItemTypeBJ takes unit whichUnit, integer itemId r
 
     set index = 0
     loop
-        set indexItem = UnitItemInBagSlot(whichUnit, index)
+        set indexItem = BlzUnitItemInBagSlot(whichUnit, index)
         if (indexItem != null) and (GetItemTypeId(indexItem) == itemId) then
             return index + 1
         endif
@@ -3520,7 +3520,7 @@ function GetItemOfTypeFromUnitBagBJ takes unit whichUnit, integer itemId returns
     if (index == 0) then
         return null
     else
-        return UnitItemInBagSlot(whichUnit, index - 1)
+        return BlzUnitItemInBagSlot(whichUnit, index - 1)
     endif
 endfunction
 
@@ -3536,8 +3536,8 @@ function GetInventoryBagIndexOfEquipmentTypeBJ takes unit whichUnit, equipmentTy
 
     set index = 0
     loop
-        set indexItem = UnitItemInBagSlot(whichUnit, index)
-        if (indexItem != null) and (GetItemEquipmentType(indexItem) == whichEquipmentType) then
+        set indexItem = BlzUnitItemInBagSlot(whichUnit, index)
+        if (indexItem != null) and (BlzGetItemEquipmentType(indexItem) == whichEquipmentType) then
             return index + 1
         endif
 
@@ -3554,7 +3554,7 @@ function GetItemOfEquipmentTypeFromUnitBagBJ takes unit whichUnit, equipmentType
     if (index == 0) then
         return null
     else
-        return UnitItemInBagSlot(whichUnit, index - 1)
+        return BlzUnitItemInBagSlot(whichUnit, index - 1)
     endif
 endfunction
 
@@ -3565,7 +3565,7 @@ function GetEquipmentInventoryIndexOfItemTypeBJ takes unit whichUnit, integer it
 
     set index = 0
     loop
-        set indexItem = UnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index))
+        set indexItem = BlzUnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index))
         if (indexItem != null) and (GetItemTypeId(indexItem) == itemId) then
             return index + 1
         endif
@@ -3583,8 +3583,8 @@ function GetEquipmentInventoryIndexOfEquipmentTypeBJ takes unit whichUnit, equip
 
     set index = 0
     loop
-        set indexItem = UnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index))
-        if (indexItem != null) and (GetItemEquipmentType(indexItem) == whichEquipmentType) then
+        set indexItem = BlzUnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index))
+        if (indexItem != null) and (BlzGetItemEquipmentType(indexItem) == whichEquipmentType) then
             return index + 1
         endif
 
@@ -3601,7 +3601,7 @@ function GetItemEquippedByHeroOfTypeBJ takes unit whichUnit, integer itemId retu
     if (index == 0) then
         return null
     else
-        return UnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index - 1))
+        return BlzUnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index - 1))
     endif
 endfunction
 
@@ -3612,7 +3612,7 @@ function GetItemEquippedByHeroOfEquipmentTypeBJ takes unit whichUnit, equipmentT
     if (index == 0) then
         return null
     else
-        return UnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index - 1))
+        return BlzUnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index - 1))
     endif
 endfunction
 
@@ -3649,7 +3649,7 @@ function UnitExtendedInventoryCount takes unit whichUnit returns integer
     local integer count = 0
 
     loop
-        if (UnitItemInBagSlot(whichUnit, index) != null) then
+        if (BlzUnitItemInBagSlot(whichUnit, index) != null) then
             set count = count + 1
         endif
 
@@ -3662,7 +3662,7 @@ endfunction
 
 //===========================================================================
 function UnitExtendedInventorySizeBJ takes unit whichUnit returns integer
-    return UnitExtendedInventorySize(whichUnit)
+    return BlzUnitExtendedInventorySize(whichUnit)
 endfunction
 
 //===========================================================================
@@ -3671,7 +3671,7 @@ function UnitEquipmentCount takes unit whichUnit returns integer
     local integer count = 0
 
     loop
-        if (UnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index)) != null) then
+        if (BlzUnitItemInEquipmentSlot(whichUnit, ConvertLoadoutSlot(index)) != null) then
             set count = count + 1
         endif
 
@@ -3725,6 +3725,11 @@ endfunction
 //===========================================================================
 function ChooseRandomItemExWithFilterBJ takes integer level, itemtype whichType, equipmentType whichEquipmentType, itemTag whichTag returns integer
     return ChooseRandomItemExWithFilter(whichType, level, whichEquipmentType, whichTag)
+endfunction
+
+//===========================================================================
+function ChooseRandomItemExWithFilterAndIncludesBJ takes integer level, itemtype whichType, equipmentType whichEquipmentType, itemTag whichTag, boolean includeInvalidMorphs, boolean includeNonPickRandom returns integer
+    return ChooseRandomItemExWithFilterAndIncludes(whichType, level, whichEquipmentType, whichTag, includeInvalidMorphs, includeNonPickRandom)
 endfunction
 
 //===========================================================================
