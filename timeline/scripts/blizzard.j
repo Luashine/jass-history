@@ -2323,8 +2323,8 @@ function SetTerrainFogExVBJ takes integer style, real zstart, real zend, real de
 endfunction
 
 //===========================================================================
-function BlzSetTerrainFogStyleBJ takes fogstyle style returns nothing
-    call BlzSetTerrainFogStyle(style)
+function BlzSetTerrainFogStyleBJ takes integer style returns nothing
+    call BlzSetTerrainFogStyle(ConvertFogStyle(style))
 endfunction
 
 //===========================================================================
