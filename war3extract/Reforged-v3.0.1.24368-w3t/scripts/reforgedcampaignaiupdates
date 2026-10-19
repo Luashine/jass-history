@@ -1,0 +1,657 @@
+https://jira.blizzard.com/browse/WAR3-26693
+RKinports 2020
+
+Primary Issue:
+The game was not tested for AI difficulty using any type of standards for Easy, Normal, and Hard.
+
+Goal:
+Align all campaigns on difficulty
+Make sure Hard is challenging to a seasoned veteran
+
+Editing AI files:
+https://wc3modding.info/4238/how-to-make-a-campaign-ai/
+
+Note for Normal:
+Handicap removed from all missions
+
+Definitions:
+
+Easy (Story Mode)
+
+Players should require minimal RTS experience
+One hand rule
+Players should be allowed to make many mistakes and recover
+Experiencing the cutscenes, scripted gameplay moments, and plot are the priority
+Attack move is expected
+
+Normal
+
+Players should be allowed to make mistakes with minimal punishment
+Players should be using their keyboard to build and use unit abilities
+Attack move is expected
+
+Hard
+
+Players should be punished for mistakes
+Bosses and similar pivotal gameplay moments should be memorable due to how hard they are, while remaining interesting
+Players will be expected to use most of the tools at their disposal to complete a mission
+Targeting individual units by priority is expected
+"Gold Stress" should come into play, meaning the player should feel as though they need to expand at some point rather than relying on a single mine without concern
+
+General:
+
+Anecdotally I've heard that the efforts to reduce "wasted" startup time building bases has been appreciated. We did this numerous times by providing more workers and making sure they are harvesting coming out of cutscenes. We should look into how we can apply this further. 
+
+RoC
+
+Prologue
+
+PR01
+
+Normal
+
+2x Gnoll and 1x Gnoll Poacher replaced with 2x Gnoll Brute and 1x Gnoll Assassian at camp
+Hard
+
++1 Gnoll Overseer at camp
+All difficulties
+
+Narrator VO first Gnoll will not play or truncate if you attack before they are finished speaking
+Narrator VO for a-moving into the Gnoll camp will not play or truncate if you are already moving in
+These resolve an issue where the Narrator would be speaking over you doing the thing he's preparing you for
+Gnoll camp exit is blocked until you kill all the Gnolls
+Players could run past, skipping the experience and more importantly level 2 and the lesson on Chain Lightning
+There is a text Hint if you near the barrier while Gnolls are alive
+This is the watershed moment of the map so the difficulty is focused here
+PR02
+
+Hard
+
+Enemy AI has level 1 weapon, armor, and Improved Masonry upgrades
++2 Footmen at far side bridge
++2 Footmen, +1 Knight at gate 1
++2 Footmen at cage 2
++3 Riflemen at firing range
++1 Knight at cage 3
++2 Footmen at gate 2
++1 Captain, +1 Knight, +2 Riflemen at base 
+PR03
+
+Hard
+
+Did not exist
+Enemy AI has level 1 weapon, armor, and Improved Masonry upgrades
+Bugs
+
+Debug triggers were on
+PR04
+
+Hard
+
+Enemy AI has level 1 weapon, and armor upgrades
+Player has level 1 weapon and armor upgrades instead of level 2
+PR05
+
+Hard
+
+Did not exist
+Buildings seen as damaged in the intro are not repaired
+
+Human
+
+These will be used as controls for the campaigns
+HU01
+
+Hard
+
++1 Gnoll at Timmy
++2 bandits at bandit camp for Ledger
++3 Grunts when entering town
++1 Grunt at Slave Master
+AI starts with level 1 armor and weapon upgrades
+Orc forces will now rush to defend their leader if you move directly to him
+Benedict no longer disabled
+Bugs:
+
+VO and quest triggers no longer stack and overlap if you run past triggered events
+You no longer see units pop out of existence in the mid scene
+HU02
+
+Hard
+
+-2 Scout Towers at player base
++2 Grunts, +3 Axethrower at Blademaster
++2 Grunts, +1 Watch Tower, +1 Barracks at Blackrock Clan base
++1 Grunt, +1 Raider, +1 Watch Tower at center
++2 Black Drake road to Searinox
+AI starts with level 1 armor and weapon upgrades
+HU03
+
+Hard
+
++2 Bandit Rogues at village ambush
++2 Murloc Huntsman at Murloc Island
++6 Skeleton Archers at ambush
++4 Skeleton Warriors at pre-KT fountain
+Skeleton Warriors replaced with Giant Skeleton Warriors at KT
+Ghoul rush from wheat increased from 4 to 8 at KT
+Ghoul rush from rear +4 each side of buildings at KT
+Final Barn rush doubled
+AI starts with level 1 armor and weapon upgrades
+All difficulties
+
++1 Puddle Lord Envoy (Murloc Flesheater) at Murloc island - Reference to UDx03
+HU04
+
+Normal
+
++1 Abomination outside KT
+Hard
+
+Starting mine reduced to 8000
+Expansion mine reduced to 6000
+Replace Potion of Mana Enforcer with Bandit Lord
++6 Ghouls, +2 Giant Skeleton Warriors spawn and attack after Granary cutscene
++2 Giant Skeleton Warriors, +1 Abomination at KT throne
+Abominations at KT Throne now warp in surrounding the player
++3 Abominations outside KT area
+Wave 2 +2 Abominations
+Wave 3 +2 Abominations
+Wave 4 +4 Abominations
+Wave 5 +3 Abominations
+Wave 6 +4 Abominations
+Wave 7 +2 Abominations
+AI starts with level 1 armor and weapon upgrades, Disease Cloud
+All difficulties
+
++1 Spirit Tower outside KT
+Swap Slaughterhouse at KT with Altar of Darkness
++2 Slaughterhouses at green base
+Fight with KT is now more substantial. 3/5/8 Aboms will warp in to defend him. 
+KT further adjusted to be a hero unit and will use Death Pact to heal himself.
+Wave 1 M5,M5,M1 -> M5,M3,M1 
+Wave 2 M6,M6,M3 -> M5,M4,M2 
+Wave 3 M5,M5,M3 -> M5,M3,M2 
+Wave 4 M5,M5,M4 -> M5,M3,M2 
+Wave 5 M6,M6,M3 -> M6,M4,M2
+Wave 6 M5,M5,M4 -> M5,M3,M2
+Wave 7 M6,M6,M3 -> M6,M4,M2
+A wave of zombies will emerge from the trees if you get past the Abominations
+HU05
+
+Hard
+
++30 intro zombies
+Green:
+Wave 2 +2 Ghouls, +1 Necro, -1 Meat Wagon
+Wave 3 +Hero
+Wave 4 +4 Ghouls, +2 Necromancers
+Wave 5 +4 Necromancers, +2 Abominations
+Wave 6 +Hero, -2 Meat Wagons
+Wave 7
+Wave 8 +4 Ghouls, +2 Abominations, -3 Meat Wagons, +Hero
+Purple
+Wave 5 -2 Meat Wagon
+Wave 6 -1 Meat Wagon
+Wave 8 -2 Meat Wagon
+Wave 10 -1 Meat Wagon
+All attack wave intervals increased by 2 minutes through 25 minutes, after all waves increased by 1 minute
+Orange
+-1 Meat Wagon, -1 Abomination, -1 Necromancer
+All difficulties
+
+Lich heroes were not configured per difficulty level, they are now: Green/Purple, 2/3, 4/5, 6/7
+Ordering forces to move to the first village no longer paths through Green's base
+Waves with Liches reduced in size
+HU06
+
+Hard
+
+Starting units no longer reduced
+Damage of Meathook Disease Cloud increased from 16/sec to 28/sec
+Enemy AI starts with level 1 Armor and weapon upgrades, Disease Cloud
+Purple:
+
+Wave 1 +4 Ghouls
+All difficulties
+
+Purple shares upgrades with Green
+Easy/Normal damage of Meathook Disease Cloud increased from 12/sec ro 18/sec, all difficulties auto attack damage increased from 52 to 72
+Salramm the Fleshcrafter: Base damage increase from 7 to 45, auto attack is AoE, cooldown decreased from 1.8 to 1.4
+HU07
+
+Hard
+
++2 Frost Wolfs at first choke
+Replace three Ice Trolls with Ice Troll Berserkers
+Enemy AI starts with level 1 Armor and weapon upgrades, Disease Cloud
+Remove starting Priest
+Expansion mine reduced from 12500 to 9000
+Opening mine reduced from 9000 to 7000
+Green:
+
+Wave 1 +2 Ghouls
+Wave 2 +3 Gargoyles, + 0/2/5 Ghouls, 1 minute faster
+Wave 3 +1 Abomination, +2 Necromancers
+Wave 4 +3 Gargoyles, + 0/2/6 Ghouls
+Wave 5 +1 Abomination
+Wave 6 +0/4/8 Ghouls
+Wave 7 +3 Abominations
+Wave 9 +0/4/8 Ghouls
+Wave 10 +2 Abominations
++1 Slaughterhouse
++3 Spirit Towers in base
++2 Spirit Towers out of base with small guard force
++1 Crypt
+All difficulties
+
+Main mine gold reduced from 24680 to 9000
+Expansion mine gold reduced from 20000 to 12500
+1 Frost Wolf replaced with Giant Frost Wolf at first choke
+Small attack wave after mid cutscene
+Start with a Lumber Mill
+Green Lich was not scaled. He is now 5/7/9
+Green Lich was not limited from leveling
+HU08
+
+Normal
+
++3 Giant Skeleton Warriors at Graveyards
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades, Disease Cloud
++1 Abomination at first encounter
++2 Abominations at second encounter
++2 Abominations at third encounter
++2 Nerubian Seers at Nerubian village
++7 Giant Skeleton Warriors at Graveyard
+All difficulties
+
+Gold mine scales: 12500/9000/6000
+
+HU09
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades, Disease Cloud
+Escort for guantlet reduced to 1 Knight and 1 Rifleman
+Purple starts with 1 more Graveyard
+All difficulties
+
+Green
+
+Pre-sword
+
+Wave 1 Timing M8,M8,M7 -> M8,M6,M3
+Wave 2 Timing **M10,M10,M7 -> M10,M7,M4
+Wave 3 Timing M8,M8,M7 -> M8,M6,M4
+Wave 4 Timing M10,M10,M7 -> M10,M7,M4
+Wave 5 Timing M8,M8,M7 -> M8,M6,M4
+Wave 6 Timing M10,M10,M7 -> M10,M7,M4
+Wave 9+ Timing M8,M8,M7 -> M8,M6,M4
+M10,M10,M7 -> M10,M7,M4
+After the Sword
+
+Wave 9+ Timing after sword
+Purple
+
+M10,M10,M8 -> M10,M8,M6
+M10,M10,M9 -> M10,M8,M7
+M10,M10,M8 -> M10,M8,M6
+M10,M10,M9 -> M10,M8,M7
+No more than 2 Meat Wagons per wave
+The AI was stacking wait times for wave 1 after the sword. There is now an attack wave immediately after the cutscene from all three directions of small forces
+Mal'Ganis was Level 9 on all difficulties, he's now 8/9/10
+Mal'Ganis is now warped away when he's close to death rather than being killable outright on attack waves
+Main gold mine reduced from 30,000 to 30000/10000/7000
+Golem mine reduced from 15000 to 8000
+Green expo mine reduced from 25000 to 12500
+Purple mine reduced from 25000 to 12500
+Three extra Scout Towers provided. On Easy they are Cannon Towers.
+Green no longer has infinite gold. Instead it normally harvests and is supplemented by the smaller Western UD base. 
+Bugs:
+
+Mal'Ganis was missing two of his abilities
+AI's would only rebuild some buildings at some difficulty levels, and there were duplicate entries.
+Teal's AI was non-functional due to missing starting lumber
+
+Undead
+
+UD01
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades
+-1 Ghoul, -1 Skeleton Warrior at the Graveyard
+UD02
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades
++3 Mud Golems at golem field
+Gold mine reduced from 50,000 to 20,000
+UD03
+
+Normal
+
+There is now a timer that destroys the treelines restricting the AI at 6m
+Yellow and teal AI's will send small attack forces
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades
+There is now a timer that destroys the treelines restricting the AI at 3m
+Yellow and teal AI's will send small attack forces
+Starting gold mine reduced from 13000 to 7000
+Natural expansion gold mine reduced from 15000 to 6000
+Two small outposts added on the way to Farstriders base
+All difficulties
+
+Expansion mines default to 12500
+Bugs
+
+Normal handicap trigger was disabled
+Escaping rapidly could break the opening camera
+UD04
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades
+Main mine gold reduced from 14500 to 11000
+Sylvanas is level 8 and has Starfall
++2 Earth Fury towers at each Magic Vault
+All difficulties
+
+Expansion mines set to 12500
+UD05
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades
+Sylvanas is level 8 and has Starfall
+Main gold mine reduced from 14000 to 8000
+Expansion gold mine reduced from 20000 to 12500
+Zeppelin drops include a level 6 Rock Golem
+All difficulties
+
++4 Moss Covered Granite Golems at Sunwell
+Sunstrider Isle revised, removed Waygates, +1 Wagon with Potion of Mana
+Fountain of Power replaced with Fountain of Health
+City revised to be more city-y
+Side quest clarification
+Prevent all runners from reaching Silvermoon before breaching the city 
+In connection with lore you'll now see the Dead Scar after the Ice Bridge cinematic
+Bugs
+
+Rapidly escaping the intro could break the camera
+Rushing to the city could result in both failing and completing the optional quest 
+UD06
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades, and Spiked Barricades
+Enemy heroes start with +2 levels and all have their ultimates
+Teal attack force attacks immediately after the intro cutscene
+Main gold mine reduced from 18000 to 8000
+Red AI is enabled with all the others, the first wave you face will be two Red Dragons
+Bug fixes
+
+Enemy heroes were not experience locked
+Enemy AI's would not rebuild and were not configured for different difficulties
+UD07
+
+Hard
+
+Pain field damage increased from 15/18/21 to 20/25/30
+Main gold mine reduced from 12500 to 8000
+Enemy AI starts with level 1 Armor and weapon upgrades, Storm Hammers, and Defend
+All difficulties
+
+1 Crypt replaced with 1 Slaughterhouse
+UD08
+
+Hard
+
+Enemy AI starts with level 1 Armor and weapon upgrades, Storm Hammers, Flying Machine Bombs, and Defend
+Main gold mine reduced from 14000 to 8000
+Expansion gold mine reduced from 12500 to 10000
+Starting resources reduced by 50%
+All difficulties
+
+Start with Black Citadel
+Expansion gold mine reduced from 25000 to 12500
+Bug fixes
+
+Archmagi could be level 1 due to order of operations in triggers
+
+Orc
+
+Orc01
+
+Hard
+
+Tauren have level 1 attack and armor upgrades instead of level 3's. Normal and Story Mode unchanged.
+-1 Headhunter at first ship
+-1 Grunt at second ship
+All difficulties
+
+Level 1 attack and armor upgrades, Brute Strength, and Troll Regeneration no longer researched for the player except on Story Mode
+All rescuable Tauren have 4x starting HP % to make them attempting to rescue them less frustrating
+Orc02
+
+Hard
+
+-2 starting Headhunters
+-1 Grunt reinforcement
+-1 Raider reinforcement
+-1 Demolisher reinforcement
+All difficulties
+
+Upgrades match Orc01
+Orc03
+
+Hard
+
+AI build one extra of their primary unit composition production building
+Purple initial delay reduced from 2 to 1 minute
+Main mine reduced from 21,000 to 10,000
+Enemy AI start with level 1 armor and weapon upgrades
+All difficulties
+
+AI attack frequency reduced by 1 minute on Normal and Hard
+AI will now rebuild on Normal and Hard
+Grommash will now begin his attack timer after the mid custscene rather than waiting until the Great Hall is completed
+Expansion mines reduced from 22100-24000 to 12500
+Main mine reduced from 21,000 to 14,000 on Easy and Normal
+Thralls VO indicated there should have been a way to complete the main quest without attacking the Humans. There is now a hidden path with a special surprise. 
+Orc04
+
+Hard
+
+Reduced attack intervals for all AI by 1 minute
+Other than Ai attack timing there was no Hard mode at all
+Enemy AI start with level 1 armor and weapon upgrades
+West expansion gold mine reduced from 40000 to 20000
+Orc05
+
+Hard
+
+Main mine reduced from 20000 to 9000
+Expansion mine reduced from 12500 to 10000
+Enemy AI start with level 1 armor and weapon upgrades
+All difficulties
+
+Main mine reduced from 30000 to 20000
+Expansion mine reduced from 20000 to 12500
+Orc06
+
+Hard
+
+Enemy AI start with level 1 armor and weapon upgrades
+Main mine reduced from 14000 to 9000
+Expansion mine reduced from 18000 to 12500
+All difficulties
+
+Main mine reduced from 22500 to 14000
+Expansion mine reduced from 25000 to 18000
+AI was not configured to rebuild
+Map route is not revealed where the Zeppelin was in the intro cutscene
+Bugs
+
+Main gold mine and harvested amount varied based on how long you watched the intro
+Orc07
+
+Hard
+
+Human Enemy AI start with level 1 weapon and armor upgrades
+All difficulties
+
+Remove revealed area from intro cinematic
+Orc08
+
+Easy
+
++2 Guard Towers at Jaina
++3 Watch Towers at player base
+Jaina starts with level 1 armor, weapon, and magic upgrades
+Normal
+
++2 Guard Towers at Jaina
++3 Watch Towers at player base
+Hard
+
+Main mine reduced from 20000 to 14,000
+Expansion mines reduced from to 9000
+All difficulties
+
+Main mine reduced from 30000 to 20000
+Expansion mines reduced from to 12500 (including Jaina's mine)
+Legacy Infernal wave restored
+If a player did not complete the optional quest in Orc06 they will get the new unit message for Wyvern
+Bugs
+
+Dark Green's AI was not given starting resources so it could not build anything requiring lumber
+There was a mix of Fel and standard Burrows for both Orc AI, and they were missing Fel Burrows from their build tree resulting in being unable to rebuild food production
+Jaina AI was not rebuilding most of her base, and would never utilize Gryphons 
+Skipping the intro rapidly could break the camera
+
+Night Elf
+
+NE01
+
+Hard
+
+There was no Hard mode
+Enemy AI start with level 1 weapon and armor upgrades
+Enemy AI attack timer starts after the intro instead of upon completing the base building quest
+Main gold mine reduced from 12500 to 9000
+Expansion gold mines reduced from 12500 to 8000
+Enemy AI was not configured to rebuild
+NE02
+
+Hard
+
+Enemy AI start with level 1 weapon and armor upgrades
+-2 Archers at 1st reinforcement
+-1 Huntress at 2nd reinforcement
+-1 Huntresses at 3rd reinforcement
+-1 Glaive Throwers at final reinforcement
+-2 Archers at final reinforcement
+Secret path must be entered from second entrance
+1 Abomination and 2 Crypt Fends greet you on the secret path
+All difficulties
+
+Replace Human bridge with Elven bridge
+AI was not reacting or rebuilding
+AI will now protect itself when the Ziggurat near secret entrance 2 is attacked
+Triggers for the timed moonlight/sunlight weren't working correctly, they are meant to signal day/night shift
+Bugs
+
+One of Green's buildings was owned by an enemy and would be killed immediately at game start
+NE03
+
+Hard
+
+Enemy AI start with level 1 weapon and armor upgrades
+Main gold mine reduced from 14500 to 9000
+Expansion gold mines reduced from 12500 to 8000
+Wave 1 attack time reduced from 4 to 2 minutes
+Following waves reduced from 4 to 3 minutes
+All difficulties
+
+Replace 1 Murloc Nightcrawler with Puddle Lord Envoy (Murloc Flesheater) at Murloc island - Reference to UDx03
+Bugs
+
+Trigger to detect Guardian deaths did not filter out corpses so a player may need to wait 60 seconds after killing the last Guardian before the outro starts
+NE04
+
+Normal
+
+No longer remove 2 Cannon Towers
+Hard
+
+Enemy AI start with level 1 weapon, armor, and magic upgrades
+Corrupted NE
+Second wave is 1 minute faster
+Plague Treants added to attack waves
+All difficulties
+
+Human and Corrupted NE AI's would not rebuild, and Corrupted NE could not repair
+NE05
+
+Hard
+
+No longer have level 1 armor upgrades
+-3 Archers at prison rescue
+All difficulties
+
+Circles of Power at gate turn blue once activated
+Gates "explode" in correct directions
+Outro scene part 2 no longer shows the gate opening and units being placed. There's also 1 DoC removed to better frame MalFurion. 
+NE06
+
+Hard
+
+Enemy AI start with level 1 weapon and armor upgrades
+Plague Treants included in attack waves
+All brown attack waves 2 minutes faster
+Reduce Southern expansion mine from 10000 to 6000
+Reduce Northern expansion mine from 12500 to 9000
+Reduce main mine from 14000 to 9000
+All difficulties
+
+AI now rebuilds besides Tree of Eternities
+Reduce Southern expansion mine from 17500 to 10000
+Reduce Northern expansion mine from 23500 to 12500
+Reduce main mine from 18500 to 14000
+Bugs
+
+Brown AI had a double wave in the beginning
+Illidan no longer has cinematic anims after intro
+NE07
+
+Hard
+
+Enemy AI start with level 1 weapon, armor, and magic upgrades
+Main and two expansion mine gold amounts reduced by 50%
+All difficulties
+
+Friendly AI would not rebuild 
+Chimaeras available
+
+TFT
+
+Remove handicaps from Normal and Hard
+Give enemy AI +1 upgrades on Hard
+Reduce available gold on Hard
+
+Legacy Note:
+
+HUX02 - Part 1 advancing forces had +3 upgrades
+HUX03 - Enemy units had +3 attack upgrades
+NEX03 - Siren training was at +2
+NEX06 - End UD forces had +2 upgrades
+NEX08 - Enemy units had +3 upgrades
+UDX01 - Enemy units had +3 upgrades
+UDX02 - Enemy units had +2 upgrades
+UDX03 - Was missing Hard mode
+UDX04 - Main Human base has +3 building armor
