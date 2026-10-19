@@ -14,6 +14,8 @@ Manually add one version:
 5. Extract `war3.w3mod:_balance\custom_v0.w3mod:scripts`
 6. Extract `war3.w3mod:_balance\melee_v0.w3mod:scripts`
 7. Put the extracted files in `/jass-history/war3extract/<tag name>`
+7. IF ON WINDOWS: run this to change file permissions from 755 to 644 (remove exec permission):
+`find war3extract/Reforged-v3.0.1.24368-w3t/ -type f -executable -exec chmod -x {} \+`
 8. Commit
 9. Add tag name to `version-list-sorted.txt`
 10. Copy-paste & replace folder contents into `/jass-history/timeline/`
